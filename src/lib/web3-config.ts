@@ -102,7 +102,7 @@ export const wagmiConfig = createConfig({
 // 智能合约地址
 export const CONTRACT_ADDRESSES = {
   SSH_MANAGER: {
-    [xLayerTestnet.id]: '0xFf9EAe146001597a8Dd8424DE7D3Ef0bE9B1762a',
+    [xLayerTestnet.id]: '0xeE65a2296d80D9a296Bfe5CAB4B609DD26295421',
     [xLayerMainnet.id]: '', // 主网地址待部署
   },
 } as const
