@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider } from 'wagmi'
-import { wagmiConfig } from '@/lib/web3-config'
+import { walletConnectConfig } from '@/lib/walletconnect-config'
 import { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
@@ -18,7 +18,7 @@ interface Web3ProviderProps {
 
 export function Web3Provider({ children }: Web3ProviderProps) {
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={walletConnectConfig}>
       <QueryClientProvider client={queryClient}>
         {children}
       </QueryClientProvider>
