@@ -1,32 +1,54 @@
-import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { ConnectionsView } from '@/views/ConnectionsView'
 import { SettingsView } from '@/views/SettingsView'
 import { StatsView } from '@/views/StatsView'
 import { AboutView } from '@/views/AboutView'
 
-function App() {
-  const [activeTab, setActiveTab] = useState('connections')
+// 新的单机器终端视图（稍后实现）
+function SingleTerminalView() {
+  return <div>Single Terminal View - Coming Soon</div>
+}
 
-  const renderCurrentView = () => {
-    switch (activeTab) {
-      case 'connections':
-        return <ConnectionsView />
-      case 'settings':
-        return <SettingsView />
-      case 'stats':
-        return <StatsView />
-      case 'about':
-        return <AboutView />
-      default:
-        return <ConnectionsView />
-    }
+function AppContent() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  
+  // 根据当前路径确定活跃的tab
+  const getActiveTab = () => {
+    const path = location.pathname
+    if (path.startsWith('/terminal/')) return 'terminal'
+    if (path.startsWith('/connections')) return 'connections'
+    if (path.startsWith('/settings')) return 'settings'
+    if (path.startsWith('/stats')) return 'stats'
+    if (path.startsWith('/about')) return 'about'
+    return 'connections'
   }
 
   return (
-    <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-      {renderCurrentView()}
+    <Layout activeTab={getActiveTab()} onTabChange={(tab) => {
+      // 使用React Router导航
+      if (tab !== 'terminal') {
+        navigate(`/${tab}`)
+      }
+    }}>
+      <Routes>
+        <Route path="/" element={<Navigate to="/connections" replace />} />
+        <Route path="/connections" element={<ConnectionsView />} />
+        <Route path="/settings" element={<SettingsView />} />
+        <Route path="/stats" element={<StatsView />} />
+        <Route path="/about" element={<AboutView />} />
+        <Route path="/terminal/:configId" element={<SingleTerminalView />} />
+      </Routes>
     </Layout>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   )
 }
 
