@@ -18,6 +18,10 @@
     "@noble/secp256k1": "^3.0.0",
     "@tanstack/react-query": "^5.85.5",
     "@wagmi/connectors": "^5.9.5",
+    "@walletconnect/ethereum-provider": "^2.21.8",
+    "@walletconnect/universal-provider": "^2.21.8",
+    "@web3modal/siwe": "^5.1.11",
+    "@web3modal/wagmi": "^5.1.11",
     "buffer": "^6.0.3",
     "date-fns": "^4.1.0",
     "fflate": "^0.8.2",
@@ -35,6 +39,8 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.12",
@@ -56,7 +62,8 @@
     "typescript": "^5.2.2",
     "vite": "^5.1.6",
     "vite-plugin-electron": "^0.28.6",
-    "vite-plugin-electron-renderer": "^0.14.5"
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vite-plugin-node-polyfills": "^0.24.0"
   },
   "main": "dist-electron/main.js"
 }
