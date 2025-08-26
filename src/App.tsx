@@ -4,11 +4,7 @@ import { ConnectionsView } from '@/views/ConnectionsView'
 import { SettingsView } from '@/views/SettingsView'
 import { StatsView } from '@/views/StatsView'
 import { AboutView } from '@/views/AboutView'
-
-// 新的单机器终端视图（稍后实现）
-function SingleTerminalView() {
-  return <div>Single Terminal View - Coming Soon</div>
-}
+import { SingleTerminalView } from '@/views/SingleTerminalView'
 
 function AppContent() {
   const location = useLocation()

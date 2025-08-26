@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { Sidebar } from './Sidebar'
+import { DynamicSidebar } from './DynamicSidebar'
 import { Header } from './Header'
 
 interface LayoutProps {
@@ -40,7 +40,7 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
       />
       
       {/* Sidebar */}
-      <Sidebar activeTab={activeTab} onTabChange={onTabChange} />
+      <DynamicSidebar activeTab={activeTab} onTabChange={onTabChange} />
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">

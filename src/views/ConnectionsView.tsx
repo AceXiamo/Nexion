@@ -27,10 +27,8 @@ export function ConnectionsView() {
   
   // SSH 连接管理
   const {
-    connectionStates,
     testConnection,
-    connect,
-    disconnect,
+    isTesting,
   } = useSSHConnection()
   
   // 模态框状态
@@ -63,15 +61,6 @@ export function ConnectionsView() {
     await deleteConfig(configId)
   }
   
-  // 处理连接/断开
-  const handleConnect = async (config: DecryptedSSHConfig) => {
-    const currentState = connectionStates[config.id]
-    if (currentState?.status === 'connected') {
-      await disconnect(config.id)
-    } else {
-      await connect(config)
-    }
-  }
   
   // 处理连接测试
   const handleTestConnection = async (config: DecryptedSSHConfig) => {
@@ -123,9 +112,8 @@ export function ConnectionsView() {
             onAdd={handleAddConfig}
             onEdit={handleEditConfig}
             onDelete={handleDeleteConfig}
-            onConnect={handleConnect}
             onTest={handleTestConnection}
-            connectionStates={connectionStates}
+            isTesting={isTesting}
           />
         ) : (
           <div className="border border-neutral-800 rounded-xl shadow-lg p-12 text-center">
