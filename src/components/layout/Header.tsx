@@ -13,24 +13,31 @@ export function Header({ title, description }: HeaderProps) {
   const isCorrectNetwork = chainId === xLayerTestnet.id
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-black border-b border-neutral-800 px-8 py-6 pt-10">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+        {/* 页面标题 */}
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold text-white tracking-tight">{title}</h1>
           {description && (
-            <p className="text-sm text-gray-600 mt-1">{description}</p>
+            <p className="text-sm text-neutral-400 mt-2 leading-relaxed">{description}</p>
           )}
         </div>
         
-        <div className="flex items-center space-x-4">
+        {/* 右侧工具栏 */}
+        <div className="flex items-center space-x-6">
           {/* Network Status */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3 px-4 py-2 bg-neutral-900 rounded-lg border border-neutral-800">
             <div className={`w-2 h-2 rounded-full ${
-              isCorrectNetwork ? 'bg-green-500' : 'bg-red-500'
+              isCorrectNetwork 
+                ? 'bg-lime-400 shadow-lg shadow-lime-400/50' 
+                : 'bg-red-500 shadow-lg shadow-red-500/50'
             }`}></div>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm font-medium text-neutral-200">
               {isCorrectNetwork ? 'X Layer 测试网' : '网络错误'}
             </span>
+            {isCorrectNetwork && (
+              <div className="w-1 h-1 bg-lime-400 rounded-full animate-ping"></div>
+            )}
           </div>
 
           {/* Wallet Connection */}

@@ -32,13 +32,19 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
   const currentPage = pageConfig[activeTab as keyof typeof pageConfig] || pageConfig.connections
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-black">
+      {/* macOS 标题栏拖拽区域 */}
+      <div 
+        className="fixed top-0 left-0 right-0 h-8 bg-transparent z-50 pointer-events-none"
+        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+      />
+      
       {/* Sidebar */}
       <Sidebar activeTab={activeTab} onTabChange={onTabChange} />
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
+        {/* Header - 为 macOS 标题栏预留空间 */}
         <Header 
           title={currentPage.title} 
           description={currentPage.description}
@@ -46,7 +52,7 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
         
         {/* Page Content */}
         <main className="flex-1 overflow-auto">
-          <div className="p-6">
+          <div className="p-8">
             {children}
           </div>
         </main>
