@@ -65,10 +65,10 @@ body {
 .btn-primary {
   background-color: rgb(var(--primary));
   color: rgb(var(--primary-foreground));
-  padding: 12px 24px;
+  padding: 10px 22px;
   border-radius: var(--radius-sm);
   font-weight: 500;
-  height: 40px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -91,10 +91,10 @@ body {
 .btn-secondary {
   background-color: transparent;
   color: rgb(var(--secondary-foreground));
-  padding: 12px 24px;
+  padding: 10px 22px;
   border-radius: var(--radius-sm);
   font-weight: 500;
-  height: 40px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -111,8 +111,8 @@ body {
 
 /* 图标按钮 */
 .btn-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-sm);
   background: transparent;
   border: none;
