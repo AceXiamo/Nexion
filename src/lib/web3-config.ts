@@ -53,10 +53,39 @@ export const wagmiConfig = createConfig({
   connectors: [
     injected({
       target() {
+        // Debug wallet availability
+        console.log('Checking wallet availability:', {
+          okxwallet: typeof window.okxwallet,
+          ethereum: typeof window.ethereum,
+          isElectron: typeof window !== 'undefined' && window.process?.type === 'renderer'
+        })
+        
+        // Try OKX wallet first
+        if (window.okxwallet) {
+          console.log('OKX Wallet detected')
+          return {
+            id: 'okx',
+            name: 'OKX Wallet',
+            provider: window.okxwallet,
+          }
+        }
+        
+        // Fallback to generic ethereum provider
+        if (window.ethereum) {
+          console.log('Generic Ethereum provider detected')
+          return {
+            id: 'injected',
+            name: 'Injected Wallet',
+            provider: window.ethereum,
+          }
+        }
+        
+        // No wallet found
+        console.warn('No wallet provider found')
         return {
-          id: 'okx',
-          name: 'OKX Wallet',
-          provider: window.okxwallet,
+          id: 'none',
+          name: 'No Wallet',
+          provider: null,
         }
       },
     }),
@@ -86,5 +115,9 @@ declare global {
   interface Window {
     okxwallet?: any
     ethereum?: any
+    walletDebug?: {
+      checkWalletAvailability: () => any
+      logWalletProviders: () => void
+    }
   }
 }
