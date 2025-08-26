@@ -19,8 +19,17 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     return ipcRenderer.invoke(channel, ...omit)
   },
 
-  // You can expose other APTs you need here.
-  // ...
+  // SSH Tab 相关方法
+  ssh: {
+    createSession: (config: any) => ipcRenderer.invoke('ssh-create-session', config),
+    closeSession: (sessionId: string) => ipcRenderer.invoke('ssh-close-session', sessionId),
+    switchSession: (sessionId: string) => ipcRenderer.invoke('ssh-switch-session', sessionId),
+    sendCommand: (sessionId: string, command: string) => ipcRenderer.invoke('ssh-send-command', sessionId, command),
+    resizeSession: (sessionId: string, cols: number, rows: number) => ipcRenderer.invoke('ssh-resize-session', sessionId, cols, rows),
+    getAllSessions: () => ipcRenderer.invoke('ssh-get-all-sessions'),
+    getActiveSession: () => ipcRenderer.invoke('ssh-get-active-session'),
+    testConnection: (config: any) => ipcRenderer.invoke('ssh-test-connection', config),
+  },
 })
 
 // Expose wallet detection and debugging utilities
