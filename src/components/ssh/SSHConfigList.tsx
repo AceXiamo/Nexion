@@ -9,13 +9,8 @@ interface SSHConfigListProps {
   onAdd: () => void
   onEdit: (config: DecryptedSSHConfig) => void
   onDelete: (configId: string) => void
-  onConnect: (config: DecryptedSSHConfig) => void
   onTest: (config: DecryptedSSHConfig) => void
-  connectionStates?: Record<string, {
-    status: 'connected' | 'disconnected' | 'connecting' | 'error'
-    isConnecting: boolean
-    isTesting: boolean
-  }>
+  isTesting?: (configId: string) => boolean
 }
 
 type SortOption = 'name' | 'host' | 'created' | 'updated'
@@ -27,9 +22,8 @@ export function SSHConfigList({
   onAdd,
   onEdit,
   onDelete,
-  onConnect,
   onTest,
-  connectionStates = {},
+  isTesting,
 }: SSHConfigListProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('name')
@@ -252,27 +246,16 @@ export function SSHConfigList({
           ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
           : 'space-y-4'
       }>
-        {filteredAndSortedConfigs.map((config) => {
-          const connectionState = connectionStates[config.id] || {
-            status: 'disconnected' as const,
-            isConnecting: false,
-            isTesting: false,
-          }
-
-          return (
-            <SSHConfigCard
-              key={config.id}
-              config={config}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onConnect={onConnect}
-              onTest={onTest}
-              connectionStatus={connectionState.status}
-              isConnecting={connectionState.isConnecting}
-              isTesting={connectionState.isTesting}
-            />
-          )
-        })}
+        {filteredAndSortedConfigs.map((config) => (
+          <SSHConfigCard
+            key={config.id}
+            config={config}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onTest={onTest}
+            isTesting={isTesting?.(config.id) || false}
+          />
+        ))}
       </div>
 
       {/* 搜索无结果 */}

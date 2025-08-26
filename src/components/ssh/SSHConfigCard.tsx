@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 import { format } from 'date-fns'
 import type { DecryptedSSHConfig } from '@/types/ssh'
@@ -7,64 +8,21 @@ interface SSHConfigCardProps {
   config: DecryptedSSHConfig
   onEdit: (config: DecryptedSSHConfig) => void
   onDelete: (configId: string) => void
-  onConnect: (config: DecryptedSSHConfig) => void
   onTest: (config: DecryptedSSHConfig) => void
-  isConnecting?: boolean
   isTesting?: boolean
-  connectionStatus?: 'connected' | 'disconnected' | 'connecting' | 'error'
 }
 
 export function SSHConfigCard({
   config,
   onEdit,
   onDelete,
-  onConnect,
   onTest,
-  isConnecting = false,
   isTesting = false,
-  connectionStatus = 'disconnected',
 }: SSHConfigCardProps) {
+  const navigate = useNavigate()
   const [showDropdown, setShowDropdown] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-  const getStatusColor = () => {
-    switch (connectionStatus) {
-      case 'connected':
-        return 'text-lime-400'
-      case 'connecting':
-        return 'text-yellow-400'
-      case 'error':
-        return 'text-red-400'
-      default:
-        return 'text-neutral-400'
-    }
-  }
-
-  const getStatusIcon = () => {
-    switch (connectionStatus) {
-      case 'connected':
-        return 'mdi:check-circle'
-      case 'connecting':
-        return 'mdi:loading'
-      case 'error':
-        return 'mdi:alert-circle'
-      default:
-        return 'mdi:circle-outline'
-    }
-  }
-
-  const getStatusText = () => {
-    switch (connectionStatus) {
-      case 'connected':
-        return '已连接'
-      case 'connecting':
-        return '连接中'
-      case 'error':
-        return '连接失败'
-      default:
-        return '未连接'
-    }
-  }
 
   const getAuthTypeDisplay = () => {
     return config.authType === 'password' ? '密码认证' : '密钥认证'
@@ -75,12 +33,7 @@ export function SSHConfigCard({
   }
 
   const handleConnect = () => {
-    if (connectionStatus === 'connected') {
-      // 如果已连接，则断开连接
-      // 这里可以添加断开连接的逻辑
-      return
-    }
-    onConnect(config)
+    navigate(`/terminal/${config.id}`)
   }
 
   return (
@@ -94,13 +47,6 @@ export function SSHConfigCard({
               <h3 className="text-lg font-semibold text-white group-hover:text-lime-400 transition-colors">
                 {config.name}
               </h3>
-              <div className={`flex items-center space-x-1 text-sm ${getStatusColor()}`}>
-                <Icon 
-                  icon={getStatusIcon()} 
-                  className={`w-4 h-4 ${connectionStatus === 'connecting' ? 'animate-spin' : ''}`} 
-                />
-                <span>{getStatusText()}</span>
-              </div>
             </div>
             
             <div className="flex items-center space-x-4 text-sm text-neutral-400">
@@ -124,22 +70,10 @@ export function SSHConfigCard({
             {/* 连接按钮 */}
             <button
               onClick={handleConnect}
-              disabled={isConnecting}
-              className={`btn-icon ${
-                connectionStatus === 'connected'
-                  ? 'text-lime-400 hover:text-lime-300'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-              title={connectionStatus === 'connected' ? '断开连接' : '连接到服务器'}
+              className="btn-icon text-neutral-400 hover:text-lime-400"
+              title="打开终端"
             >
-              {isConnecting ? (
-                <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
-              ) : (
-                <Icon 
-                  icon={connectionStatus === 'connected' ? 'mdi:lan-disconnect' : 'mdi:lan-connect'} 
-                  className="w-5 h-5" 
-                />
-              )}
+              <Icon icon="mdi:terminal" className="w-5 h-5" />
             </button>
 
             {/* 更多操作 */}
