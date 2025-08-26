@@ -1,11 +1,91 @@
+import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { Icon } from '@iconify/react'
 import { RegistrationPrompt } from '@/components/wallet/RegistrationPrompt'
 import { useUserRegistration } from '@/hooks/useUserRegistration'
+import { useSSHConfigs } from '@/hooks/useSSHConfigs'
+import { useSSHConnection } from '@/hooks/useSSHConnection'
+import { SSHConfigList } from '@/components/ssh/SSHConfigList'
+import { SSHConfigModal } from '@/components/ssh/SSHConfigModal'
+import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
 
 export function ConnectionsView() {
   const { isConnected } = useAccount()
   const { isRegistered } = useUserRegistration()
+  
+  // SSH 配置管理
+  const {
+    configs,
+    isLoading: isLoadingConfigs,
+    addConfig,
+    updateConfig,
+    deleteConfig,
+    isAdding,
+    isUpdating,
+    isDeleting,
+  } = useSSHConfigs()
+  
+  // SSH 连接管理
+  const {
+    connectionStates,
+    testConnection,
+    connect,
+    disconnect,
+  } = useSSHConnection()
+  
+  // 模态框状态
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingConfig, setEditingConfig] = useState<DecryptedSSHConfig | undefined>()
+  
+  // 处理添加配置
+  const handleAddConfig = () => {
+    setEditingConfig(undefined)
+    setIsModalOpen(true)
+  }
+  
+  // 处理编辑配置
+  const handleEditConfig = (config: DecryptedSSHConfig) => {
+    setEditingConfig(config)
+    setIsModalOpen(true)
+  }
+  
+  // 处理表单提交
+  const handleSubmitConfig = async (configData: SSHConfigInput) => {
+    if (editingConfig) {
+      await updateConfig(editingConfig.id, configData)
+    } else {
+      await addConfig(configData)
+    }
+  }
+  
+  // 处理删除配置
+  const handleDeleteConfig = async (configId: string) => {
+    await deleteConfig(configId)
+  }
+  
+  // 处理连接/断开
+  const handleConnect = async (config: DecryptedSSHConfig) => {
+    const currentState = connectionStates[config.id]
+    if (currentState?.status === 'connected') {
+      await disconnect(config.id)
+    } else {
+      await connect(config)
+    }
+  }
+  
+  // 处理连接测试
+  const handleTestConnection = async (config: DecryptedSSHConfig) => {
+    await testConnection(config)
+  }
+  
+  // 关闭模态框
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingConfig(undefined)
+  }
+  
+  // 检查是否有操作正在进行
+  const isSubmitting = isAdding || isUpdating || isDeleting
 
   if (!isConnected) {
     return (
@@ -30,41 +110,25 @@ export function ConnectionsView() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Registration Prompt */}
-      <RegistrationPrompt />
+    <>
+      <div className="space-y-8">
+        {/* Registration Prompt */}
+        <RegistrationPrompt />
 
-      <div className="border border-neutral-800 rounded-xl shadow-lg p-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-white mb-2">SSH 连接配置</h2>
-            <p className="text-neutral-400">安全管理你的 SSH 服务器连接配置</p>
-          </div>
-          {isRegistered && (
-            <button className="btn-primary">
-              <Icon icon="mdi:plus" className="w-4 h-4" />
-              <span>添加配置</span>
-            </button>
-          )}
-        </div>
-        
+        {/* SSH 配置管理区域 */}
         {isRegistered ? (
-          /* SSH 配置列表区域 */
-          <div className="border-2 border-dashed border-neutral-700 rounded-xl p-12 text-center">
-            <div className="w-16 h-16 bg-neutral-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Icon icon="mdi:server-plus" className="w-8 h-8 text-neutral-500" />
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-3">暂无 SSH 配置</h3>
-            <p className="text-neutral-400 mb-6 max-w-md mx-auto leading-relaxed">
-              你还没有添加任何 SSH 连接配置。添加你的第一个配置来开始安全地管理服务器连接。
-            </p>
-            <button className="btn-primary">
-              <Icon icon="mdi:rocket-launch" className="w-4 h-4" />
-              <span>创建首个配置</span>
-            </button>
-          </div>
+          <SSHConfigList
+            configs={configs}
+            isLoading={isLoadingConfigs}
+            onAdd={handleAddConfig}
+            onEdit={handleEditConfig}
+            onDelete={handleDeleteConfig}
+            onConnect={handleConnect}
+            onTest={handleTestConnection}
+            connectionStates={connectionStates}
+          />
         ) : (
-          <div className="border-2 border-dashed border-neutral-700 rounded-xl p-12 text-center">
+          <div className="border border-neutral-800 rounded-xl shadow-lg p-12 text-center">
             <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Icon icon="mdi:account-alert" className="w-8 h-8 text-red-400" />
             </div>
@@ -79,6 +143,15 @@ export function ConnectionsView() {
           </div>
         )}
       </div>
-    </div>
+
+      {/* SSH 配置模态框 */}
+      <SSHConfigModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        config={editingConfig}
+        onSubmit={handleSubmitConfig}
+        isSubmitting={isSubmitting}
+      />
+    </>
   )
 }

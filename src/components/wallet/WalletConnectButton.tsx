@@ -69,7 +69,7 @@ export function WalletConnectButton() {
 
         {/* Dropdown Menu */}
         {showDropdown && (
-          <div className="absolute right-0 top-full mt-3 w-80 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-800 py-3 z-50">
+          <div className="absolute right-0 top-full mt-3 w-80 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-800 pt-3 z-50 overflow-hidden">
             <div className="px-5 py-4 border-b border-neutral-800">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-lime-400 to-lime-500 rounded-xl flex items-center justify-center">

@@ -9,7 +9,7 @@ interface SidebarProps {
 const navigation = [
   {
     id: 'connections',
-    name: 'SSH 连接',
+    name: 'SSH 配置',
     icon: 'mdi:server-network',
     description: '管理你的 SSH 配置'
   },
