@@ -7,7 +7,7 @@ export function useSSHContract() {
   const { address } = useAccount()
   const chainId = useChainId()
   const contractAddress = getContractAddress(chainId)
-  
+
   const { writeContract, data: hash, isPending } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
@@ -33,8 +33,8 @@ export function useSSHContract() {
       functionName: 'getSSHConfigs',
       args: [userAddress!],
       query: {
-        enabled: !!userAddress,
-        refetchInterval: 30000, // Refetch every 30 seconds
+        enabled: !!userAddress && !!contractAddress,
+        refetchInterval: 30000,
       },
     }) as { data: SSHConfig[] | undefined; isLoading: boolean; error: Error | null; refetch: () => void }
   }
@@ -66,7 +66,7 @@ export function useSSHContract() {
   // Write operations
   const registerUser = async () => {
     if (!address) throw new Error('Wallet not connected')
-    
+
     return writeContract({
       ...SSH_MANAGER_CONTRACT,
       address: contractAddress as `0x${string}`,
@@ -76,7 +76,7 @@ export function useSSHContract() {
 
   const addSSHConfig = async (encryptedData: string) => {
     if (!address) throw new Error('Wallet not connected')
-    
+
     return writeContract({
       ...SSH_MANAGER_CONTRACT,
       address: contractAddress as `0x${string}`,
@@ -87,7 +87,7 @@ export function useSSHContract() {
 
   const updateSSHConfig = async (configId: bigint, newEncryptedData: string) => {
     if (!address) throw new Error('Wallet not connected')
-    
+
     return writeContract({
       ...SSH_MANAGER_CONTRACT,
       address: contractAddress as `0x${string}`,
@@ -98,7 +98,7 @@ export function useSSHContract() {
 
   const revokeConfig = async (configId: bigint) => {
     if (!address) throw new Error('Wallet not connected')
-    
+
     return writeContract({
       ...SSH_MANAGER_CONTRACT,
       address: contractAddress as `0x${string}`,
@@ -112,7 +112,7 @@ export function useSSHContract() {
     if (configIds.length !== newEncryptedData.length) {
       throw new Error('Arrays length mismatch')
     }
-    
+
     return writeContract({
       ...SSH_MANAGER_CONTRACT,
       address: contractAddress as `0x${string}`,
@@ -123,12 +123,34 @@ export function useSSHContract() {
 
   const batchRevokeConfigs = async (configIds: bigint[]) => {
     if (!address) throw new Error('Wallet not connected')
-    
+
     return writeContract({
       ...SSH_MANAGER_CONTRACT,
       address: contractAddress as `0x${string}`,
       functionName: 'batchRevokeConfigs',
       args: [configIds],
+    })
+  }
+
+  const useGetTotalUsers = () => {
+    return useReadContract({
+      ...SSH_MANAGER_CONTRACT,
+      address: contractAddress as `0x${string}`,
+      functionName: 'getTotalUsers',
+      query: {
+        enabled: !!contractAddress,
+      },
+    })
+  }
+
+  const useGetTotalConfigs = () => {
+    return useReadContract({
+      ...SSH_MANAGER_CONTRACT,
+      address: contractAddress as `0x${string}`,
+      functionName: 'getTotalConfigs',
+      query: {
+        enabled: !!contractAddress,
+      },
     })
   }
 
@@ -138,7 +160,9 @@ export function useSSHContract() {
     useGetSSHConfigs,
     useGetSSHConfig,
     useGetUserStats,
-    
+    useGetTotalUsers,
+    useGetTotalConfigs,
+
     // Write functions
     registerUser,
     addSSHConfig,
@@ -146,13 +170,13 @@ export function useSSHContract() {
     revokeConfig,
     batchUpdateConfigs,
     batchRevokeConfigs,
-    
+
     // Transaction states
     isPending,
     isConfirming,
     isConfirmed,
     hash,
-    
+
     // Contract info
     contractAddress,
   }
