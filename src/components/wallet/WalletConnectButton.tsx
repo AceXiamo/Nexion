@@ -1,11 +1,12 @@
-import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from 'wagmi'
+import { useAccount, useDisconnect, useChainId, useSwitchChain } from 'wagmi'
+import { useWeb3Modal } from '@web3modal/wagmi/react'
 import { Icon } from '@iconify/react'
 import { useState, useEffect } from 'react'
 import { xLayerTestnet } from '@/lib/web3-config'
 
 export function WalletConnectButton() {
   const { address, isConnected, isConnecting } = useAccount()
-  const { connect, connectors } = useConnect()
+  const { open } = useWeb3Modal()
   const { disconnect } = useDisconnect()
   const chainId = useChainId()
   const { switchChain } = useSwitchChain()
@@ -13,16 +14,13 @@ export function WalletConnectButton() {
   const [showDropdown, setShowDropdown] = useState(false)
   const [needsNetworkSwitch, setNeedsNetworkSwitch] = useState(false)
 
-  const okxConnector = connectors.find(connector => connector.id === 'injected' || connector.name.includes('OKX'))
-  const metaMaskConnector = connectors.find(connector => connector.name.includes('MetaMask'))
-
   useEffect(() => {
     setNeedsNetworkSwitch(isConnected && chainId !== xLayerTestnet.id)
   }, [isConnected, chainId])
 
-  const handleConnect = (connector: any) => {
-    connect({ connector })
-    setShowDropdown(false)
+  const handleConnect = () => {
+    console.log('Opening WalletConnect modal...')
+    open()
   }
 
   const handleSwitchNetwork = () => {
@@ -36,12 +34,12 @@ export function WalletConnectButton() {
   if (isConnected && address) {
     return (
       <div className="relative">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-4">
           {/* Network Switch Button */}
           {needsNetworkSwitch && (
             <button
               onClick={handleSwitchNetwork}
-              className="bg-red-100 text-red-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors flex items-center space-x-2"
+              className="bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-500/20 transition-all duration-200 flex items-center space-x-2"
             >
               <Icon icon="mdi:alert-circle" className="w-4 h-4" />
               <span>切换网络</span>
@@ -51,32 +49,48 @@ export function WalletConnectButton() {
           {/* Wallet Info */}
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-4 py-2 transition-colors"
+            className="flex items-center space-x-3 bg-neutral-900 hover:bg-neutral-800 rounded-lg px-4 py-3 transition-all duration-200 border border-neutral-800"
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <Icon icon="mdi:wallet" className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 bg-gradient-to-br from-lime-400 to-lime-500 rounded-lg flex items-center justify-center">
+              <Icon icon="mdi:wallet" className="w-4 h-4 text-black font-bold" />
             </div>
             <div className="text-left">
-              <div className="font-medium text-gray-900 text-sm">{formatAddress(address)}</div>
-              <div className="text-xs text-gray-500">
-                {needsNetworkSwitch ? '网络错误' : '已连接'}
+              <div className="font-medium text-white text-sm tracking-wide">{formatAddress(address)}</div>
+              <div className="text-xs text-neutral-400">
+                {needsNetworkSwitch ? '网络错误' : 'WalletConnect'}
               </div>
             </div>
             <Icon 
               icon={showDropdown ? 'mdi:chevron-up' : 'mdi:chevron-down'} 
-              className="w-4 h-4 text-gray-400"
+              className="w-4 h-4 text-neutral-400"
             />
           </button>
         </div>
 
         {/* Dropdown Menu */}
         {showDropdown && (
-          <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-            <div className="px-4 py-3 border-b border-gray-100">
-              <div className="font-medium text-gray-900">钱包信息</div>
-              <div className="text-sm text-gray-600 mt-1">地址: {formatAddress(address)}</div>
-              <div className="text-sm text-gray-600">
-                网络: {needsNetworkSwitch ? '错误网络' : 'X Layer 测试网'}
+          <div className="absolute right-0 top-full mt-3 w-80 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-800 py-3 z-50">
+            <div className="px-5 py-4 border-b border-neutral-800">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-lime-400 to-lime-500 rounded-xl flex items-center justify-center">
+                  <Icon icon="mdi:wallet" className="w-5 h-5 text-black" />
+                </div>
+                <div>
+                  <div className="font-semibold text-white text-sm">已连接钱包</div>
+                  <div className="text-xs text-neutral-400">WalletConnect 协议</div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-xs text-neutral-400">钱包地址:</span>
+                  <span className="text-xs text-white font-mono">{formatAddress(address)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-xs text-neutral-400">网络状态:</span>
+                  <span className={`text-xs font-medium ${needsNetworkSwitch ? 'text-red-400' : 'text-lime-400'}`}>
+                    {needsNetworkSwitch ? '错误网络' : 'X Layer 测试网'}
+                  </span>
+                </div>
               </div>
             </div>
             
@@ -85,10 +99,10 @@ export function WalletConnectButton() {
                 disconnect()
                 setShowDropdown(false)
               }}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 text-red-600"
+              className="w-full px-5 py-4 text-left hover:bg-neutral-800 flex items-center space-x-3 text-red-400 transition-colors duration-200"
             >
               <Icon icon="mdi:logout" className="w-4 h-4" />
-              <span className="text-sm">断开连接</span>
+              <span className="text-sm font-medium">断开钱包连接</span>
             </button>
           </div>
         )}
@@ -97,11 +111,11 @@ export function WalletConnectButton() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative group">
       <button
-        onClick={() => setShowDropdown(!showDropdown)}
+        onClick={handleConnect}
         disabled={isConnecting}
-        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+        className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
       >
         {isConnecting ? (
           <>
@@ -110,53 +124,34 @@ export function WalletConnectButton() {
           </>
         ) : (
           <>
-            <Icon icon="mdi:wallet" className="w-4 h-4" />
-            <span>连接钱包</span>
+            <Icon icon="mdi:qrcode-scan" className="w-4 h-4" />
+            <span>扫码连接钱包</span>
           </>
         )}
       </button>
 
-      {/* Connect Dropdown */}
-      {showDropdown && !isConnected && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <div className="font-medium text-gray-900">选择钱包</div>
-            <div className="text-sm text-gray-600 mt-1">连接到 X Layer 网络</div>
-          </div>
-          
-          {okxConnector && (
-            <button
-              onClick={() => handleConnect(okxConnector)}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3"
-            >
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs font-bold">OKX</span>
+      {/* 连接说明 - 悬停显示 */}
+      {!isConnected && (
+        <div className="absolute right-0 top-full mt-3 w-96 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-800 p-5 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <div className="text-sm text-neutral-200">
+            <div className="flex items-center space-x-2 mb-3">
+              <Icon icon="mdi:information" className="w-5 h-5 text-lime-400" />
+              <span className="font-semibold text-white">扫码连接说明</span>
+            </div>
+            <ol className="list-decimal list-inside space-y-2 text-xs text-neutral-300 leading-relaxed">
+              <li>点击"扫码连接钱包"按钮打开二维码</li>
+              <li>使用手机钱包应用扫描二维码</li>
+              <li>在手机钱包上确认连接请求</li>
+              <li>系统将自动切换到 X Layer 测试网</li>
+            </ol>
+            <div className="mt-4 p-3 bg-lime-400/10 border border-lime-400/20 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Icon icon="mdi:star" className="w-4 h-4 text-lime-400" />
+                <span className="text-xs font-medium text-lime-400">推荐钱包</span>
               </div>
-              <div>
-                <div className="font-medium text-gray-900">OKX Wallet</div>
-                <div className="text-sm text-gray-600">推荐选择</div>
+              <div className="text-xs text-neutral-300 mt-1">
+                OKX Wallet、MetaMask、Trust Wallet、TokenPocket
               </div>
-            </button>
-          )}
-
-          {metaMaskConnector && (
-            <button
-              onClick={() => handleConnect(metaMaskConnector)}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3"
-            >
-              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                <Icon icon="mdi:fox" className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">MetaMask</div>
-                <div className="text-sm text-gray-600">需要手动添加网络</div>
-              </div>
-            </button>
-          )}
-          
-          <div className="px-4 py-3 border-t border-gray-100">
-            <div className="text-xs text-gray-500">
-              没有钱包？<a href="#" className="text-blue-600 hover:underline">下载 OKX Wallet</a>
             </div>
           </div>
         </div>
