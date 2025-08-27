@@ -1,10 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
-import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { SSHSessionManager } from './ssh-session-manager'
 
-const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // The built directory structure
@@ -42,7 +40,7 @@ function createWindow() {
       contextIsolation: true,
       webSecurity: false, // Allow external wallet connections
       allowRunningInsecureContent: true, // For Web3 wallet connections
-      enableRemoteModule: false,
+
       sandbox: false, // Required for WalletConnect
     },
     // macOS 优化的标题栏样式
@@ -53,7 +51,7 @@ function createWindow() {
       height: 32
     } : undefined,
     backgroundColor: '#000000', // 窗口背景色
-    vibrancy: process.platform === 'darwin' ? 'ultra-dark' : undefined, // macOS 毛玻璃效果
+    vibrancy: process.platform === 'darwin' ? 'under-window' : undefined, // macOS 毛玻璃效果
     visualEffectState: process.platform === 'darwin' ? 'active' : undefined,
     show: false, // Don't show until ready
   })
@@ -118,6 +116,7 @@ function initSSHManager() {
   })
   
   sshManager.on('session-connected', (sessionId) => {
+    console.log('ssh-session-connected', sessionId)
     win?.webContents.send('ssh-session-connected', sessionId)
   })
   
@@ -140,10 +139,14 @@ function initSSHManager() {
   sshManager.on('session-data', (sessionId, data) => {
     win?.webContents.send('ssh-session-data', sessionId, data)
   })
+
+  sshManager.on('session-reconnecting', (sessionId, attempt, delay) => {
+    win?.webContents.send('ssh-session-reconnecting', sessionId, attempt, delay)
+  })
 }
 
 // SSH Tab 相关的 IPC 处理器
-ipcMain.handle('ssh-create-session', async (event, config) => {
+ipcMain.handle('ssh-create-session', async (_event, config) => {
   try {
     if (!sshManager) {
       throw new Error('SSH 管理器未初始化')
@@ -159,7 +162,7 @@ ipcMain.handle('ssh-create-session', async (event, config) => {
   }
 })
 
-ipcMain.handle('ssh-close-session', async (event, sessionId) => {
+ipcMain.handle('ssh-close-session', async (_event, sessionId) => {
   try {
     if (!sshManager) {
       throw new Error('SSH 管理器未初始化')
@@ -175,7 +178,7 @@ ipcMain.handle('ssh-close-session', async (event, sessionId) => {
   }
 })
 
-ipcMain.handle('ssh-switch-session', async (event, sessionId) => {
+ipcMain.handle('ssh-switch-session', async (_event, sessionId) => {
   try {
     if (!sshManager) {
       throw new Error('SSH 管理器未初始化')
@@ -191,7 +194,7 @@ ipcMain.handle('ssh-switch-session', async (event, sessionId) => {
   }
 })
 
-ipcMain.handle('ssh-send-command', async (event, sessionId, command) => {
+ipcMain.handle('ssh-send-command', async (_event, sessionId, command) => {
   try {
     if (!sshManager) {
       throw new Error('SSH 管理器未初始化')
@@ -207,7 +210,7 @@ ipcMain.handle('ssh-send-command', async (event, sessionId, command) => {
   }
 })
 
-ipcMain.handle('ssh-resize-session', async (event, sessionId, cols, rows) => {
+ipcMain.handle('ssh-resize-session', async (_event, sessionId, cols, rows) => {
   try {
     if (!sshManager) {
       throw new Error('SSH 管理器未初始化')
@@ -223,7 +226,7 @@ ipcMain.handle('ssh-resize-session', async (event, sessionId, cols, rows) => {
   }
 })
 
-ipcMain.handle('ssh-get-all-sessions', async (event) => {
+ipcMain.handle('ssh-get-all-sessions', async () => {
   try {
     if (!sshManager) {
       return { success: true, sessions: [] }
@@ -239,7 +242,7 @@ ipcMain.handle('ssh-get-all-sessions', async (event) => {
   }
 })
 
-ipcMain.handle('ssh-get-active-session', async (event) => {
+ipcMain.handle('ssh-get-active-session', async () => {
   try {
     if (!sshManager) {
       return { success: true, sessionId: null }
@@ -255,8 +258,25 @@ ipcMain.handle('ssh-get-active-session', async (event) => {
   }
 })
 
+// 手动重连会话
+ipcMain.handle('ssh-reconnect-session', async (_event, sessionId) => {
+  try {
+    if (!sshManager) {
+      throw new Error('SSH 管理器未初始化')
+    }
+    
+    await sshManager.reconnectSession(sessionId)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '未知错误'
+    }
+  }
+})
+
 // 保留原有的测试连接功能（用于配置验证）
-ipcMain.handle('ssh-test-connection', async (event, config) => {
+ipcMain.handle('ssh-test-connection', async (_event, config) => {
   try {
     const { Client } = await import('ssh2')
     
@@ -289,7 +309,7 @@ ipcMain.handle('ssh-test-connection', async (event, config) => {
         })
       })
 
-      conn.on('error', (err) => {
+      conn.on('error', (err: Error) => {
         clearTimeout(timeout)
         const connectionTime = Date.now() - startTime
         
@@ -312,7 +332,7 @@ ipcMain.handle('ssh-test-connection', async (event, config) => {
       })
 
       try {
-        const connectionConfig: any = {
+        const connectionConfig: Record<string, unknown> = {
           host: config.host,
           port: config.port,
           username: config.username,
