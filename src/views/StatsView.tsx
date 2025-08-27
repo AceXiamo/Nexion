@@ -77,7 +77,7 @@ export function StatsView() {
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <span className="text-gray-600">网络</span>
-            <span className="text-sm font-medium">X Layer 测试网</span>
+            <span className="text-sm font-medium">X Layer Testnet</span>
           </div>
           <div className="flex justify-between items-center py-2">
             <span className="text-gray-600">数据存储</span>

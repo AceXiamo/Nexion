@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useAccount } from 'wagmi'
 import { Icon } from '@iconify/react'
 import { RegistrationPrompt } from '@/components/wallet/RegistrationPrompt'
@@ -13,6 +13,9 @@ export function ConnectionsView() {
   const { isConnected } = useAccount()
   const { isRegistered } = useUserRegistration()
   
+  // 重试状态管理
+  const [retryingConfigs, setRetryingConfigs] = useState<Set<string>>(new Set())
+  
   // SSH 配置管理
   const {
     configs,
@@ -20,9 +23,12 @@ export function ConnectionsView() {
     addConfig,
     updateConfig,
     deleteConfig,
+    refreshConfigs,
+    clearCache,
     isAdding,
     isUpdating,
     isDeleting,
+    isSigningInProgress,
   } = useSSHConfigs()
   
   // SSH 连接管理
@@ -66,6 +72,33 @@ export function ConnectionsView() {
   const handleTestConnection = async (config: DecryptedSSHConfig) => {
     await testConnection(config)
   }
+
+  // 处理单个配置重试解密
+  const handleRetryConfig = useCallback(async (configId: string) => {
+    setRetryingConfigs(prev => new Set([...prev, configId]))
+    
+    try {
+      // 清除该配置的缓存
+      const { LocalStorageEncryption } = await import('@/services/encryption')
+      LocalStorageEncryption.clearConfigCache(configId)
+      
+      // 重新获取并解密配置
+      await refreshConfigs()
+    } catch (error) {
+      console.error('重试配置解密失败:', error)
+    } finally {
+      setRetryingConfigs(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(configId)
+        return newSet
+      })
+    }
+  }, [refreshConfigs])
+
+  // 检查配置是否正在重试
+  const isConfigRetrying = useCallback((configId: string) => {
+    return retryingConfigs.has(configId)
+  }, [retryingConfigs])
   
   // 关闭模态框
   const handleCloseModal = () => {
@@ -78,7 +111,7 @@ export function ConnectionsView() {
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center h-80 border border-neutral-800 rounded-xl shadow-lg">
+      <div className="flex flex-col items-center justify-center h-160  rounded-xl shadow-lg">
         <div className="w-20 h-20 bg-lime-400/10 rounded-2xl flex items-center justify-center mb-6">
           <Icon icon="mdi:wallet-outline" className="w-10 h-10 text-lime-400" />
         </div>
@@ -113,7 +146,11 @@ export function ConnectionsView() {
             onEdit={handleEditConfig}
             onDelete={handleDeleteConfig}
             onTest={handleTestConnection}
+            onRefresh={refreshConfigs}
+            onRetry={handleRetryConfig}
             isTesting={isTesting}
+            isRefreshing={isSigningInProgress}
+            isRetrying={isConfigRetrying}
           />
         ) : (
           <div className="border border-neutral-800 rounded-xl shadow-lg p-12 text-center">
