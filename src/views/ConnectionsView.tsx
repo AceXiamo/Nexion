@@ -1,10 +1,9 @@
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { Icon } from '@iconify/react'
 import { RegistrationPrompt } from '@/components/wallet/RegistrationPrompt'
 import { useUserRegistration } from '@/hooks/useUserRegistration'
 import { useSSHConfigs } from '@/hooks/useSSHConfigs'
-import { useSSHConnection } from '@/hooks/useSSHConnection'
 import { SSHConfigList } from '@/components/ssh/SSHConfigList'
 import { SSHConfigModal } from '@/components/ssh/SSHConfigModal'
 import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
@@ -13,8 +12,6 @@ export function ConnectionsView() {
   const { isConnected } = useAccount()
   const { isRegistered } = useUserRegistration()
   
-  // 重试状态管理
-  const [retryingConfigs, setRetryingConfigs] = useState<Set<string>>(new Set())
   
   // SSH 配置管理
   const {
@@ -24,18 +21,10 @@ export function ConnectionsView() {
     updateConfig,
     deleteConfig,
     refreshConfigs,
-    clearCache,
     isAdding,
     isUpdating,
     isDeleting,
-    isSigningInProgress,
   } = useSSHConfigs()
-  
-  // SSH 连接管理
-  const {
-    testConnection,
-    isTesting,
-  } = useSSHConnection()
   
   // 模态框状态
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -66,39 +55,7 @@ export function ConnectionsView() {
   const handleDeleteConfig = async (configId: string) => {
     await deleteConfig(configId)
   }
-  
-  
-  // 处理连接测试
-  const handleTestConnection = async (config: DecryptedSSHConfig) => {
-    await testConnection(config)
-  }
 
-  // 处理单个配置重试解密
-  const handleRetryConfig = useCallback(async (configId: string) => {
-    setRetryingConfigs(prev => new Set([...prev, configId]))
-    
-    try {
-      // 清除该配置的缓存
-      const { LocalStorageEncryption } = await import('@/services/encryption')
-      LocalStorageEncryption.clearConfigCache(configId)
-      
-      // 重新获取并解密配置
-      await refreshConfigs()
-    } catch (error) {
-      console.error('重试配置解密失败:', error)
-    } finally {
-      setRetryingConfigs(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(configId)
-        return newSet
-      })
-    }
-  }, [refreshConfigs])
-
-  // 检查配置是否正在重试
-  const isConfigRetrying = useCallback((configId: string) => {
-    return retryingConfigs.has(configId)
-  }, [retryingConfigs])
   
   // 关闭模态框
   const handleCloseModal = () => {
@@ -145,12 +102,8 @@ export function ConnectionsView() {
             onAdd={handleAddConfig}
             onEdit={handleEditConfig}
             onDelete={handleDeleteConfig}
-            onTest={handleTestConnection}
             onRefresh={refreshConfigs}
-            onRetry={handleRetryConfig}
-            isTesting={isTesting}
-            isRefreshing={isSigningInProgress}
-            isRetrying={isConfigRetrying}
+            isRefreshing={isLoadingConfigs}
           />
         ) : (
           <div className="border border-neutral-800 rounded-xl shadow-lg p-12 text-center">
