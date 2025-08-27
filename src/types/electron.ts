@@ -2,11 +2,16 @@
 export interface SSHSessionData {
   id: string
   name: string
+  configId: string
+  configName: string
   status: 'connecting' | 'connected' | 'disconnected' | 'error'
   error?: string
   isActive: boolean
   createdAt: Date
   lastActivity: Date
+  reconnectAttempts: number
+  connectionTime?: number
+  bytesTransferred: number
 }
 
 export interface SSHIPCResponse<T = any> {
@@ -33,6 +38,7 @@ declare global {
         resizeSession: (sessionId: string, cols: number, rows: number) => Promise<SSHIPCResponse>
         getAllSessions: () => Promise<SSHIPCResponse<SSHSessionData[]>>
         getActiveSession: () => Promise<SSHIPCResponse<{ sessionId: string | null }>>
+        reconnectSession: (sessionId: string) => Promise<SSHIPCResponse>
         testConnection: (config: any) => Promise<any>
       }
     }
