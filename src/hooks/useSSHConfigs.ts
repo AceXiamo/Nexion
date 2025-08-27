@@ -20,6 +20,7 @@ export interface UseSSHConfigsReturn {
   updateConfig: (configId: string, config: SSHConfigInput) => Promise<void>
   deleteConfig: (configId: string) => Promise<void>
   refreshConfigs: () => Promise<void>
+  clearMasterKeyCache: () => void
 
   // 操作状态
   isAdding: boolean
@@ -57,13 +58,15 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
       try {
         const decryptedConfigs: DecryptedSSHConfig[] = []
 
-        // 并行处理所有配置（确定性签名使得每次解密都是独立的）
+        console.log(`开始处理 ${rawConfigs.length} 个配置，使用主密钥缓存优化`)
+
+        // 顺序处理所有配置（第一个配置会触发主密钥派生和缓存，后续配置使用缓存）
         for (const rawConfig of rawConfigs) {
           try {
             const configId = rawConfig.configId.toString()
             console.log('解密配置 ID:', configId)
             
-            // 直接解密配置，不使用缓存
+            // 解密配置（会自动使用主密钥缓存）
             const decryptedConfig = await WalletBasedEncryptionService.decryptSSHConfig(
               rawConfig.encryptedData,
               address,
@@ -102,6 +105,10 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
 
         setConfigs(decryptedConfigs)
         console.log('配置处理完成，解密配置数量:', decryptedConfigs.length)
+        
+        // 输出缓存状态（调试用）
+        const cacheStatus = WalletBasedEncryptionService.getCacheStatus()
+        console.log('主密钥缓存状态:', cacheStatus)
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '处理配置失败'
         setError(errorMessage)
@@ -118,6 +125,14 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
     console.log('手动刷新配置：重新获取链上数据')
     await refetchConfigs()
   }, [refetchConfigs])
+
+  // 清理主密钥缓存（调试/故障排除用）
+  const clearMasterKeyCache = useCallback(() => {
+    if (address) {
+      WalletBasedEncryptionService.clearMasterKeyCache(address)
+      console.log('已清理当前钱包的主密钥缓存')
+    }
+  }, [address])
 
   // 添加新配置
   const addConfig = useCallback(
@@ -262,9 +277,11 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
 
   // 监听钱包地址变化
   useEffect(() => {
-    // 地址变化时清空配置列表
+    // 地址变化时清空配置列表并清理缓存
     if (!address) {
       setConfigs([])
+      // 清理所有主密钥缓存（用户断开连接）
+      WalletBasedEncryptionService.clearMasterKeyCache()
     }
   }, [address])
 
@@ -283,6 +300,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
     updateConfig,
     deleteConfig,
     refreshConfigs,
+    clearMasterKeyCache,
 
     // 操作状态
     isAdding,
