@@ -113,7 +113,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             <div className="flex items-center justify-between px-4 py-3 bg-neutral-900 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-lime-400 rounded-full animate-pulse"></div>
-                <span className="text-xs text-neutral-400">X Layer 测试网</span>
+                <span className="text-xs text-neutral-400">X Layer Testnet</span>
               </div>
               <div className="w-2 h-2 bg-lime-400 rounded-full opacity-60"></div>
             </div>

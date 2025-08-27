@@ -33,7 +33,7 @@ export function Header({ title, description }: HeaderProps) {
                 : 'bg-red-500 shadow-lg shadow-red-500/50'
             }`}></div>
             <span className="text-sm font-medium text-neutral-200">
-              {isCorrectNetwork ? 'X Layer 测试网' : '网络错误'}
+              {isCorrectNetwork ? 'X Layer Testnet' : '网络错误'}
             </span>
             {isCorrectNetwork && (
               <div className="w-1 h-1 bg-lime-400 rounded-full animate-ping"></div>
