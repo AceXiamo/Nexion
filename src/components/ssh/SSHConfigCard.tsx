@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 import { format } from 'date-fns'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
@@ -58,8 +59,14 @@ interface SSHConfigCardProps {
 }
 
 export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) {
+  const navigate = useNavigate()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   
+
+  // 处理连接到终端
+  const handleConnect = () => {
+    navigate(`/terminal/${config.id}`)
+  }
 
   // 处理删除确认
   const handleDeleteConfirm = () => {
@@ -103,6 +110,15 @@ export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) 
 
             {/* 右侧操作按钮 */}
             <div className="flex items-center space-x-2 ml-3">
+              {/* 连接按钮 */}
+              <button
+                onClick={handleConnect}
+                className="w-8 h-8 flex items-center justify-center rounded-md bg-[#BCFF2F] text-black hover:bg-[#a8e529] transition-all duration-200"
+                title="连接终端"
+              >
+                <Icon icon="mdi:console" className="w-4 h-4" />
+              </button>
+
               {/* 编辑按钮 */}
               <button
                 onClick={() => onEdit(config)}
