@@ -96,7 +96,7 @@ export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) 
           {/* 卡片内容 - flex 布局 */}
           <div className="flex items-center justify-between">
             {/* 左侧信息 */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 mr-2">
               {/* IP 地址 */}
               <div className="text-white font-medium text-sm mb-1 font-mono truncate">
                 {config.host}
@@ -109,7 +109,7 @@ export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) 
             </div>
 
             {/* 右侧操作按钮 */}
-            <div className="flex items-center space-x-2 ml-3">
+            <div className="flex items-center space-x-2 ml-4 flex-shrink-0">
               {/* 连接按钮 */}
               <button
                 onClick={handleConnect}

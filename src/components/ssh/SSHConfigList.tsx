@@ -37,7 +37,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
         </div>
 
         {/* OKX 风格骨架布局 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-lg p-4">
               <div className="flex items-center justify-between">
@@ -46,6 +46,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
                   <div className="h-3 bg-[#1a1a1a] rounded w-2/3 animate-pulse" />
                 </div>
                 <div className="flex items-center space-x-2 ml-3">
+                  <div className="w-8 h-8 bg-[#1a1a1a] border border-[#333333] rounded-md animate-pulse" />
                   <div className="w-8 h-8 bg-[#1a1a1a] border border-[#333333] rounded-md animate-pulse" />
                   <div className="w-8 h-8 bg-[#1a1a1a] border border-[#333333] rounded-md animate-pulse" />
                 </div>
@@ -123,7 +124,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
       </div>
 
       {/* OKX 风格响应式网格布局 - 24px 间距 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         {filteredConfigs.map((config) => (
           <SSHConfigCard 
             key={config.id} 
