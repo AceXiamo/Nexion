@@ -1,110 +1,44 @@
 import { xchacha20poly1305 } from '@noble/ciphers/chacha'
 import { randomBytes } from '@noble/ciphers/utils'
-import { sha256 } from '@noble/hashes/sha2'
+import { DeterministicSignatureService } from './deterministic-signature'
 import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
 
 /**
- * 基于钱包签名的 SSH 配置加密服务
- * 使用钱包签名派生加密密钥，采用 ChaCha20Poly1305 对称加密
+ * 基于确定性签名的 SSH 配置加密服务
+ * 使用确定性钱包签名派生稳定加密密钥，采用 ChaCha20Poly1305 对称加密
+ * 
+ * 重构说明：
+ * - 移除了不稳定的基于日期的密钥派生
+ * - 移除了 sessionStorage 缓存机制
+ * - 使用确定性签名确保密钥一致性
  */
 export class WalletBasedEncryptionService {
-  private static readonly CACHE_PREFIX = 'ssh_encryption_key_'
-  private static readonly CACHE_EXPIRY = 24 * 60 * 60 * 1000 // 24小时
 
   /**
-   * 通过钱包签名派生加密密钥
+   * 通过确定性签名派生加密密钥
+   * 
+   * 新实现说明：
+   * - 使用固定消息确保签名确定性
+   * - 移除缓存机制，每次都能得到相同结果
+   * - 简化错误处理逻辑
    */
   private static async deriveEncryptionKey(
     walletAddress: string, 
     signMessageAsync: (message: { message: string }) => Promise<string>
   ): Promise<Uint8Array> {
-    // 检查缓存的加密密钥
-    const cachedKey = this.getCachedEncryptionKey(walletAddress)
-    if (cachedKey) {
-      return cachedKey
-    }
-
     try {
-      // 构造标准化的签名消息
-      const currentDay = Math.floor(Date.now() / (24 * 60 * 60 * 1000))
-      const message = [
-        'SSH Manager - Encryption Key Derivation',
-        `Wallet Address: ${walletAddress}`,
-        `Purpose: SSH Configuration Encryption`,
-        `Day: ${currentDay}`,
-        '',
-        'This signature will be used to generate an encryption key',
-        'for securing your SSH configurations. The key expires in 24 hours.'
-      ].join('\n')
-
-      // 使用 Wagmi 签名方法
-      const signature = await signMessageAsync({ message })
-      
-      // 从签名派生32字节加密密钥
-      const encryptionKey = sha256(new TextEncoder().encode(signature))
-      
-      // 缓存密钥
-      this.cacheEncryptionKey(walletAddress, encryptionKey)
-      
-      return encryptionKey
+      // 使用确定性签名服务派生主密钥
+      return await DeterministicSignatureService.deriveMasterKey(
+        walletAddress,
+        signMessageAsync
+      )
     } catch (error) {
       console.error('派生加密密钥失败:', error)
-      if (error instanceof Error) {
-        if (error.message.includes('User rejected') || error.message.includes('用户拒绝') || error.message.includes('User denied')) {
-          throw new Error('用户取消了签名操作，无法生成加密密钥')
-        }
-        if (error.message.includes('Connector not found') || error.message.includes('No connector')) {
-          throw new Error('钱包连接已断开，请重新连接钱包')
-        }
-        throw error
-      }
-      throw new Error('生成加密密钥时发生未知错误')
+      throw error // 直接抛出，让确定性签名服务处理具体错误
     }
   }
 
 
-
-  /**
-   * 缓存加密密钥
-   */
-  private static cacheEncryptionKey(walletAddress: string, key: Uint8Array): void {
-    try {
-      const cacheKey = `${this.CACHE_PREFIX}${walletAddress.toLowerCase()}`
-      const cacheData = {
-        key: Array.from(key),
-        timestamp: Date.now(),
-        expiry: Date.now() + this.CACHE_EXPIRY
-      }
-      sessionStorage.setItem(cacheKey, JSON.stringify(cacheData))
-    } catch (error) {
-      console.warn('缓存加密密钥失败:', error)
-    }
-  }
-
-  /**
-   * 获取缓存的加密密钥
-   */
-  private static getCachedEncryptionKey(walletAddress: string): Uint8Array | null {
-    try {
-      const cacheKey = `${this.CACHE_PREFIX}${walletAddress.toLowerCase()}`
-      const cached = sessionStorage.getItem(cacheKey)
-      
-      if (!cached) return null
-      
-      const cacheData = JSON.parse(cached)
-      
-      // 检查过期时间
-      if (Date.now() > cacheData.expiry) {
-        sessionStorage.removeItem(cacheKey)
-        return null
-      }
-      
-      return new Uint8Array(cacheData.key)
-    } catch (error) {
-      console.warn('读取加密密钥缓存失败:', error)
-      return null
-    }
-  }
 
   /**
    * 使用用户钱包地址加密 SSH 配置
@@ -136,7 +70,7 @@ export class WalletBasedEncryptionService {
       const result = {
         nonce: Array.from(nonce),
         ciphertext: Array.from(ciphertext),
-        keyVersion: '2.0' // 新版本标识
+        keyVersion: '3.0' // 确定性签名版本标识
       }
 
       return JSON.stringify(result)
@@ -179,9 +113,9 @@ export class WalletBasedEncryptionService {
       const encrypted = JSON.parse(encryptedData)
       const { nonce, ciphertext, keyVersion } = encrypted
 
-      // 检查版本
-      if (keyVersion !== '2.0') {
-        throw new Error(`不支持的加密版本: ${keyVersion || 'unknown'}`)
+      // 检查版本 - 支持新的确定性签名版本
+      if (keyVersion !== '3.0' && keyVersion !== '2.0') {
+        throw new Error(`不支持的加密版本: ${keyVersion || 'unknown'}。请升级应用或重新创建配置。`)
       }
 
       // 2. 获取加密密钥（可能需要用户签名）
@@ -254,7 +188,7 @@ export class WalletBasedEncryptionService {
         Array.isArray(data.ciphertext) &&
         data.nonce.length === 24 && // XChaCha20Poly1305 nonce
         data.ciphertext.length > 16 && // 至少包含认证标签
-        data.keyVersion === '2.0'
+        (data.keyVersion === '3.0' || data.keyVersion === '2.0')
       )
     } catch {
       return false
@@ -269,105 +203,11 @@ export class WalletBasedEncryptionService {
   }
 
   /**
-   * 清除指定地址的加密密钥缓存
+   * 测试确定性签名支持（调试功能）
    */
-  static clearEncryptionKeyCache(walletAddress: string): void {
-    try {
-      const cacheKey = `${this.CACHE_PREFIX}${walletAddress.toLowerCase()}`
-      sessionStorage.removeItem(cacheKey)
-    } catch (error) {
-      console.warn('清除密钥缓存失败:', error)
-    }
-  }
-
-  /**
-   * 清除所有加密密钥缓存
-   */
-  static clearAllEncryptionKeyCache(): void {
-    try {
-      const keys = Object.keys(sessionStorage)
-      keys.forEach(key => {
-        if (key.startsWith(this.CACHE_PREFIX)) {
-          sessionStorage.removeItem(key)
-        }
-      })
-    } catch (error) {
-      console.warn('清除所有密钥缓存失败:', error)
-    }
-  }
-}
-
-
-/**
- * 本地存储加密服务（用于临时缓存解密后的配置）
- */
-export class LocalStorageEncryption {
-  private static readonly CACHE_PREFIX = 'ssh_config_cache_'
-  private static readonly CACHE_EXPIRY = 24 * 60 * 60 * 1000 // 24小时
-
-  /**
-   * 缓存解密后的配置（使用会话级加密）
-   */
-  static cacheDecryptedConfig(
-    configId: string,
-    config: DecryptedSSHConfig
-  ): void {
-    try {
-      const cacheData = {
-        config,
-        timestamp: Date.now(),
-        expiry: Date.now() + this.CACHE_EXPIRY,
-      }
-      
-      const key = `${this.CACHE_PREFIX}${configId}`
-      sessionStorage.setItem(key, JSON.stringify(cacheData))
-    } catch (error) {
-      console.warn('配置缓存失败:', error)
-    }
-  }
-
-  /**
-   * 从缓存获取解密配置
-   */
-  static getCachedConfig(configId: string): DecryptedSSHConfig | null {
-    try {
-      const key = `${this.CACHE_PREFIX}${configId}`
-      const cached = sessionStorage.getItem(key)
-      
-      if (!cached) return null
-      
-      const cacheData = JSON.parse(cached)
-      
-      // 检查过期时间
-      if (Date.now() > cacheData.expiry) {
-        sessionStorage.removeItem(key)
-        return null
-      }
-      
-      return cacheData.config
-    } catch (error) {
-      console.warn('读取缓存失败:', error)
-      return null
-    }
-  }
-
-  /**
-   * 清除指定配置的缓存
-   */
-  static clearConfigCache(configId: string): void {
-    const key = `${this.CACHE_PREFIX}${configId}`
-    sessionStorage.removeItem(key)
-  }
-
-  /**
-   * 清除所有配置缓存
-   */
-  static clearAllCache(): void {
-    const keys = Object.keys(sessionStorage)
-    keys.forEach(key => {
-      if (key.startsWith(this.CACHE_PREFIX)) {
-        sessionStorage.removeItem(key)
-      }
-    })
+  static async testDeterministicSignature(
+    signMessageAsync: (message: { message: string }) => Promise<string>
+  ): Promise<boolean> {
+    return await DeterministicSignatureService.testDeterministicSignature(signMessageAsync)
   }
 }
