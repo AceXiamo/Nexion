@@ -88,7 +88,7 @@ export function WalletConnectButton() {
                 <div className="flex justify-between">
                   <span className="text-xs text-neutral-400">网络状态:</span>
                   <span className={`text-xs font-medium ${needsNetworkSwitch ? 'text-red-400' : 'text-lime-400'}`}>
-                    {needsNetworkSwitch ? '错误网络' : 'X Layer 测试网'}
+                    {needsNetworkSwitch ? '错误网络' : 'X Layer Testnet'}
                   </span>
                 </div>
               </div>
@@ -142,7 +142,7 @@ export function WalletConnectButton() {
               <li>点击"扫码连接钱包"按钮打开二维码</li>
               <li>使用手机钱包应用扫描二维码</li>
               <li>在手机钱包上确认连接请求</li>
-              <li>系统将自动切换到 X Layer 测试网</li>
+              <li>系统将自动切换到 X Layer Testnet</li>
             </ol>
             <div className="mt-4 p-3 bg-lime-400/10 border border-lime-400/20 rounded-lg">
               <div className="flex items-center space-x-2">
