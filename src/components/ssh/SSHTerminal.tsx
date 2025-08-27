@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
@@ -19,6 +19,8 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
   // 初始化终端
   useEffect(() => {
     if (!terminalRef.current) return
+
+    console.log('🚀 初始化终端实例') // 调试日志
 
     // 创建终端实例
     const terminal = new Terminal({
@@ -51,6 +53,11 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
       cursorBlink: true,
       scrollback: 1000,
       tabStopWidth: 4,
+      // 添加这些配置
+      convertEol: true, // 自动转换行尾
+      disableStdin: false, // 允许输入
+      screenReaderMode: false, // 关闭屏幕阅读器模式
+      allowProposedApi: true, // 允许使用实验性API
     })
 
     // 创建自适应插件
@@ -96,7 +103,7 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
   // 更新当前会话ID
   useEffect(() => {
     currentSessionId.current = sessionId
-    
+
     if (terminalInstance.current && sessionId) {
       // 清空终端并显示连接信息
       terminalInstance.current.clear()
@@ -108,25 +115,26 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
   useEffect(() => {
     if (!window.ipcRenderer) return
 
-    const handleSessionData = (receivedSessionId: string, data: string) => {
+    const handleSessionData = (_event: unknown, receivedSessionId: string, data: string) => {
+      console.log('handleSessionData', receivedSessionId, data)
       if (receivedSessionId === sessionId && terminalInstance.current) {
         terminalInstance.current.write(data)
       }
     }
 
-    const handleSessionConnected = (connectedSessionId: string) => {
+    const handleSessionConnected = (_event: unknown, connectedSessionId: string) => {
       if (connectedSessionId === sessionId && terminalInstance.current) {
         terminalInstance.current.write('\r\n\x1b[1;32m✓ SSH 连接已建立\x1b[0m\r\n')
       }
     }
 
-    const handleSessionDisconnected = (disconnectedSessionId: string) => {
+    const handleSessionDisconnected = (_event: unknown, disconnectedSessionId: string) => {
       if (disconnectedSessionId === sessionId && terminalInstance.current) {
         terminalInstance.current.write('\r\n\x1b[1;31m✗ SSH 连接已断开\x1b[0m\r\n')
       }
     }
 
-    const handleSessionError = (errorSessionId: string, error: string) => {
+    const handleSessionError = (_event: unknown, errorSessionId: string, error: string) => {
       if (errorSessionId === sessionId && terminalInstance.current) {
         terminalInstance.current.write(`\r\n\x1b[1;31m✗ 连接错误: ${error}\x1b[0m\r\n`)
       }
@@ -162,10 +170,10 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
 
     // 监听窗口大小变化
     window.addEventListener('resize', handleResize)
-    
+
     // 使用 ResizeObserver 监听容器大小变化
     let resizeObserver: ResizeObserver | null = null
-    
+
     if (terminalRef.current) {
       resizeObserver = new ResizeObserver(() => {
         // 延迟调整以避免频繁调用
@@ -189,11 +197,7 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
 
   return (
     <div className={`flex-1 ${isVisible ? 'block' : 'hidden'}`}>
-      <div 
-        ref={terminalRef} 
-        className="w-full h-full"
-        style={{ minHeight: '400px' }}
-      />
+      <div ref={terminalRef} className="w-full h-full" style={{ minHeight: '400px' }} />
     </div>
   )
 }

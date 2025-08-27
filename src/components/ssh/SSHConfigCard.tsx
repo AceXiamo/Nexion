@@ -61,11 +61,34 @@ interface SSHConfigCardProps {
 export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) {
   const navigate = useNavigate()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
   
 
-  // 处理连接到终端
-  const handleConnect = () => {
-    navigate(`/terminal/${config.id}`)
+  // 处理连接到终端 - 创建新会话
+  const handleConnect = async () => {
+    if (!window.ipcRenderer?.ssh) {
+      console.error('SSH IPC not available')
+      return
+    }
+
+    setIsConnecting(true)
+    
+    try {
+      const result = await window.ipcRenderer.ssh.createSession(config)
+      
+      if (result.success && result.sessionId) {
+        // 跳转到新创建的会话终端页面
+        navigate(`/terminal/${result.sessionId}`)
+      } else {
+        console.error('Failed to create session:', result.error)
+        // TODO: 显示错误通知
+      }
+    } catch (error) {
+      console.error('Error creating session:', error)
+      // TODO: 显示错误通知
+    } finally {
+      setIsConnecting(false)
+    }
   }
 
   // 处理删除确认
@@ -113,10 +136,18 @@ export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) 
               {/* 连接按钮 */}
               <button
                 onClick={handleConnect}
-                className="w-8 h-8 flex items-center justify-center rounded-md bg-[#BCFF2F] text-black hover:bg-[#a8e529] transition-all duration-200"
-                title="连接终端"
+                disabled={isConnecting}
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all duration-200 ${
+                  isConnecting 
+                    ? 'bg-[#BCFF2F]/50 text-black cursor-not-allowed' 
+                    : 'bg-[#BCFF2F] text-black hover:bg-[#a8e529]'
+                }`}
+                title={isConnecting ? '创建会话中...' : '连接终端'}
               >
-                <Icon icon="mdi:console" className="w-4 h-4" />
+                <Icon 
+                  icon={isConnecting ? 'mdi:loading' : 'mdi:console'} 
+                  className={`w-4 h-4 ${isConnecting ? 'animate-spin' : ''}`} 
+                />
               </button>
 
               {/* 编辑按钮 */}
