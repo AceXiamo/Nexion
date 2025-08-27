@@ -9,32 +9,72 @@ import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
  * 
  * 重构说明：
  * - 移除了不稳定的基于日期的密钥派生
- * - 移除了 sessionStorage 缓存机制
+ * - 添加了主密钥内存缓存机制，避免重复签名
  * - 使用确定性签名确保密钥一致性
  */
 export class WalletBasedEncryptionService {
+  // 主密钥内存缓存：钱包地址 -> 主密钥
+  private static masterKeyCache = new Map<string, Uint8Array>()
 
   /**
-   * 通过确定性签名派生加密密钥
+   * 通过确定性签名派生加密密钥（带缓存）
    * 
    * 新实现说明：
    * - 使用固定消息确保签名确定性
-   * - 移除缓存机制，每次都能得到相同结果
-   * - 简化错误处理逻辑
+   * - 添加内存缓存，同一钱包地址只需签名一次
+   * - 钱包断开连接时自动清理缓存
    */
   private static async deriveEncryptionKey(
     walletAddress: string, 
     signMessageAsync: (message: { message: string }) => Promise<string>
   ): Promise<Uint8Array> {
     try {
-      // 使用确定性签名服务派生主密钥
-      return await DeterministicSignatureService.deriveMasterKey(
+      // 检查缓存
+      const cachedKey = this.masterKeyCache.get(walletAddress.toLowerCase())
+      if (cachedKey) {
+        console.log(`使用缓存的主密钥 for ${walletAddress}`)
+        return cachedKey
+      }
+
+      // 缓存未命中，需要重新派生主密钥
+      console.log(`派生新的主密钥 for ${walletAddress}`)
+      const masterKey = await DeterministicSignatureService.deriveMasterKey(
         walletAddress,
         signMessageAsync
       )
+
+      // 缓存主密钥
+      this.masterKeyCache.set(walletAddress.toLowerCase(), masterKey)
+      console.log(`主密钥已缓存 for ${walletAddress}`)
+
+      return masterKey
     } catch (error) {
       console.error('派生加密密钥失败:', error)
       throw error // 直接抛出，让确定性签名服务处理具体错误
+    }
+  }
+
+  /**
+   * 清理指定钱包地址的主密钥缓存
+   */
+  static clearMasterKeyCache(walletAddress?: string): void {
+    if (walletAddress) {
+      const removed = this.masterKeyCache.delete(walletAddress.toLowerCase())
+      console.log(`清理钱包 ${walletAddress} 的主密钥缓存:`, removed ? '成功' : '无缓存')
+    } else {
+      const size = this.masterKeyCache.size
+      this.masterKeyCache.clear()
+      console.log(`清理所有主密钥缓存，共 ${size} 个`)
+    }
+  }
+
+  /**
+   * 获取当前缓存状态（调试用）
+   */
+  static getCacheStatus(): { cachedAddresses: string[], cacheSize: number } {
+    return {
+      cachedAddresses: Array.from(this.masterKeyCache.keys()),
+      cacheSize: this.masterKeyCache.size
     }
   }
 
