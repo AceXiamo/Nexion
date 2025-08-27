@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Icon } from '@iconify/react'
+import { useSSHSessions } from '@/hooks/useSSHSessions'
 
 interface DynamicSidebarProps {
   activeTab: string
@@ -35,28 +36,23 @@ const navigation = [
   },
 ]
 
-// Mock connection list - in real app this would come from props
-const mockConnections = [
-  { id: '1', name: 'Production Server', status: 'connected' },
-  { id: '2', name: 'Dev Environment', status: 'disconnected' },
-  { id: '3', name: 'Database Server', status: 'connecting' },
-]
-
 export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const { sessions, switchSession, closeSession, reconnectSession } = useSSHSessions()
 
   // Check if we're in terminal mode
   const isInTerminalMode = location.pathname.startsWith('/terminal/')
-  const currentConfigId = isInTerminalMode ? location.pathname.split('/terminal/')[1] : null
+  const currentSessionId = isInTerminalMode ? location.pathname.split('/terminal/')[1] : null
 
   const handleBackToMain = () => {
     navigate('/connections')
   }
 
-  const handleConnectionClick = (configId: string) => {
-    navigate(`/terminal/${configId}`)
+  const handleSessionClick = async (sessionId: string) => {
+    await switchSession(sessionId)
+    navigate(`/terminal/${sessionId}`)
   }
 
   const getConnectionStatusColor = (status: string) => {
@@ -138,32 +134,51 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                   </button>
                 )}
 
-                {/* Connection List */}
+                {/* Session List */}
                 <div className="space-y-2">
-                  {!isCollapsed && <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide px-4">连接列表</h3>}
+                  {!isCollapsed && <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide px-4">会话列表</h3>}
 
-                  {mockConnections.map((connection) => (
-                    <button
-                      key={connection.id}
-                      onClick={() => handleConnectionClick(connection.id)}
-                      className={`w-full flex items-center space-x-4 px-4 py-3 rounded-lg transition-all duration-200 group ${
-                        currentConfigId === connection.id ? 'bg-neutral-800 text-white' : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                      }`}
-                      title={isCollapsed ? connection.name : undefined}
-                    >
-                      <Icon
-                        icon={getConnectionStatusIcon(connection.status)}
-                        className={`w-5 h-5 flex-shrink-0 ${currentConfigId === connection.id ? 'text-lime-400' : getConnectionStatusColor(connection.status)} ${
-                          connection.status === 'connecting' ? 'animate-spin' : ''
+                  {sessions.map((session, index) => (
+                    <div key={session.id} className="relative group">
+                      <button
+                        onClick={() => handleSessionClick(session.id)}
+                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                          currentSessionId === session.id ? 'bg-neutral-800 text-white' : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
                         }`}
-                      />
-                      {!isCollapsed && (
-                        <div className="flex-1 text-left">
-                          <div className="text-sm font-medium truncate">{connection.name}</div>
-                          <div className="text-xs text-neutral-500 capitalize">{connection.status === 'connected' ? '已连接' : connection.status === 'connecting' ? '连接中' : '未连接'}</div>
-                        </div>
+                        title={isCollapsed ? session.name : undefined}
+                      >
+                        <Icon
+                          icon={getConnectionStatusIcon(session.status)}
+                          className={`w-5 h-5 flex-shrink-0 ${currentSessionId === session.id ? 'text-lime-400' : getConnectionStatusColor(session.status)} ${
+                            session.status === 'connecting' ? 'animate-spin' : ''
+                          }`}
+                        />
+                        {!isCollapsed && (
+                          <div className="flex-1 text-left min-w-0">
+                            <div className="text-sm font-medium truncate">{session.name}</div>
+                            <div className="text-xs text-neutral-500">
+                              {session.status === 'connected' ? '已连接' : session.status === 'connecting' ? '连接中' : session.status === 'error' ? '连接错误' : '未连接'}
+                              {session.error && session.status === 'error' && <span className="ml-1 text-red-400">• {session.error}</span>}
+                            </div>
+                          </div>
+                        )}
+                        {!isCollapsed && <div className="text-xs text-neutral-500 font-mono">⌘{index + 1}</div>}
+                      </button>
+
+                      {/* 会话操作按钮（悬停时显示） */}
+                      {!isCollapsed && session.status === 'error' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            reconnectSession(session.id)
+                          }}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded text-neutral-400 hover:text-lime-400"
+                          title="重连"
+                        >
+                          <Icon icon="mdi:refresh" className="w-4 h-4" />
+                        </button>
                       )}
-                    </button>
+                    </div>
                   ))}
 
                   {/* Add Connection Button */}

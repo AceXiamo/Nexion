@@ -1,59 +1,28 @@
-import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 import { useSSHConfigs } from '@/hooks/useSSHConfigs'
-import { useSSHConnection } from '@/hooks/useSSHConnection'
+import { useSSHSessions } from '@/hooks/useSSHSessions'
+import { SSHTerminal } from '@/components/ssh/SSHTerminal'
 
 export function SingleTerminalView() {
-  const { configId } = useParams<{ configId: string }>()
+  const { configId: sessionId } = useParams<{ configId: string }>() // 注意：路由参数名还是configId，但实际是sessionId
   const navigate = useNavigate()
   const { configs, isLoading } = useSSHConfigs()
-  const { 
-    connectionStates, 
-    connect, 
-    disconnect, 
-    isConnected, 
-    isConnecting 
-  } = useSSHConnection()
+  const { sessions, closeSession, reconnectSession } = useSSHSessions()
 
-  const [terminalStatus, setTerminalStatus] = useState<'idle' | 'connecting' | 'connected' | 'error'>('idle')
-  const [errorMessage, setErrorMessage] = useState<string>('')
+  // Find the current session and config
+  const currentSession = sessions.find((session) => session.id === sessionId)
+  const currentConfig = currentSession ? configs.find((config) => config.id === currentSession.configId) : null
 
-  // Find the current config
-  const currentConfig = configs.find(config => config.id === configId)
-
-  // Handle connection when component mounts
-  useEffect(() => {
-    if (currentConfig && !isConnected(configId!)) {
-      handleConnect()
-    }
-  }, [currentConfig, configId])
-
-  const handleConnect = async () => {
-    if (!currentConfig || !configId) return
-
-    setTerminalStatus('connecting')
-    setErrorMessage('')
-    
-    try {
-      await connect(currentConfig)
-      setTerminalStatus('connected')
-    } catch (error) {
-      console.error('Connection failed:', error)
-      setTerminalStatus('error')
-      setErrorMessage(error instanceof Error ? error.message : '连接失败')
-    }
+  const handleReconnect = async () => {
+    if (!sessionId) return
+    await reconnectSession(sessionId)
   }
 
   const handleDisconnect = async () => {
-    if (!configId) return
-
-    try {
-      await disconnect(configId)
-      setTerminalStatus('idle')
-    } catch (error) {
-      console.error('Disconnect failed:', error)
-    }
+    if (!sessionId) return
+    await closeSession(sessionId)
+    navigate('/connections')
   }
 
   const handleBackToConfigs = () => {
@@ -71,16 +40,14 @@ export function SingleTerminalView() {
     )
   }
 
-  if (!currentConfig) {
+  if (!currentSession || !currentConfig) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center">
         <div className="w-20 h-20 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Icon icon="mdi:server-off" className="w-10 h-10 text-red-400" />
         </div>
-        <h3 className="text-xl font-semibold text-white mb-3">配置不存在</h3>
-        <p className="text-neutral-400 mb-6 max-w-md leading-relaxed">
-          未找到 ID 为 "{configId}" 的 SSH 配置。可能已被删除或不存在。
-        </p>
+        <h3 className="text-xl font-semibold text-white mb-3">会话不存在</h3>
+        <p className="text-neutral-400 mb-6 max-w-md leading-relaxed">未找到 ID 为 "{sessionId}" 的 SSH 会话。可能已被关闭或不存在。</p>
         <button onClick={handleBackToConfigs} className="btn-primary">
           <Icon icon="mdi:arrow-left" className="w-4 h-4" />
           <span>返回配置列表</span>
@@ -89,10 +56,9 @@ export function SingleTerminalView() {
     )
   }
 
-  const connectionState = connectionStates[configId!]
-  const currentConnectionStatus = connectionState?.status || 'disconnected'
-  const isCurrentlyConnecting = isConnecting(configId!) || terminalStatus === 'connecting'
-  const isCurrentlyConnected = isConnected(configId!) || terminalStatus === 'connected'
+  const isCurrentlyConnecting = currentSession.status === 'connecting'
+  const isCurrentlyConnected = currentSession.status === 'connected'
+  const hasError = currentSession.status === 'error'
 
   return (
     <div className="space-y-6">
@@ -104,9 +70,7 @@ export function SingleTerminalView() {
               <Icon icon="mdi:terminal" className="w-6 h-6 text-lime-400" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-white mb-1">
-                {currentConfig.name}
-              </h1>
+              <h1 className="text-xl font-semibold text-white mb-1">{currentSession.name}</h1>
               <div className="flex items-center space-x-4 text-sm text-neutral-400">
                 <span className="flex items-center space-x-1">
                   <Icon icon="mdi:account" className="w-4 h-4" />
@@ -114,29 +78,16 @@ export function SingleTerminalView() {
                 </span>
                 <span className="flex items-center space-x-1">
                   <Icon icon="mdi:server" className="w-4 h-4" />
-                  <span>{currentConfig.host}:{currentConfig.port}</span>
-                </span>
-                <span className={`flex items-center space-x-1 ${
-                  isCurrentlyConnected ? 'text-lime-400' : 
-                  isCurrentlyConnecting ? 'text-yellow-400' :
-                  terminalStatus === 'error' ? 'text-red-400' :
-                  'text-neutral-400'
-                }`}>
-                  <Icon 
-                    icon={
-                      isCurrentlyConnected ? 'mdi:check-circle' :
-                      isCurrentlyConnecting ? 'mdi:loading' :
-                      terminalStatus === 'error' ? 'mdi:alert-circle' :
-                      'mdi:circle-outline'
-                    } 
-                    className={`w-4 h-4 ${isCurrentlyConnecting ? 'animate-spin' : ''}`} 
-                  />
                   <span>
-                    {isCurrentlyConnected ? '已连接' :
-                     isCurrentlyConnecting ? '连接中' :
-                     terminalStatus === 'error' ? '连接失败' :
-                     '未连接'}
+                    {currentConfig.host}:{currentConfig.port}
                   </span>
+                </span>
+                <span className={`flex items-center space-x-1 ${isCurrentlyConnected ? 'text-lime-400' : isCurrentlyConnecting ? 'text-yellow-400' : hasError ? 'text-red-400' : 'text-neutral-400'}`}>
+                  <Icon
+                    icon={isCurrentlyConnected ? 'mdi:check-circle' : isCurrentlyConnecting ? 'mdi:loading' : hasError ? 'mdi:alert-circle' : 'mdi:circle-outline'}
+                    className={`w-4 h-4 ${isCurrentlyConnecting ? 'animate-spin' : ''}`}
+                  />
+                  <span>{isCurrentlyConnected ? '已连接' : isCurrentlyConnecting ? '连接中' : hasError ? '连接失败' : '未连接'}</span>
                 </span>
               </div>
             </div>
@@ -147,21 +98,14 @@ export function SingleTerminalView() {
               <Icon icon="mdi:arrow-left" className="w-4 h-4" />
               <span>返回列表</span>
             </button>
-            
+
             {isCurrentlyConnected ? (
-              <button 
-                onClick={handleDisconnect} 
-                className="btn-secondary text-red-400 hover:text-red-300"
-              >
+              <button onClick={handleDisconnect} className="btn-secondary text-red-400 hover:text-red-300">
                 <Icon icon="mdi:lan-disconnect" className="w-4 h-4" />
                 <span>断开连接</span>
               </button>
             ) : (
-              <button 
-                onClick={handleConnect} 
-                className="btn-primary"
-                disabled={isCurrentlyConnecting}
-              >
+              <button onClick={handleReconnect} className="btn-primary" disabled={isCurrentlyConnecting}>
                 {isCurrentlyConnecting ? (
                   <>
                     <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
@@ -179,13 +123,13 @@ export function SingleTerminalView() {
         </div>
 
         {/* Error Message */}
-        {terminalStatus === 'error' && errorMessage && (
+        {hasError && currentSession.error && (
           <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
             <div className="flex items-center space-x-3">
               <Icon icon="mdi:alert-circle" className="w-5 h-5 text-red-400 flex-shrink-0" />
               <div>
                 <p className="text-red-400 font-medium">连接失败</p>
-                <p className="text-red-300 text-sm mt-1">{errorMessage}</p>
+                <p className="text-red-300 text-sm mt-1">{currentSession.error}</p>
               </div>
             </div>
           </div>
@@ -205,37 +149,30 @@ export function SingleTerminalView() {
           </div>
         </div>
 
-        <div className="p-6 min-h-[500px]">
+        <div className="min-h-[500px]">
           {isCurrentlyConnected ? (
-            <div className="font-mono text-sm">
-              <div className="text-lime-400 mb-4">
-                <Icon icon="mdi:check-circle" className="w-4 h-4 inline mr-2" />
-                成功连接到 {currentConfig.name}
-              </div>
-              <div className="text-neutral-400 mb-4">
-                终端功能正在开发中...
-              </div>
-              <div className="flex items-center text-neutral-300">
-                <span className="text-lime-400 mr-2">$</span>
-                <div className="w-2 h-4 bg-lime-400 animate-pulse ml-1"></div>
-              </div>
-            </div>
+            <SSHTerminal
+              sessionId={sessionId}
+              isVisible={true}
+              onResize={(cols, rows) => {
+                // 可以在这里处理终端大小变化
+                console.log('Terminal resized:', cols, rows)
+              }}
+            />
           ) : isCurrentlyConnecting ? (
             <div className="flex items-center justify-center h-32">
               <div className="flex items-center space-x-3 text-neutral-400">
                 <Icon icon="mdi:loading" className="w-6 h-6 animate-spin" />
-                <span>正在连接到 {currentConfig.name}...</span>
+                <span>正在连接到 {currentSession.name}...</span>
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-32 text-center">
               <div>
                 <Icon icon="mdi:lan-disconnect" className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
-                <p className="text-neutral-500">
-                  {terminalStatus === 'error' ? '连接失败，请重试' : '等待连接...'}
-                </p>
-                {terminalStatus !== 'error' && (
-                  <button onClick={handleConnect} className="btn-primary mt-4">
+                <p className="text-neutral-500">{hasError ? '连接失败，请重试' : '等待连接...'}</p>
+                {!hasError && (
+                  <button onClick={handleReconnect} className="btn-primary mt-4">
                     <Icon icon="mdi:lan-connect" className="w-4 h-4" />
                     <span>立即连接</span>
                   </button>
