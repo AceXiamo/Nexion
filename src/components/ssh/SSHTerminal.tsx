@@ -107,7 +107,6 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
     if (terminalInstance.current && sessionId) {
       // 清空终端并显示连接信息
       terminalInstance.current.clear()
-      terminalInstance.current.write(`\r\n\x1b[1;33m正在连接到会话 ${sessionId}...\x1b[0m\r\n`)
     }
   }, [sessionId])
 
@@ -196,7 +195,7 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
   }, [isVisible, sessionId])
 
   return (
-    <div className={`flex-1 ${isVisible ? 'block' : 'hidden'}`}>
+    <div className={`flex-1 h-full ${isVisible ? 'block' : 'hidden'}`}>
       <div ref={terminalRef} className="w-full h-full" style={{ minHeight: '400px' }} />
     </div>
   )

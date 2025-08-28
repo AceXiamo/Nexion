@@ -12,27 +12,27 @@ interface DynamicSidebarProps {
 const navigation = [
   {
     id: 'connections',
-    name: 'SSH 配置',
-    icon: 'mdi:server-network',
-    description: '管理你的 SSH 配置',
+    name: 'SSH 连接',
+    icon: 'lucide:server',
+    description: '管理安全连接配置',
   },
   {
     id: 'settings',
     name: '设置',
-    icon: 'mdi:cog',
-    description: '应用设置和偏好',
+    icon: 'lucide:settings',
+    description: '应用偏好与配置',
   },
   {
     id: 'stats',
     name: '统计',
-    icon: 'mdi:chart-line',
-    description: '查看使用统计',
+    icon: 'lucide:bar-chart-3',
+    description: '连接使用分析',
   },
   {
     id: 'about',
     name: '关于',
-    icon: 'mdi:information',
-    description: '关于 Web3 SSH Manager',
+    icon: 'lucide:info',
+    description: '版本信息与帮助',
   },
 ]
 
@@ -58,26 +58,26 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
   const getConnectionStatusColor = (status: string) => {
     switch (status) {
       case 'connected':
-        return 'text-lime-400'
+        return 'text-[#BCFF2F]'
       case 'connecting':
         return 'text-yellow-400'
       case 'error':
         return 'text-red-400'
       default:
-        return 'text-neutral-400'
+        return 'text-[#888888]'
     }
   }
 
   const getConnectionStatusIcon = (status: string) => {
     switch (status) {
       case 'connected':
-        return 'mdi:check-circle'
+        return 'lucide:check-circle'
       case 'connecting':
-        return 'mdi:loading'
+        return 'lucide:loader-2'
       case 'error':
-        return 'mdi:alert-circle'
+        return 'lucide:alert-circle'
       default:
-        return 'mdi:circle-outline'
+        return 'lucide:circle'
     }
   }
 
@@ -89,12 +89,12 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
           <div className="flex items-center justify-between">
             {(!isCollapsed || !isInTerminalMode) && (
               <motion.div className="flex items-center space-x-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <div className="w-10 h-10 bg-gradient-to-br from-lime-400 to-lime-500 rounded-xl flex items-center justify-center">
-                  <Icon icon="mdi:shield-lock" className="w-6 h-6 text-black" />
+                <div className="w-10 h-10 bg-gradient-to-br from-[#BCFF2F] to-[#9FE827] rounded-xl flex items-center justify-center">
+                  <Icon icon="lucide:terminal-square" className="w-6 h-6 text-black" />
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-white">SSH Manager</h1>
-                  <p className="text-sm text-neutral-400">{isInTerminalMode ? '终端连接' : 'Web3 Security'}</p>
+                  <p className="text-sm text-[#888888]">{isInTerminalMode ? '安全终端' : 'Web3 安全连接'}</p>
                 </div>
               </motion.div>
             )}
@@ -116,9 +116,9 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                 {!isCollapsed && (
                   <button
                     onClick={handleBackToMain}
-                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-neutral-300 hover:bg-neutral-900 hover:text-white transition-all duration-200 group"
+                    className="w-full flex items-center space-x-3 py-3 text-[#CCCCCC] hover:text-white transition-all duration-200 group"
                   >
-                    <Icon icon="mdi:arrow-left" className="w-5 h-5" />
+                    <Icon icon="lucide:arrow-left" className="w-5 h-5 text-[#888888] group-hover:text-white" />
                     <span>返回主菜单</span>
                   </button>
                 )}
@@ -127,56 +127,77 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                 {isCollapsed && (
                   <button
                     onClick={handleBackToMain}
-                    className="w-full flex items-center justify-center px-4 py-3 rounded-lg text-neutral-300 hover:bg-neutral-900 hover:text-white transition-all duration-200 group"
+                    className="w-full flex items-center justify-center px-4 py-3 rounded-lg text-[#CCCCCC] hover:bg-[#0f0f0f] hover:text-white transition-all duration-200 group border border-[#1a1a1a] hover:border-[#333333]"
                     title="返回主菜单"
                   >
-                    <Icon icon="mdi:arrow-left" className="w-5 h-5" />
+                    <Icon icon="lucide:arrow-left" className="w-5 h-5 text-[#888888] group-hover:text-white" />
                   </button>
                 )}
 
                 {/* Session List */}
                 <div className="space-y-2">
-                  {!isCollapsed && <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide px-4">会话列表</h3>}
+                  {!isCollapsed && <h3 className="text-sm font-semibold text-[#888888] uppercase tracking-wide px-4">会话列表</h3>}
 
-                  {sessions.map((session, index) => (
+                  {sessions.map((session) => (
                     <div key={session.id} className="relative group">
                       <button
                         onClick={() => handleSessionClick(session.id)}
-                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                          currentSessionId === session.id ? 'bg-neutral-800 text-white' : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 border ${
+                          currentSessionId === session.id 
+                            ? 'bg-[#272727] text-white border-[#BCFF2F] border-l-[3px] border-t-[1px] border-r-[1px] border-b-[1px]' 
+                            : 'text-[#CCCCCC] hover:bg-[#0f0f0f] hover:text-white border-[#1a1a1a] hover:border-[#333333]'
                         }`}
                         title={isCollapsed ? session.name : undefined}
                       >
                         <Icon
                           icon={getConnectionStatusIcon(session.status)}
-                          className={`w-5 h-5 flex-shrink-0 ${currentSessionId === session.id ? 'text-lime-400' : getConnectionStatusColor(session.status)} ${
-                            session.status === 'connecting' ? 'animate-spin' : ''
-                          }`}
+                          className={`w-5 h-5 flex-shrink-0 ${
+                            currentSessionId === session.id 
+                              ? 'text-[#BCFF2F]' 
+                              : getConnectionStatusColor(session.status)
+                          } ${session.status === 'connecting' ? 'animate-spin' : ''}`}
                         />
                         {!isCollapsed && (
                           <div className="flex-1 text-left min-w-0">
-                            <div className="text-sm font-medium truncate">{session.name}</div>
-                            <div className="text-xs text-neutral-500">
+                            <div className={`text-sm font-medium truncate ${
+                              currentSessionId === session.id ? 'text-white' : 'text-[#CCCCCC]'
+                            }`}>
+                              {session.name}
+                            </div>
+                            <div className="text-xs text-[#888888] mt-0.5">
                               {session.status === 'connected' ? '已连接' : session.status === 'connecting' ? '连接中' : session.status === 'error' ? '连接错误' : '未连接'}
                               {session.error && session.status === 'error' && <span className="ml-1 text-red-400">• {session.error}</span>}
                             </div>
                           </div>
                         )}
-                        {!isCollapsed && <div className="text-xs text-neutral-500 font-mono">⌘{index + 1}</div>}
                       </button>
 
                       {/* 会话操作按钮（悬停时显示） */}
-                      {!isCollapsed && session.status === 'error' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            reconnectSession(session.id)
-                          }}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded text-neutral-400 hover:text-lime-400"
-                          title="重连"
-                        >
-                          <Icon icon="mdi:refresh" className="w-4 h-4" />
-                        </button>
+                      {!isCollapsed && (
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-1">
+                          {session.status === 'error' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                reconnectSession(session.id)
+                              }}
+                              className="p-1 rounded text-[#888888] hover:text-[#BCFF2F] hover:bg-[#1C260A] transition-all duration-200"
+                              title="重连"
+                            >
+                              <Icon icon="lucide:refresh-cw" className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              closeSession(session.id)
+                            }}
+                            className="p-1 rounded text-[#888888] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                            title="关闭连接"
+                          >
+                            <Icon icon="lucide:x" className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   ))}
@@ -184,10 +205,10 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                   {/* Add Connection Button */}
                   <button
                     onClick={() => navigate('/connections')}
-                    className="w-full flex items-center space-x-4 px-4 py-3 rounded-lg text-neutral-400 hover:bg-neutral-900 hover:text-lime-400 transition-all duration-200 group border-2 border-dashed border-neutral-700 hover:border-lime-400/50"
+                    className="w-full flex items-center space-x-4 px-4 py-3 rounded-lg text-[#888888] hover:bg-[#0f0f0f] hover:text-[#BCFF2F] transition-all duration-200 group border-2 border-dashed border-[#333333] hover:border-[#BCFF2F]/50"
                     title={isCollapsed ? '添加连接' : undefined}
                   >
-                    <Icon icon="mdi:plus" className="w-5 h-5 flex-shrink-0" />
+                    <Icon icon="lucide:plus" className="w-5 h-5 flex-shrink-0" />
                     {!isCollapsed && <span className="text-sm font-medium">添加连接</span>}
                   </button>
                 </div>
@@ -200,16 +221,29 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                     <li key={item.id}>
                       <button
                         onClick={() => onTabChange(item.id)}
-                        className={`w-full flex border-0 items-center space-x-4 px-4 py-3 rounded-lg transition-all duration-200 group relative ${
-                          activeTab === item.id ? 'bg-neutral-800 text-white' : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                        className={`w-full flex items-center space-x-4 px-4 py-3 rounded-lg transition-all duration-200 group relative border ${
+                          activeTab === item.id 
+                            ? 'bg-[#272727] text-white border-[#BCFF2F]' 
+                            : 'text-[#CCCCCC] hover:bg-[#0f0f0f] hover:text-white border-[#1a1a1a] hover:border-[#333333]'
                         }`}
                         title={isCollapsed ? item.name : undefined}
                       >
-                        <Icon icon={item.icon} className={`w-5 h-5 flex-shrink-0 ${activeTab === item.id ? 'text-lime-400' : 'text-neutral-400 group-hover:text-white'}`} />
+                        <Icon 
+                          icon={item.icon} 
+                          className={`w-5 h-5 flex-shrink-0 ${
+                            activeTab === item.id 
+                              ? 'text-[#BCFF2F]' 
+                              : 'text-[#888888] group-hover:text-white'
+                          }`} 
+                        />
                         {!isCollapsed && (
                           <div className="flex-1 text-left">
-                            <div className={`text-sm font-medium ${activeTab === item.id ? 'text-white' : 'text-neutral-200'}`}>{item.name}</div>
-                            <div className="text-xs text-neutral-500 mt-0.5">{item.description}</div>
+                            <div className={`text-sm font-medium ${
+                              activeTab === item.id ? 'text-white' : 'text-[#CCCCCC]'
+                            }`}>
+                              {item.name}
+                            </div>
+                            <div className="text-xs text-[#888888] mt-0.5">{item.description}</div>
                           </div>
                         )}
                       </button>

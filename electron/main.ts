@@ -32,7 +32,7 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 600,
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    icon: path.join(process.env.VITE_PUBLIC, 'app-icon.png'),
     title: 'Web3 SSH Manager',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),

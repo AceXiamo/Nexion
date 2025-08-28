@@ -52,7 +52,7 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
         
         {/* Page Content */}
         <main className="flex-1 overflow-auto">
-          <div className="p-8">
+          <div className="p-8 h-full">
             {children}
           </div>
         </main>
