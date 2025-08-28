@@ -1,11 +1,12 @@
 // @see - https://www.electron.build/configuration/configuration
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "YourAppID",
+  "appId": "com.web3.ssh-manager",
   "asar": true,
-  "productName": "YourAppName",
+  "productName": "Web3 SSH Manager",
   "directories": {
-    "output": "release/${version}"
+    "output": "release/${version}",
+    "buildResources": "public"
   },
   "files": [
     "dist",
@@ -15,6 +16,7 @@
     "target": [
       "dmg"
     ],
+    "icon": "app-icon.icns",
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
   },
   "win": {
@@ -26,18 +28,24 @@
         ]
       }
     ],
+    "icon": "app-icon.ico",
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
   "nsis": {
     "oneClick": false,
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false
+    "deleteAppDataOnUninstall": false,
+    "installerIcon": "app-icon.ico",
+    "uninstallerIcon": "app-icon.ico",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true
   },
   "linux": {
     "target": [
       "AppImage"
     ],
+    "icon": "app-icon.png",
     "artifactName": "${productName}-Linux-${version}.${ext}"
   }
 }
