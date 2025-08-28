@@ -68,21 +68,30 @@ export function ConnectionsView() {
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center h-160  rounded-xl shadow-lg">
-        <div className="w-20 h-20 bg-lime-400/10 rounded-2xl flex items-center justify-center mb-6">
-          <Icon icon="mdi:wallet-outline" className="w-10 h-10 text-lime-400" />
+      <div className="flex flex-col items-center justify-center h-160 rounded-xl shadow-lg">
+        <div className="w-20 h-20 bg-[#BCFF2F]/10 rounded-2xl flex items-center justify-center mb-6 border border-[#BCFF2F]/20">
+          <Icon icon="lucide:wallet" className="w-10 h-10 text-[#BCFF2F]" />
         </div>
-        <h3 className="text-xl font-bold text-white mb-3">连接钱包以开始</h3>
-        <p className="text-neutral-400 text-center max-w-md leading-relaxed">
-          请连接你的 OKX 钱包或其他 WalletConnect 兼容钱包来管理 SSH 配置。<br />
-          你的所有配置都将被端到端加密并安全存储在区块链上。
+        <h3 className="text-2xl font-semibold text-white mb-4">连接钱包</h3>
+        <p className="text-[#CCCCCC] text-center max-w-lg leading-relaxed text-base mb-6">
+          连接你的 Web3 钱包开始使用安全的 SSH 连接管理器。<br />
+          所有配置信息将通过区块链加密存储，确保数据安全与隐私保护。
         </p>
-        <div className="mt-6 flex items-center space-x-2 text-xs text-neutral-500">
-          <Icon icon="mdi:shield-check" className="w-4 h-4 text-lime-400" />
-          <span>完全去中心化</span>
-          <div className="w-1 h-1 bg-neutral-600 rounded-full"></div>
-          <Icon icon="mdi:lock" className="w-4 h-4 text-lime-400" />
-          <span>端到端加密</span>
+        <div className="mt-4 flex items-center space-x-6 text-sm text-[#888888]">
+          <div className="flex items-center space-x-2">
+            <Icon icon="lucide:shield-check" className="w-4 h-4 text-[#BCFF2F]" />
+            <span>去中心化存储</span>
+          </div>
+          <div className="w-1 h-1 bg-[#555555] rounded-full"></div>
+          <div className="flex items-center space-x-2">
+            <Icon icon="lucide:lock" className="w-4 h-4 text-[#BCFF2F]" />
+            <span>端到端加密</span>
+          </div>
+          <div className="w-1 h-1 bg-[#555555] rounded-full"></div>
+          <div className="flex items-center space-x-2">
+            <Icon icon="lucide:server" className="w-4 h-4 text-[#BCFF2F]" />
+            <span>SSH 安全连接</span>
+          </div>
         </div>
       </div>
     )
@@ -106,17 +115,18 @@ export function ConnectionsView() {
             isRefreshing={isLoadingConfigs}
           />
         ) : (
-          <div className="border border-neutral-800 rounded-xl shadow-lg p-12 text-center">
-            <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Icon icon="mdi:account-alert" className="w-8 h-8 text-red-400" />
+          <div className="border border-[#1a1a1a] bg-[#0f0f0f] rounded-xl shadow-lg p-12 text-center">
+            <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-orange-500/20">
+              <Icon icon="lucide:user-plus" className="w-8 h-8 text-orange-400" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-3">需要注册钱包</h3>
-            <p className="text-neutral-400 mb-6 max-w-md mx-auto leading-relaxed">
-              请先注册你的钱包地址才能开始管理 SSH 配置。注册过程快速简单。
+            <h3 className="text-xl font-semibold text-white mb-4">完成身份验证</h3>
+            <p className="text-[#CCCCCC] mb-6 max-w-lg mx-auto leading-relaxed">
+              为确保安全性，需要通过数字签名验证你的钱包身份。<br />
+              验证完成后即可开始创建和管理 SSH 连接配置。
             </p>
-            <div className="flex items-center justify-center space-x-2 text-xs text-neutral-500">
-              <Icon icon="mdi:information" className="w-4 h-4" />
-              <span>点击上方横幅中的注册按钮即可开始</span>
+            <div className="flex items-center justify-center space-x-2 text-sm text-[#888888]">
+              <Icon icon="lucide:info" className="w-4 h-4 text-[#BCFF2F]" />
+              <span>点击上方的"验证身份"按钮完成设置</span>
             </div>
           </div>
         )}
