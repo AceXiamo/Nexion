@@ -44,6 +44,11 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
   // 获取区块链上的配置数据
   const { data: rawConfigs, isLoading: isContractLoading, refetch: refetchConfigs } = sshContract.useGetSSHConfigs(address)
 
+  // 应用启动时清理过期的持久缓存
+  useEffect(() => {
+    WalletBasedEncryptionService.cleanupExpiredPersistentCache()
+  }, [])
+
   // 统一处理链上数据的解密和转换
   const processRawConfigs = useCallback(
     async (rawConfigs: SSHConfig[]): Promise<void> => {
@@ -108,7 +113,10 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         
         // 输出缓存状态（调试用）
         const cacheStatus = WalletBasedEncryptionService.getCacheStatus()
-        console.log('主密钥缓存状态:', cacheStatus)
+        console.log('主密钥缓存状态:', {
+          内存缓存: `${cacheStatus.memoryCache.cacheSize} 个 [${cacheStatus.memoryCache.cachedAddresses.join(', ')}]`,
+          持久缓存: `${cacheStatus.persistentCache.cacheSize} 个 [${cacheStatus.persistentCache.cachedAddresses.join(', ')}]`
+        })
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '处理配置失败'
         setError(errorMessage)

@@ -9,43 +9,230 @@ import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
  * 
  * 重构说明：
  * - 移除了不稳定的基于日期的密钥派生
- * - 添加了主密钥内存缓存机制，避免重复签名
+ * - 添加了主密钥内存+持久缓存机制，避免重复签名
  * - 使用确定性签名确保密钥一致性
+ * - 支持localStorage持久化，用户断开钱包时自动清理
  */
+/**
+ * 持久缓存数据结构
+ */
+interface CachedMasterKey {
+  version: string
+  walletAddress: string
+  masterKey: number[] // Uint8Array 转换为普通数组存储
+  timestamp: number
+  expiresAt: number
+}
+
 export class WalletBasedEncryptionService {
   // 主密钥内存缓存：钱包地址 -> 主密钥
   private static masterKeyCache = new Map<string, Uint8Array>()
+  
+  // 持久缓存配置
+  private static readonly CACHE_KEY_PREFIX = 'ssh_master_key_'
+  private static readonly CACHE_VERSION = '1.0'
+  private static readonly CACHE_EXPIRY_HOURS = 24 // 24小时过期
 
   /**
-   * 通过确定性签名派生加密密钥（带缓存）
+   * 检查localStorage是否可用
+   */
+  private static isLocalStorageAvailable(): boolean {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) {
+        return false
+      }
+      
+      // 测试localStorage读写功能
+      const testKey = '__ssh_localStorage_test__'
+      localStorage.setItem(testKey, 'test')
+      localStorage.removeItem(testKey)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * 生成持久缓存的键
+   */
+  private static getCacheKey(walletAddress: string): string {
+    return `${this.CACHE_KEY_PREFIX}${walletAddress.toLowerCase()}`
+  }
+
+  /**
+   * 从localStorage读取持久缓存的主密钥
+   */
+  private static loadMasterKeyFromPersistentCache(walletAddress: string): Uint8Array | null {
+    try {
+      if (!this.isLocalStorageAvailable()) {
+        return null
+      }
+
+      const cacheKey = this.getCacheKey(walletAddress)
+      const cachedData = localStorage.getItem(cacheKey)
+      
+      if (!cachedData) {
+        return null
+      }
+
+      const parsed: CachedMasterKey = JSON.parse(cachedData)
+      
+      // 验证缓存版本
+      if (parsed.version !== this.CACHE_VERSION) {
+        console.log(`缓存版本不匹配，清理旧版本缓存: ${parsed.version} != ${this.CACHE_VERSION}`)
+        localStorage.removeItem(cacheKey)
+        return null
+      }
+
+      // 验证缓存是否过期
+      if (Date.now() > parsed.expiresAt) {
+        console.log(`缓存已过期，清理过期缓存: ${walletAddress}`)
+        localStorage.removeItem(cacheKey)
+        return null
+      }
+
+      // 验证钱包地址
+      if (parsed.walletAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+        console.log(`钱包地址不匹配，清理无效缓存`)
+        localStorage.removeItem(cacheKey)
+        return null
+      }
+
+      console.log(`从持久缓存加载主密钥: ${walletAddress}`)
+      return new Uint8Array(parsed.masterKey)
+    } catch (error) {
+      console.error('读取持久缓存失败:', error)
+      // 清理损坏的缓存
+      try {
+        localStorage.removeItem(this.getCacheKey(walletAddress))
+      } catch (cleanupError) {
+        console.error('清理损坏缓存失败:', cleanupError)
+      }
+      return null
+    }
+  }
+
+  /**
+   * 将主密钥保存到localStorage持久缓存
+   */
+  private static saveMasterKeyToPersistentCache(walletAddress: string, masterKey: Uint8Array): void {
+    try {
+      if (!this.isLocalStorageAvailable()) {
+        console.log('localStorage不可用，跳过持久缓存保存')
+        return
+      }
+
+      const now = Date.now()
+      const expiresAt = now + (this.CACHE_EXPIRY_HOURS * 60 * 60 * 1000)
+      
+      const cacheData: CachedMasterKey = {
+        version: this.CACHE_VERSION,
+        walletAddress: walletAddress.toLowerCase(),
+        masterKey: Array.from(masterKey), // 转换为普通数组
+        timestamp: now,
+        expiresAt
+      }
+
+      const cacheKey = this.getCacheKey(walletAddress)
+      localStorage.setItem(cacheKey, JSON.stringify(cacheData))
+      console.log(`主密钥已保存到持久缓存: ${walletAddress}，过期时间: ${new Date(expiresAt).toLocaleString()}`)
+    } catch (error) {
+      console.error('保存主密钥到持久缓存失败:', error)
+      // 持久缓存失败不影响正常功能，继续使用内存缓存
+    }
+  }
+
+  /**
+   * 清理指定钱包的持久缓存
+   */
+  private static clearPersistentCache(walletAddress: string): void {
+    try {
+      if (!this.isLocalStorageAvailable()) {
+        return
+      }
+
+      const cacheKey = this.getCacheKey(walletAddress)
+      const removed = localStorage.getItem(cacheKey) !== null
+      localStorage.removeItem(cacheKey)
+      console.log(`清理持久缓存: ${walletAddress}`, removed ? '成功' : '无缓存')
+    } catch (error) {
+      console.error('清理持久缓存失败:', error)
+    }
+  }
+
+  /**
+   * 清理所有SSH相关的持久缓存
+   */
+  private static clearAllPersistentCache(): void {
+    try {
+      if (!this.isLocalStorageAvailable()) {
+        return
+      }
+
+      const keysToRemove: string[] = []
+      
+      // 遍历localStorage找到所有SSH缓存键
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith(this.CACHE_KEY_PREFIX)) {
+          keysToRemove.push(key)
+        }
+      }
+
+      // 删除找到的缓存
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key)
+      })
+
+      console.log(`清理所有持久缓存，共 ${keysToRemove.length} 个`)
+    } catch (error) {
+      console.error('清理所有持久缓存失败:', error)
+    }
+  }
+
+  /**
+   * 通过确定性签名派生加密密钥（带双重缓存）
    * 
    * 新实现说明：
    * - 使用固定消息确保签名确定性
-   * - 添加内存缓存，同一钱包地址只需签名一次
-   * - 钱包断开连接时自动清理缓存
+   * - 添加内存+持久双重缓存，同一钱包地址只需签名一次
+   * - 支持跨会话缓存，提升用户体验
+   * - 钱包断开连接时自动清理所有缓存
    */
   private static async deriveEncryptionKey(
     walletAddress: string, 
     signMessageAsync: (message: { message: string }) => Promise<string>
   ): Promise<Uint8Array> {
     try {
-      // 检查缓存
-      const cachedKey = this.masterKeyCache.get(walletAddress.toLowerCase())
-      if (cachedKey) {
-        console.log(`使用缓存的主密钥 for ${walletAddress}`)
-        return cachedKey
+      const addressKey = walletAddress.toLowerCase()
+
+      // 1. 检查内存缓存（最快）
+      const memoryCachedKey = this.masterKeyCache.get(addressKey)
+      if (memoryCachedKey) {
+        console.log(`使用内存缓存的主密钥: ${walletAddress}`)
+        return memoryCachedKey
       }
 
-      // 缓存未命中，需要重新派生主密钥
-      console.log(`派生新的主密钥 for ${walletAddress}`)
+      // 2. 检查持久缓存（避免跨会话重复签名）
+      const persistentCachedKey = this.loadMasterKeyFromPersistentCache(walletAddress)
+      if (persistentCachedKey) {
+        console.log(`使用持久缓存的主密钥: ${walletAddress}`)
+        // 同时更新内存缓存以提高后续访问速度
+        this.masterKeyCache.set(addressKey, persistentCachedKey)
+        return persistentCachedKey
+      }
+
+      // 3. 缓存全部未命中，需要重新派生主密钥
+      console.log(`派生新的主密钥: ${walletAddress}`)
       const masterKey = await DeterministicSignatureService.deriveMasterKey(
         walletAddress,
         signMessageAsync
       )
 
-      // 缓存主密钥
-      this.masterKeyCache.set(walletAddress.toLowerCase(), masterKey)
-      console.log(`主密钥已缓存 for ${walletAddress}`)
+      // 4. 同时更新内存缓存和持久缓存
+      this.masterKeyCache.set(addressKey, masterKey)
+      this.saveMasterKeyToPersistentCache(walletAddress, masterKey)
+      console.log(`主密钥已缓存（内存+持久）: ${walletAddress}`)
 
       return masterKey
     } catch (error) {
@@ -55,26 +242,106 @@ export class WalletBasedEncryptionService {
   }
 
   /**
-   * 清理指定钱包地址的主密钥缓存
+   * 清理指定钱包地址的主密钥缓存（内存+持久）
    */
   static clearMasterKeyCache(walletAddress?: string): void {
     if (walletAddress) {
-      const removed = this.masterKeyCache.delete(walletAddress.toLowerCase())
-      console.log(`清理钱包 ${walletAddress} 的主密钥缓存:`, removed ? '成功' : '无缓存')
+      // 清理内存缓存
+      const memoryRemoved = this.masterKeyCache.delete(walletAddress.toLowerCase())
+      // 清理持久缓存
+      this.clearPersistentCache(walletAddress)
+      console.log(`清理钱包 ${walletAddress} 的主密钥缓存（内存+持久）:`, memoryRemoved ? '成功' : '无内存缓存')
     } else {
-      const size = this.masterKeyCache.size
+      // 清理所有内存缓存
+      const memorySize = this.masterKeyCache.size
       this.masterKeyCache.clear()
-      console.log(`清理所有主密钥缓存，共 ${size} 个`)
+      // 清理所有持久缓存
+      this.clearAllPersistentCache()
+      console.log(`清理所有主密钥缓存（内存+持久），内存缓存 ${memorySize} 个`)
     }
   }
 
   /**
    * 获取当前缓存状态（调试用）
    */
-  static getCacheStatus(): { cachedAddresses: string[], cacheSize: number } {
+  static getCacheStatus(): { 
+    memoryCache: { cachedAddresses: string[], cacheSize: number }
+    persistentCache: { cachedAddresses: string[], cacheSize: number }
+  } {
+    const persistentCachedAddresses: string[] = []
+    
+    try {
+      if (this.isLocalStorageAvailable()) {
+        // 扫描localStorage中的SSH缓存
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && key.startsWith(this.CACHE_KEY_PREFIX)) {
+            // 提取钱包地址
+            const address = key.substring(this.CACHE_KEY_PREFIX.length)
+            persistentCachedAddresses.push(address)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('扫描持久缓存失败:', error)
+    }
+
     return {
-      cachedAddresses: Array.from(this.masterKeyCache.keys()),
-      cacheSize: this.masterKeyCache.size
+      memoryCache: {
+        cachedAddresses: Array.from(this.masterKeyCache.keys()),
+        cacheSize: this.masterKeyCache.size
+      },
+      persistentCache: {
+        cachedAddresses: persistentCachedAddresses,
+        cacheSize: persistentCachedAddresses.length
+      }
+    }
+  }
+
+  /**
+   * 清理过期的持久缓存（维护任务）
+   */
+  static cleanupExpiredPersistentCache(): void {
+    try {
+      if (!this.isLocalStorageAvailable()) {
+        return
+      }
+
+      const keysToRemove: string[] = []
+      const now = Date.now()
+      
+      // 遍历所有SSH缓存
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith(this.CACHE_KEY_PREFIX)) {
+          try {
+            const cachedData = localStorage.getItem(key)
+            if (cachedData) {
+              const parsed: CachedMasterKey = JSON.parse(cachedData)
+              
+              // 检查是否过期或版本不匹配
+              if (now > parsed.expiresAt || parsed.version !== this.CACHE_VERSION) {
+                keysToRemove.push(key)
+              }
+            }
+          } catch (parseError) {
+            // 损坏的缓存也要清理
+            console.error(`解析缓存失败，将清理: ${key}`, parseError)
+            keysToRemove.push(key)
+          }
+        }
+      }
+
+      // 删除过期缓存
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key)
+      })
+
+      if (keysToRemove.length > 0) {
+        console.log(`清理过期持久缓存，共 ${keysToRemove.length} 个`)
+      }
+    } catch (error) {
+      console.error('清理过期持久缓存失败:', error)
     }
   }
 
