@@ -1,0 +1,77 @@
+{
+  "connections": {
+    "connectWallet": "Connect Wallet",
+    "connectWalletDesc": "Connect your Web3 wallet to start using the secure SSH connection manager. All configuration data will be encrypted and stored on the blockchain, ensuring data security and privacy protection.",
+    "decentralizedStorage": "Decentralized Storage",
+    "endToEndEncryption": "End-to-End Encryption",
+    "sshSecureConnection": "SSH Secure Connection",
+    "completeAuthentication": "Complete Authentication",
+    "authenticationDesc": "For security purposes, digital signature verification of your wallet identity is required. After verification is complete, you can start creating and managing SSH connection configurations.",
+    "clickVerifyButton": "Click the \"Verify Identity\" button above to complete the setup"
+  },
+  "terminal": {
+    "connectWalletToStart": "Connect Wallet to Start",
+    "connectWalletDesc": "Please connect your OKX wallet or other WalletConnect compatible wallet to use the SSH terminal. All your connections will go through secure encrypted channels.",
+    "secureConnection": "Secure Connection",
+    "endToEndEncryption": "End-to-End Encryption",
+    "needRegistration": "Wallet Registration Required",
+    "registrationDesc": "Please register your wallet address first to use the SSH terminal. The registration process is quick and simple.",
+    "clickConnectButton": "Click the connect wallet button in the top right corner to start registration",
+    "loadingConfig": "Loading configuration...",
+    "sessionNotFound": "Session Not Found",
+    "sessionNotFoundDesc": "SSH session with ID \"{sessionId}\" was not found. It may have been closed or does not exist.",
+    "backToConfigList": "Back to Configuration List",
+    "connectingTo": "Connecting to {name}...",
+    "waitingConnection": "Waiting for connection...",
+    "connectionFailed": "Connection failed, please try again",
+    "reconnect": "Reconnect",
+    "connectNow": "Connect Now"
+  },
+  "about": {
+    "version": "v0.1.0 - Beta",
+    "productIntro": "Product Introduction",
+    "productDesc": "Web3 SSH Manager is a blockchain-based SSH configuration management tool. It combines traditional SSH management with Web3 technology to provide a decentralized, secure, and convenient server access management solution.",
+    "coreFeatures": "Core Features",
+    "features": {
+      "unifiedAuth": {
+        "title": "Unified Authentication",
+        "description": "Use Web3 wallet instead of traditional SSH key management"
+      },
+      "decentralizedStorage": {
+        "title": "Decentralized Storage",
+        "description": "Configuration data encrypted and stored on blockchain"
+      },
+      "secureConnection": {
+        "title": "Secure Connection",
+        "description": "End-to-end encryption protects data transmission security"
+      },
+      "crossPlatform": {
+        "title": "Cross-Platform Support",
+        "description": "Supports Windows, macOS, Linux systems"
+      }
+    },
+    "techStack": "Technology Stack",
+    "frontend": "Frontend Technology",
+    "blockchain": "Blockchain",
+    "security": "Security Technology",
+    "contact": "Contact Us",
+    "github": "GitHub Repository",
+    "website": "Official Website",
+    "email": "Email Contact",
+    "copyright": "Copyright Information",
+    "license": "Open Source License",
+    "changelog": "Changelog",
+    "releaseDate": "2024-08-29",
+    "contactEmail": "xiamo@qwq.link",
+    "releaseFeatures": {
+      "basicSSH": "Basic SSH configuration management",
+      "walletIntegration": "OKX wallet integration and authentication",
+      "testnetSupport": "X Layer testnet support",
+      "encryption": "End-to-end encryption protection"
+    }
+  },
+  "stats": {
+    "title": "Usage Statistics",
+    "description": "View your SSH usage and connection statistics"
+  }
+}

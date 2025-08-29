@@ -1,0 +1,9 @@
+{
+  "networkError": "网络连接错误",
+  "connectionFailed": "连接失败",
+  "authenticationFailed": "认证失败",
+  "configSaveFailed": "配置保存失败",
+  "configLoadFailed": "配置加载失败",
+  "configDeleteFailed": "配置删除失败",
+  "unknown": "未知错误"
+}

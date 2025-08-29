@@ -1,0 +1,36 @@
+{
+  "connections": "SSH 连接",
+  "connectionsDesc": "管理安全连接配置",
+  "settings": "设置",
+  "settingsDesc": "应用偏好与配置",
+  "stats": "统计",
+  "statsDesc": "连接使用分析",
+  "about": "关于",
+  "aboutDesc": "版本信息与帮助",
+  "appTitle": "SSH Manager",
+  "appSubtitle": "Web3 Security",
+  "networkStatus": "X Layer Testnet",
+  "secureTerminal": "安全终端",
+  "web3SecureConnection": "Web3 安全连接",
+  "backToMainMenu": "返回主菜单",
+  "sessionList": "会话列表",
+  "connected": "已连接",
+  "connecting": "连接中",
+  "connectionError": "连接错误",
+  "disconnected": "未连接",
+  "reconnect": "重连",
+  "closeConnection": "关闭连接",
+  "addConnection": "添加连接",
+  "pageTitle": {
+    "connections": "SSH 连接管理",
+    "settings": "设置",
+    "stats": "使用统计",
+    "about": "关于"
+  },
+  "pageDescription": {
+    "connections": "管理你的 SSH 配置和连接",
+    "settings": "应用设置和个人偏好",
+    "stats": "查看你的 SSH 使用情况",
+    "about": "了解 Web3 SSH Manager"
+  }
+}

@@ -4,6 +4,7 @@ import App from './App.tsx'
 import { Web3Provider } from '@/components/providers/Web3Provider'
 import './index.css'
 import './types/electron'
+import './i18n'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>

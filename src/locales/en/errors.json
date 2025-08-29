@@ -1,0 +1,9 @@
+{
+  "networkError": "Network connection error",
+  "connectionFailed": "Connection failed",
+  "authenticationFailed": "Authentication failed",
+  "configSaveFailed": "Configuration save failed",
+  "configLoadFailed": "Configuration load failed",
+  "configDeleteFailed": "Configuration delete failed",
+  "unknown": "Unknown error"
+}

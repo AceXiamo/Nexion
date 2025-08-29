@@ -1,0 +1,34 @@
+{
+  "connect": "连接钱包",
+  "disconnect": "断开连接",
+  "connecting": "连接中",
+  "connected": "已连接",
+  "register": "注册",
+  "registering": "注册中",
+  "registered": "已注册",
+  "switchNetwork": "切换网络",
+  "networkError": "网络错误",
+  "connectedWallet": "已连接钱包",
+  "walletProtocol": "WalletConnect 协议",
+  "walletAddress": "钱包地址:",
+  "networkStatus": "网络状态:",
+  "wrongNetwork": "错误网络",
+  "disconnectWallet": "断开钱包连接",
+  "scanToConnect": "扫码连接钱包",
+  "connectionGuide": "扫码连接说明",
+  "connectionSteps": [
+    "点击\"扫码连接钱包\"按钮打开二维码",
+    "使用手机钱包应用扫描二维码",
+    "在手机钱包上确认连接请求",
+    "系统将自动切换到 X Layer Testnet"
+  ],
+  "recommendedWallets": "推荐钱包",
+  "walletList": "OKX Wallet、MetaMask、Trust Wallet、TokenPocket",
+  "registration": {
+    "title": "欢迎使用 Web3 SSH Manager",
+    "description": "请先注册你的钱包地址以开始使用 SSH 配置管理服务。注册过程完全免费，仅需支付极少的网络手续费（约 0.0006 OKB）。",
+    "walletRequired": "需要连接钱包",
+    "registerButton": "立即注册钱包",
+    "registering": "正在注册..."
+  }
+}

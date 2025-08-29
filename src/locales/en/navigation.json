@@ -1,0 +1,36 @@
+{
+  "connections": "SSH Connections",
+  "connectionsDesc": "Manage secure connection configurations",
+  "settings": "Settings",
+  "settingsDesc": "Application preferences and configurations",
+  "stats": "Statistics",
+  "statsDesc": "Connection usage analytics",
+  "about": "About",
+  "aboutDesc": "Version information and help",
+  "appTitle": "SSH Manager",
+  "appSubtitle": "Web3 Security",
+  "networkStatus": "X Layer Testnet",
+  "secureTerminal": "Secure Terminal",
+  "web3SecureConnection": "Web3 Secure Connection",
+  "backToMainMenu": "Back to Main Menu",
+  "sessionList": "Session List",
+  "connected": "Connected",
+  "connecting": "Connecting",
+  "connectionError": "Connection Error",
+  "disconnected": "Disconnected",
+  "reconnect": "Reconnect",
+  "closeConnection": "Close Connection",
+  "addConnection": "Add Connection",
+  "pageTitle": {
+    "connections": "SSH Connection Management",
+    "settings": "Settings",
+    "stats": "Usage Statistics",
+    "about": "About"
+  },
+  "pageDescription": {
+    "connections": "Manage your SSH configurations and connections",
+    "settings": "Application settings and personal preferences",
+    "stats": "View your SSH usage statistics",
+    "about": "Learn about Web3 SSH Manager"
+  }
+}

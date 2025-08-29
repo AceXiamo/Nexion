@@ -1,0 +1,77 @@
+{
+  "connections": {
+    "connectWallet": "连接钱包",
+    "connectWalletDesc": "连接你的 Web3 钱包开始使用安全的 SSH 连接管理器。所有配置信息将通过区块链加密存储，确保数据安全与隐私保护。",
+    "decentralizedStorage": "去中心化存储",
+    "endToEndEncryption": "端到端加密",
+    "sshSecureConnection": "SSH 安全连接",
+    "completeAuthentication": "完成身份验证",
+    "authenticationDesc": "为确保安全性，需要通过数字签名验证你的钱包身份。验证完成后即可开始创建和管理 SSH 连接配置。",
+    "clickVerifyButton": "点击上方的\"验证身份\"按钮完成设置"
+  },
+  "terminal": {
+    "connectWalletToStart": "连接钱包以开始",
+    "connectWalletDesc": "请连接你的 OKX 钱包或其他 WalletConnect 兼容钱包来使用 SSH 终端。你的所有连接都将通过安全的加密通道进行。",
+    "secureConnection": "安全连接",
+    "endToEndEncryption": "端到端加密",
+    "needRegistration": "需要注册钱包",
+    "registrationDesc": "请先注册你的钱包地址才能使用 SSH 终端。注册过程快速简单。",
+    "clickConnectButton": "点击右上角连接钱包按钮开始注册",
+    "loadingConfig": "加载配置中...",
+    "sessionNotFound": "会话不存在",
+    "sessionNotFoundDesc": "未找到 ID 为 \"{sessionId}\" 的 SSH 会话。可能已被关闭或不存在。",
+    "backToConfigList": "返回配置列表",
+    "connectingTo": "正在连接到 {name}...",
+    "waitingConnection": "等待连接...",
+    "connectionFailed": "连接失败，请重试",
+    "reconnect": "重新连接",
+    "connectNow": "立即连接"
+  },
+  "about": {
+    "version": "v0.1.0 - 测试版",
+    "productIntro": "产品介绍",
+    "productDesc": "Web3 SSH Manager 是一个基于区块链技术的 SSH 配置管理工具。它将传统的 SSH 管理与 Web3 技术相结合，提供去中心化、安全、便捷的服务器访问管理解决方案。",
+    "coreFeatures": "核心特性",
+    "features": {
+      "unifiedAuth": {
+        "title": "统一身份认证",
+        "description": "使用 Web3 钱包替代传统 SSH 密钥管理"
+      },
+      "decentralizedStorage": {
+        "title": "去中心化存储",
+        "description": "配置数据加密存储在区块链上"
+      },
+      "secureConnection": {
+        "title": "安全连接",
+        "description": "端到端加密保护数据传输安全"
+      },
+      "crossPlatform": {
+        "title": "跨平台支持",
+        "description": "支持 Windows、macOS、Linux 系统"
+      }
+    },
+    "techStack": "技术栈",
+    "frontend": "前端技术",
+    "blockchain": "区块链",
+    "security": "安全技术",
+    "contact": "联系我们",
+    "github": "GitHub 仓库",
+    "website": "官方网站",
+    "email": "邮箱联系",
+    "copyright": "版权信息",
+    "license": "开源协议",
+    "changelog": "更新日志",
+    "releaseDate": "2024-08-29",
+    "contactEmail": "xiamo@qwq.link",
+    "releaseFeatures": {
+      "basicSSH": "基础 SSH 配置管理功能",
+      "walletIntegration": "OKX 钱包集成与身份验证",
+      "testnetSupport": "X Layer 测试网支持",
+      "encryption": "端到端加密保护"
+    }
+  },
+  "stats": {
+    "title": "使用统计",
+    "description": "查看你的 SSH 使用情况和连接统计"
+  }
+}

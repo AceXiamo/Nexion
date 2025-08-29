@@ -1,0 +1,34 @@
+{
+  "connect": "Connect Wallet",
+  "disconnect": "Disconnect",
+  "connecting": "Connecting",
+  "connected": "Connected",
+  "register": "Register",
+  "registering": "Registering",
+  "registered": "Registered",
+  "switchNetwork": "Switch Network",
+  "networkError": "Network Error",
+  "connectedWallet": "Connected Wallet",
+  "walletProtocol": "WalletConnect Protocol",
+  "walletAddress": "Wallet Address:",
+  "networkStatus": "Network Status:",
+  "wrongNetwork": "Wrong Network",
+  "disconnectWallet": "Disconnect Wallet",
+  "scanToConnect": "Scan to Connect Wallet",
+  "connectionGuide": "Connection Guide",
+  "connectionSteps": [
+    "Click 'Scan to Connect Wallet' button to open QR code",
+    "Use your mobile wallet app to scan the QR code",
+    "Confirm the connection request on your mobile wallet",
+    "System will automatically switch to X Layer Testnet"
+  ],
+  "recommendedWallets": "Recommended Wallets",
+  "walletList": "OKX Wallet, MetaMask, Trust Wallet, TokenPocket",
+  "registration": {
+    "title": "Welcome to Web3 SSH Manager",
+    "description": "Please register your wallet address first to start using the SSH configuration management service. The registration process is completely free, only requiring minimal network fees (about 0.0006 OKB).",
+    "walletRequired": "Wallet connection required",
+    "registerButton": "Register Wallet Now",
+    "registering": "Registering..."
+  }
+}
