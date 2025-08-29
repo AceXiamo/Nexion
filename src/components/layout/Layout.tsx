@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DynamicSidebar } from './DynamicSidebar'
 import { Header } from './Header'
 
@@ -8,27 +9,29 @@ interface LayoutProps {
   onTabChange: (tab: string) => void
 }
 
-// 页面配置
-const pageConfig = {
+// 页面配置工厂函数
+const getPageConfig = (t: any) => ({
   connections: {
-    title: 'SSH 连接管理',
-    description: '管理你的 SSH 配置和连接'
+    title: t('navigation:pageTitle.connections'),
+    description: t('navigation:pageDescription.connections')
   },
   settings: {
-    title: '设置',
-    description: '应用设置和个人偏好'
+    title: t('navigation:pageTitle.settings'),
+    description: t('navigation:pageDescription.settings')
   },
   stats: {
-    title: '使用统计',
-    description: '查看你的 SSH 使用情况'
+    title: t('navigation:pageTitle.stats'),
+    description: t('navigation:pageDescription.stats')
   },
   about: {
-    title: '关于',
-    description: '了解 Web3 SSH Manager'
+    title: t('navigation:pageTitle.about'),
+    description: t('navigation:pageDescription.about')
   }
-}
+})
 
 export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
+  const { t } = useTranslation()
+  const pageConfig = getPageConfig(t)
   const currentPage = pageConfig[activeTab as keyof typeof pageConfig] || pageConfig.connections
 
   return (
@@ -51,8 +54,8 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
         />
         
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-8 h-full">
+        <main className="flex-1">
+          <div className="p-8 h-full overflow-auto">
             {children}
           </div>
         </main>

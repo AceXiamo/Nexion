@@ -1,4 +1,5 @@
 import { useChainId } from 'wagmi'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { xLayerTestnet } from '@/lib/web3-config'
 import { WalletConnectButton } from '@/components/wallet/WalletConnectButton'
@@ -9,6 +10,7 @@ interface HeaderProps {
 }
 
 export function Header({ title, description }: HeaderProps) {
+  const { t } = useTranslation()
   const chainId = useChainId()
   const isCorrectNetwork = chainId === xLayerTestnet.id
 
@@ -33,7 +35,7 @@ export function Header({ title, description }: HeaderProps) {
                 : 'bg-red-500 shadow-lg shadow-red-500/50'
             }`}></div>
             <span className="text-sm font-medium text-neutral-200">
-              {isCorrectNetwork ? 'X Layer Testnet' : '网络错误'}
+              {isCorrectNetwork ? 'X Layer Testnet' : t('wallet:networkError')}
             </span>
             {isCorrectNetwork && (
               <div className="w-1 h-1 bg-lime-400 rounded-full animate-ping"></div>

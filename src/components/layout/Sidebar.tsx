@@ -1,40 +1,43 @@
 import { useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 
 interface SidebarProps {
   activeTab: string
   onTabChange: (tab: string) => void
 }
 
-const navigation = [
+const getNavigation = (t: any) => [
   {
     id: 'connections',
-    name: 'SSH 配置',
+    name: t('navigation:connections'),
     icon: 'mdi:server-network',
-    description: '管理你的 SSH 配置'
+    description: t('navigation:connectionsDesc')
   },
   {
     id: 'settings',
-    name: '设置',
+    name: t('navigation:settings'),
     icon: 'mdi:cog',
-    description: '应用设置和偏好'
+    description: t('navigation:settingsDesc')
   },
   {
     id: 'stats',
-    name: '统计',
+    name: t('navigation:stats'),
     icon: 'mdi:chart-line',
-    description: '查看使用统计'
+    description: t('navigation:statsDesc')
   },
   {
     id: 'about',
-    name: '关于',
+    name: t('navigation:about'),
     icon: 'mdi:information',
-    description: '关于 Web3 SSH Manager'
+    description: t('navigation:aboutDesc')
   }
 ]
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+  const { t } = useTranslation()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const navigation = getNavigation(t)
 
   return (
     <div className={`bg-black border-r border-neutral-800 transition-all duration-300 ${
@@ -50,8 +53,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   <Icon icon="mdi:shield-lock" className="w-6 h-6 text-black" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">SSH Manager</h1>
-                  <p className="text-sm text-neutral-400">Web3 Security</p>
+                  <h1 className="text-xl font-bold text-white">{t('navigation:appTitle')}</h1>
+                  <p className="text-sm text-neutral-400">{t('navigation:appSubtitle')}</p>
                 </div>
               </div>
             )}
@@ -113,7 +116,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             <div className="flex items-center justify-between px-4 py-3 bg-neutral-900 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-lime-400 rounded-full animate-pulse"></div>
-                <span className="text-xs text-neutral-400">X Layer Testnet</span>
+                <span className="text-xs text-neutral-400">{t('navigation:networkStatus')}</span>
               </div>
               <div className="w-2 h-2 bg-lime-400 rounded-full opacity-60"></div>
             </div>

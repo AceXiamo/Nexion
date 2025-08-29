@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import { useSSHSessions } from '@/hooks/useSSHSessions'
 
 interface DynamicSidebarProps {
@@ -9,38 +10,40 @@ interface DynamicSidebarProps {
   onTabChange: (tab: string) => void
 }
 
-const navigation = [
+const getNavigation = (t: any) => [
   {
     id: 'connections',
-    name: 'SSH 连接',
+    name: t('navigation:connections'),
     icon: 'lucide:server',
-    description: '管理安全连接配置',
+    description: t('navigation:connectionsDesc'),
   },
   {
     id: 'settings',
-    name: '设置',
+    name: t('navigation:settings'),
     icon: 'lucide:settings',
-    description: '应用偏好与配置',
+    description: t('navigation:settingsDesc'),
   },
-  {
-    id: 'stats',
-    name: '统计',
-    icon: 'lucide:bar-chart-3',
-    description: '连接使用分析',
-  },
+  // {
+  //   id: 'stats',
+  //   name: t('navigation:stats'),
+  //   icon: 'lucide:bar-chart-3',
+  //   description: t('navigation:statsDesc'),
+  // },
   {
     id: 'about',
-    name: '关于',
+    name: t('navigation:about'),
     icon: 'lucide:info',
-    description: '版本信息与帮助',
+    description: t('navigation:aboutDesc'),
   },
 ]
 
 export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { sessions, switchSession, closeSession, reconnectSession } = useSSHSessions()
+  const navigation = getNavigation(t)
 
   // Check if we're in terminal mode
   const isInTerminalMode = location.pathname.startsWith('/terminal/')
@@ -93,8 +96,8 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                   <Icon icon="lucide:terminal-square" className="w-6 h-6 text-black" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">SSH Manager</h1>
-                  <p className="text-sm text-[#888888]">{isInTerminalMode ? '安全终端' : 'Web3 安全连接'}</p>
+                  <h1 className="text-xl font-bold text-white">{t('navigation:appTitle')}</h1>
+                  <p className="text-sm text-[#888888]">{isInTerminalMode ? t('navigation:secureTerminal') : t('navigation:web3SecureConnection')}</p>
                 </div>
               </motion.div>
             )}
@@ -119,7 +122,7 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                     className="w-full flex items-center space-x-3 py-3 text-[#CCCCCC] hover:text-white transition-all duration-200 group"
                   >
                     <Icon icon="lucide:arrow-left" className="w-5 h-5 text-[#888888] group-hover:text-white" />
-                    <span>返回主菜单</span>
+                    <span>{t('navigation:backToMainMenu')}</span>
                   </button>
                 )}
 
@@ -128,7 +131,7 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                   <button
                     onClick={handleBackToMain}
                     className="w-full flex items-center justify-center px-4 py-3 rounded-lg text-[#CCCCCC] hover:bg-[#0f0f0f] hover:text-white transition-all duration-200 group border border-[#1a1a1a] hover:border-[#333333]"
-                    title="返回主菜单"
+                    title={t('navigation:backToMainMenu')}
                   >
                     <Icon icon="lucide:arrow-left" className="w-5 h-5 text-[#888888] group-hover:text-white" />
                   </button>
@@ -136,7 +139,7 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
 
                 {/* Session List */}
                 <div className="space-y-2">
-                  {!isCollapsed && <h3 className="text-sm font-semibold text-[#888888] uppercase tracking-wide px-4">会话列表</h3>}
+                  {!isCollapsed && <h3 className="text-sm font-semibold text-[#888888] uppercase tracking-wide px-4">{t('navigation:sessionList')}</h3>}
 
                   {sessions.map((session) => (
                     <div key={session.id} className="relative group">
@@ -165,7 +168,7 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                               {session.name}
                             </div>
                             <div className="text-xs text-[#888888] mt-0.5">
-                              {session.status === 'connected' ? '已连接' : session.status === 'connecting' ? '连接中' : session.status === 'error' ? '连接错误' : '未连接'}
+                              {session.status === 'connected' ? t('navigation:connected') : session.status === 'connecting' ? t('navigation:connecting') : session.status === 'error' ? t('navigation:connectionError') : t('navigation:disconnected')}
                               {session.error && session.status === 'error' && <span className="ml-1 text-red-400">• {session.error}</span>}
                             </div>
                           </div>
@@ -182,7 +185,7 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                                 reconnectSession(session.id)
                               }}
                               className="p-1 rounded text-[#888888] hover:text-[#BCFF2F] hover:bg-[#1C260A] transition-all duration-200"
-                              title="重连"
+                              title={t('navigation:reconnect')}
                             >
                               <Icon icon="lucide:refresh-cw" className="w-4 h-4" />
                             </button>
@@ -193,7 +196,7 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                               closeSession(session.id)
                             }}
                             className="p-1 rounded text-[#888888] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
-                            title="关闭连接"
+                            title={t('navigation:closeConnection')}
                           >
                             <Icon icon="lucide:x" className="w-4 h-4" />
                           </button>
@@ -206,10 +209,10 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                   <button
                     onClick={() => navigate('/connections')}
                     className="w-full flex items-center space-x-4 px-4 py-3 rounded-lg text-[#888888] hover:bg-[#0f0f0f] hover:text-[#BCFF2F] transition-all duration-200 group border-2 border-dashed border-[#333333] hover:border-[#BCFF2F]/50"
-                    title={isCollapsed ? '添加连接' : undefined}
+                    title={isCollapsed ? t('navigation:addConnection') : undefined}
                   >
                     <Icon icon="lucide:plus" className="w-5 h-5 flex-shrink-0" />
-                    {!isCollapsed && <span className="text-sm font-medium">添加连接</span>}
+                    {!isCollapsed && <span className="text-sm font-medium">{t('navigation:addConnection')}</span>}
                   </button>
                 </div>
               </motion.div>
@@ -261,7 +264,7 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
             <div className="flex items-center justify-between px-4 py-3 bg-neutral-900 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-lime-400 rounded-full animate-pulse"></div>
-                <span className="text-xs text-neutral-400">X Layer Testnet</span>
+                <span className="text-xs text-neutral-400">{t('navigation:networkStatus')}</span>
               </div>
               <div className="w-2 h-2 bg-lime-400 rounded-full opacity-60"></div>
             </div>
