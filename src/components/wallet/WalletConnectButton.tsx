@@ -112,22 +112,24 @@ export function WalletConnectButton() {
 
   return (
     <div className="relative group">
+
+      {isConnecting}
       <button
         onClick={handleConnect}
-        disabled={isConnecting}
+        // disabled={isConnecting}
         className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
       >
-        {isConnecting ? (
+        {/* {isConnecting ? (
           <>
             <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
             <span>连接中...</span>
           </>
-        ) : (
+        ) : ( */}
           <>
             <Icon icon="mdi:qrcode-scan" className="w-4 h-4" />
             <span>扫码连接钱包</span>
           </>
-        )}
+        {/* )} */}
       </button>
 
       {/* 连接说明 - 悬停显示 */}
