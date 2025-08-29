@@ -17,7 +17,11 @@
       "dmg"
     ],
     "icon": "app-icon.icns",
-    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+    "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
+    "entitlements": "build/entitlements.mac.plist",
+    "entitlementsInherit": "build/entitlements.mac.plist",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false
   },
   "win": {
     "target": [
