@@ -1,10 +1,12 @@
 import { useAccount, useDisconnect, useChainId, useSwitchChain } from 'wagmi'
 import { useWeb3Modal } from '@web3modal/wagmi/react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import { useState, useEffect } from 'react'
 import { xLayerTestnet } from '@/lib/web3-config'
 
 export function WalletConnectButton() {
+  const { t } = useTranslation()
   const { address, isConnected, isConnecting } = useAccount()
   const { open } = useWeb3Modal()
   const { disconnect } = useDisconnect()
@@ -42,7 +44,7 @@ export function WalletConnectButton() {
               className="bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-500/20 transition-all duration-200 flex items-center space-x-2"
             >
               <Icon icon="mdi:alert-circle" className="w-4 h-4" />
-              <span>切换网络</span>
+              <span>{t('wallet:switchNetwork')}</span>
             </button>
           )}
 
@@ -57,7 +59,7 @@ export function WalletConnectButton() {
             <div className="text-left">
               <div className="font-medium text-white text-sm tracking-wide">{formatAddress(address)}</div>
               <div className="text-xs text-neutral-400">
-                {needsNetworkSwitch ? '网络错误' : 'WalletConnect'}
+                {needsNetworkSwitch ? t('wallet:networkError') : 'WalletConnect'}
               </div>
             </div>
             <Icon 
@@ -76,19 +78,19 @@ export function WalletConnectButton() {
                   <Icon icon="mdi:wallet" className="w-5 h-5 text-black" />
                 </div>
                 <div>
-                  <div className="font-semibold text-white text-sm">已连接钱包</div>
-                  <div className="text-xs text-neutral-400">WalletConnect 协议</div>
+                  <div className="font-semibold text-white text-sm">{t('wallet:connectedWallet')}</div>
+                  <div className="text-xs text-neutral-400">{t('wallet:walletProtocol')}</div>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-xs text-neutral-400">钱包地址:</span>
+                  <span className="text-xs text-neutral-400">{t('wallet:walletAddress')}</span>
                   <span className="text-xs text-white font-mono">{formatAddress(address)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-xs text-neutral-400">网络状态:</span>
+                  <span className="text-xs text-neutral-400">{t('wallet:networkStatus')}</span>
                   <span className={`text-xs font-medium ${needsNetworkSwitch ? 'text-red-400' : 'text-lime-400'}`}>
-                    {needsNetworkSwitch ? '错误网络' : 'X Layer Testnet'}
+                    {needsNetworkSwitch ? t('wallet:wrongNetwork') : 'X Layer Testnet'}
                   </span>
                 </div>
               </div>
@@ -102,7 +104,7 @@ export function WalletConnectButton() {
               className="w-full px-5 py-4 text-left hover:bg-neutral-800 flex items-center space-x-3 text-red-400 transition-colors duration-200"
             >
               <Icon icon="mdi:logout" className="w-4 h-4" />
-              <span className="text-sm font-medium">断开钱包连接</span>
+              <span className="text-sm font-medium">{t('wallet:disconnectWallet')}</span>
             </button>
           </div>
         )}
@@ -127,7 +129,7 @@ export function WalletConnectButton() {
         ) : ( */}
           <>
             <Icon icon="mdi:qrcode-scan" className="w-4 h-4" />
-            <span>扫码连接钱包</span>
+            <span>{t('wallet:scanToConnect')}</span>
           </>
         {/* )} */}
       </button>
@@ -138,21 +140,20 @@ export function WalletConnectButton() {
           <div className="text-sm text-neutral-200">
             <div className="flex items-center space-x-2 mb-3">
               <Icon icon="mdi:information" className="w-5 h-5 text-lime-400" />
-              <span className="font-semibold text-white">扫码连接说明</span>
+              <span className="font-semibold text-white">{t('wallet:connectionGuide')}</span>
             </div>
             <ol className="list-decimal list-inside space-y-2 text-xs text-neutral-300 leading-relaxed">
-              <li>点击"扫码连接钱包"按钮打开二维码</li>
-              <li>使用手机钱包应用扫描二维码</li>
-              <li>在手机钱包上确认连接请求</li>
-              <li>系统将自动切换到 X Layer Testnet</li>
+              {(t('wallet:connectionSteps', { returnObjects: true }) as string[]).map((step: string, index: number) => (
+                <li key={index}>{step}</li>
+              ))}
             </ol>
             <div className="mt-4 p-3 bg-lime-400/10 border border-lime-400/20 rounded-lg">
               <div className="flex items-center space-x-2">
                 <Icon icon="mdi:star" className="w-4 h-4 text-lime-400" />
-                <span className="text-xs font-medium text-lime-400">推荐钱包</span>
+                <span className="text-xs font-medium text-lime-400">{t('wallet:recommendedWallets')}</span>
               </div>
               <div className="text-xs text-neutral-300 mt-1">
-                OKX Wallet、MetaMask、Trust Wallet、TokenPocket
+                {t('wallet:walletList')}
               </div>
             </div>
           </div>

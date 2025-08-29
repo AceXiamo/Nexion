@@ -1,7 +1,9 @@
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import { useUserRegistration } from '@/hooks/useUserRegistration'
 
 export function RegistrationPrompt() {
+  const { t } = useTranslation()
   const { showRegistrationPrompt, handleRegister, isRegistering } = useUserRegistration()
 
   if (!showRegistrationPrompt) return null
@@ -13,29 +15,28 @@ export function RegistrationPrompt() {
           <Icon icon="mdi:account-plus" className="w-6 h-6 text-lime-400" />
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-bold text-white mb-2">欢迎使用 Web3 SSH Manager</h3>
+          <h3 className="text-lg font-bold text-white mb-2">{t('wallet:registration.title')}</h3>
           <p className="text-sm text-neutral-300 leading-relaxed mb-4">
-            请先注册你的钱包地址以开始使用 SSH 配置管理服务。<br />
-            注册过程完全免费，仅需支付极少的网络手续费（约 0.0006 OKB）。
+            {t('wallet:registration.description')}
           </p>
           
           {/* 功能亮点 */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="flex items-center space-x-2">
               <Icon icon="mdi:shield-check" className="w-4 h-4 text-lime-400" />
-              <span className="text-xs text-neutral-400">端到端加密</span>
+              <span className="text-xs text-neutral-400">{t('ssh:securityFeature1')}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Icon icon="mdi:database-lock" className="w-4 h-4 text-lime-400" />
-              <span className="text-xs text-neutral-400">去中心化存储</span>
+              <span className="text-xs text-neutral-400">{t('ssh:securityFeature2')}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Icon icon="mdi:history" className="w-4 h-4 text-lime-400" />
-              <span className="text-xs text-neutral-400">操作可追溯</span>
+              <span className="text-xs text-neutral-400">Traceable Operations</span>
             </div>
             <div className="flex items-center space-x-2">
               <Icon icon="mdi:account-group" className="w-4 h-4 text-lime-400" />
-              <span className="text-xs text-neutral-400">团队协作</span>
+              <span className="text-xs text-neutral-400">Team Collaboration</span>
             </div>
           </div>
           
@@ -47,12 +48,12 @@ export function RegistrationPrompt() {
             {isRegistering ? (
               <>
                 <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
-                <span>正在注册...</span>
+                <span>{t('wallet:registration.registering')}</span>
               </>
             ) : (
               <>
                 <Icon icon="mdi:rocket-launch" className="w-4 h-4" />
-                <span>立即注册钱包</span>
+                <span>{t('wallet:registration.registerButton')}</span>
               </>
             )}
           </button>
