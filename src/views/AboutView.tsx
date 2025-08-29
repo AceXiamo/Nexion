@@ -1,6 +1,8 @@
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 
 export function AboutView() {
+  const { t } = useTranslation()
   return (
     <div className="space-y-6">
       {/* 产品头部 */}
@@ -12,7 +14,7 @@ export function AboutView() {
           <div>
             <h1 className="text-2xl font-bold text-white">Web3 SSH Manager</h1>
             <div className="flex items-center space-x-2 mt-1">
-              <span className="text-[#888888]">v0.1.0 - 测试版</span>
+              <span className="text-[#888888]">{t('views:about.version')}</span>
               <div className="w-2 h-2 bg-[#BCFF2F] rounded-full"></div>
               <span className="text-xs text-[#BCFF2F]">BETA</span>
             </div>
@@ -23,40 +25,39 @@ export function AboutView() {
           <div>
             <div className="flex items-center space-x-3 mb-3">
               <Icon icon="lucide:info" className="w-5 h-5 text-[#BCFF2F]" />
-              <h2 className="text-lg font-semibold text-white">产品介绍</h2>
+              <h2 className="text-lg font-semibold text-white">{t('views:about.productIntro')}</h2>
             </div>
             <p className="text-[#CCCCCC] leading-relaxed">
-              Web3 SSH Manager 是一个基于区块链技术的 SSH 配置管理工具。
-              它将传统的 SSH 管理与 Web3 技术相结合，提供去中心化、安全、便捷的服务器访问管理解决方案。
+              {t('views:about.productDesc')}
             </p>
           </div>
 
           <div>
             <div className="flex items-center space-x-3 mb-4">
               <Icon icon="lucide:star" className="w-5 h-5 text-[#BCFF2F]" />
-              <h2 className="text-lg font-semibold text-white">核心特性</h2>
+              <h2 className="text-lg font-semibold text-white">{t('views:about.coreFeatures')}</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
                 {
                   icon: 'lucide:wallet',
-                  title: '统一身份认证',
-                  description: '使用 Web3 钱包替代传统 SSH 密钥管理'
+                  title: t('views:about.features.unifiedAuth.title'),
+                  description: t('views:about.features.unifiedAuth.description')
                 },
                 {
                   icon: 'lucide:shield-check',
-                  title: '去中心化存储',
-                  description: 'SSH 配置信息 ECIES 加密存储在区块链'
+                  title: t('views:about.features.decentralizedStorage.title'),
+                  description: t('views:about.features.decentralizedStorage.description')
                 },
                 {
-                  icon: 'lucide:history',
-                  title: '审计可追溯',
-                  description: '所有操作记录链上可查，完整审计链'
+                  icon: 'lucide:lock',
+                  title: t('views:about.features.secureConnection.title'),
+                  description: t('views:about.features.secureConnection.description')
                 },
                 {
-                  icon: 'lucide:users',
-                  title: '团队协作',
-                  description: '基于智能合约的权限管理系统'
+                  icon: 'lucide:monitor',
+                  title: t('views:about.features.crossPlatform.title'),
+                  description: t('views:about.features.crossPlatform.description')
                 }
               ].map((feature, index) => (
                 <div key={index} className="flex items-start space-x-4 p-4 bg-[#272727] border border-[#333333] rounded-lg hover:border-[#BCFF2F]/50 transition-all duration-200">
@@ -74,78 +75,14 @@ export function AboutView() {
         </div>
       </div>
 
-      {/* 技术架构 */}
+
+      {/* 联系我们 */}
       <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
         <div className="flex items-center space-x-3 mb-6">
-          <Icon icon="lucide:cpu" className="w-5 h-5 text-[#BCFF2F]" />
-          <h2 className="text-lg font-semibold text-white">技术架构</h2>
+          <Icon icon="lucide:heart" className="w-5 h-5 text-[#BCFF2F]" />
+          <h2 className="text-lg font-semibold text-white">{t('views:about.contact')}</h2>
         </div>
-        <div className="bg-[#000000] border border-[#333333] rounded-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-[#333333]">
-                <span className="text-[#888888]">区块链网络</span>
-                <span className="text-white font-medium">X Layer</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-[#333333]">
-                <span className="text-[#888888]">加密方案</span>
-                <span className="text-white font-medium">ECIES + ChaCha20Poly1305</span>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-[#888888]">智能合约</span>
-                <span className="text-white font-medium">Solidity</span>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-[#333333]">
-                <span className="text-[#888888]">前端框架</span>
-                <span className="text-white font-medium">Electron + React</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-[#333333]">
-                <span className="text-[#888888]">Web3 工具</span>
-                <span className="text-white font-medium">Wagmi + Viem</span>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-[#888888]">UI 框架</span>
-                <span className="text-white font-medium">Tailwind CSS</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 版本信息 & 开发团队 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <Icon icon="lucide:code" className="w-5 h-5 text-[#BCFF2F]" />
-            <h2 className="text-lg font-semibold text-white">版本信息</h2>
-          </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b border-[#333333]">
-              <span className="text-[#888888]">当前版本</span>
-              <span className="text-white font-medium">0.1.0-beta</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-[#333333]">
-              <span className="text-[#888888]">发布日期</span>
-              <span className="text-white font-medium">2024-08-27</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-[#333333]">
-              <span className="text-[#888888]">构建版本</span>
-              <span className="text-[#CCCCCC] font-mono text-xs">a1b2c3d</span>
-            </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-[#888888]">许可证</span>
-              <span className="text-white font-medium">MIT</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <Icon icon="lucide:heart" className="w-5 h-5 text-[#BCFF2F]" />
-            <h2 className="text-lg font-semibold text-white">开发团队</h2>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <p className="text-[#CCCCCC] leading-relaxed">
               本项目由 Web3 技术爱好者开发，致力于为用户提供更安全、便捷的 SSH 管理体验。
@@ -156,7 +93,21 @@ export function AboutView() {
             </div>
             <div className="flex items-center space-x-2">
               <Icon icon="lucide:mail" className="w-4 h-4 text-[#888888]" />
-              <span className="text-sm text-[#888888]">support@web3ssh.com</span>
+              <span className="text-sm text-[#888888]">{t('views:about.contactEmail')}</span>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Icon icon="lucide:message-circle" className="w-4 h-4 text-[#888888]" />
+              <span className="text-sm text-[#888888]">反馈建议</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Icon icon="lucide:users" className="w-4 h-4 text-[#888888]" />
+              <span className="text-sm text-[#888888]">社区支持</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Icon icon="lucide:shield" className="w-4 h-4 text-[#888888]" />
+              <span className="text-sm text-[#888888]">安全报告</span>
             </div>
           </div>
         </div>
@@ -175,7 +126,7 @@ export function AboutView() {
           >
             <Icon icon="lucide:github" className="w-5 h-5 text-[#CCCCCC] group-hover:text-[#BCFF2F]" />
             <div>
-              <div className="text-sm font-medium text-white group-hover:text-[#BCFF2F]">GitHub</div>
+              <div className="text-sm font-medium text-white group-hover:text-[#BCFF2F]">{t('views:about.github')}</div>
               <div className="text-xs text-[#888888]">源码仓库</div>
             </div>
           </a>
@@ -218,19 +169,19 @@ export function AboutView() {
       <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
         <div className="flex items-center space-x-3 mb-6">
           <Icon icon="lucide:clock" className="w-5 h-5 text-[#BCFF2F]" />
-          <h2 className="text-lg font-semibold text-white">更新日志</h2>
+          <h2 className="text-lg font-semibold text-white">{t('views:about.changelog')}</h2>
         </div>
         <div className="space-y-4">
           <div className="border-l-2 border-[#BCFF2F] pl-4">
             <div className="flex items-center space-x-2 mb-2">
               <span className="text-sm font-medium text-white">v0.1.0-beta</span>
-              <span className="text-xs text-[#888888]">2024-08-27</span>
+              <span className="text-xs text-[#888888]">{t('views:about.releaseDate')}</span>
             </div>
             <ul className="text-sm text-[#CCCCCC] space-y-1">
-              <li>• 初始版本发布</li>
-              <li>• 基础 SSH 配置管理功能</li>
-              <li>• OKX 钱包集成</li>
-              <li>• X Layer 测试网支持</li>
+              <li>• {t('views:about.releaseFeatures.basicSSH')}</li>
+              <li>• {t('views:about.releaseFeatures.walletIntegration')}</li>
+              <li>• {t('views:about.releaseFeatures.testnetSupport')}</li>
+              <li>• {t('views:about.releaseFeatures.encryption')}</li>
             </ul>
           </div>
         </div>

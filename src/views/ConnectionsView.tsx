@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { RegistrationPrompt } from '@/components/wallet/RegistrationPrompt'
 import { useUserRegistration } from '@/hooks/useUserRegistration'
@@ -9,6 +10,7 @@ import { SSHConfigModal } from '@/components/ssh/SSHConfigModal'
 import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
 
 export function ConnectionsView() {
+  const { t } = useTranslation()
   const { isConnected } = useAccount()
   const { isRegistered } = useUserRegistration()
   
@@ -72,25 +74,29 @@ export function ConnectionsView() {
         <div className="w-20 h-20 bg-[#BCFF2F]/10 rounded-2xl flex items-center justify-center mb-6 border border-[#BCFF2F]/20">
           <Icon icon="lucide:wallet" className="w-10 h-10 text-[#BCFF2F]" />
         </div>
-        <h3 className="text-2xl font-semibold text-white mb-4">连接钱包</h3>
+        <h3 className="text-2xl font-semibold text-white mb-4">{t('views:connections.connectWallet')}</h3>
         <p className="text-[#CCCCCC] text-center max-w-lg leading-relaxed text-base mb-6">
-          连接你的 Web3 钱包开始使用安全的 SSH 连接管理器。<br />
-          所有配置信息将通过区块链加密存储，确保数据安全与隐私保护。
+          {t('views:connections.connectWalletDesc').split('。').map((part, index, array) => (
+            <span key={index}>
+              {part}{index < array.length - 1 ? '。' : ''}
+              {index === 0 && <br />}
+            </span>
+          ))}
         </p>
         <div className="mt-4 flex items-center space-x-6 text-sm text-[#888888]">
           <div className="flex items-center space-x-2">
             <Icon icon="lucide:shield-check" className="w-4 h-4 text-[#BCFF2F]" />
-            <span>去中心化存储</span>
+            <span>{t('views:connections.decentralizedStorage')}</span>
           </div>
           <div className="w-1 h-1 bg-[#555555] rounded-full"></div>
           <div className="flex items-center space-x-2">
             <Icon icon="lucide:lock" className="w-4 h-4 text-[#BCFF2F]" />
-            <span>端到端加密</span>
+            <span>{t('views:connections.endToEndEncryption')}</span>
           </div>
           <div className="w-1 h-1 bg-[#555555] rounded-full"></div>
           <div className="flex items-center space-x-2">
             <Icon icon="lucide:server" className="w-4 h-4 text-[#BCFF2F]" />
-            <span>SSH 安全连接</span>
+            <span>{t('views:connections.sshSecureConnection')}</span>
           </div>
         </div>
       </div>
@@ -119,14 +125,18 @@ export function ConnectionsView() {
             <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-orange-500/20">
               <Icon icon="lucide:user-plus" className="w-8 h-8 text-orange-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-4">完成身份验证</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t('views:connections.completeAuthentication')}</h3>
             <p className="text-[#CCCCCC] mb-6 max-w-lg mx-auto leading-relaxed">
-              为确保安全性，需要通过数字签名验证你的钱包身份。<br />
-              验证完成后即可开始创建和管理 SSH 连接配置。
+              {t('views:connections.authenticationDesc').split('。').map((part, index, array) => (
+                <span key={index}>
+                  {part}{index < array.length - 1 ? '。' : ''}
+                  {index === 0 && <br />}
+                </span>
+              ))}
             </p>
             <div className="flex items-center justify-center space-x-2 text-sm text-[#888888]">
               <Icon icon="lucide:info" className="w-4 h-4 text-[#BCFF2F]" />
-              <span>点击上方的"验证身份"按钮完成设置</span>
+              <span>{t('views:connections.clickVerifyButton')}</span>
             </div>
           </div>
         )}

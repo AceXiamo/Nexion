@@ -1,8 +1,10 @@
 import { useAccount } from 'wagmi'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { useSSHContract } from '@/hooks/useSSHContract'
 
 export function StatsView() {
+  const { t } = useTranslation()
   const { address } = useAccount()
   const { useGetUserStats } = useSSHContract()
   const { data: userStats, isLoading } = useGetUserStats(address)
@@ -11,9 +13,9 @@ export function StatsView() {
     return (
       <div className="flex flex-col items-center justify-center h-64 bg-[#0f0f0f] rounded-lg border border-[#1a1a1a]">
         <Icon icon="lucide:bar-chart-3" className="w-16 h-16 text-[#888888] mb-4" />
-        <h3 className="text-lg font-medium text-white mb-2">连接钱包查看统计</h3>
+        <h3 className="text-lg font-medium text-white mb-2">{t('views:stats.title')}</h3>
         <p className="text-[#888888] text-center max-w-md">
-          连接你的钱包以查看 SSH 配置和使用统计信息
+          {t('views:stats.description')}
         </p>
       </div>
     )
@@ -63,7 +65,7 @@ export function StatsView() {
       {/* 标题区域 */}
       <div className="flex items-center space-x-3">
         <Icon icon="lucide:bar-chart-3" className="w-6 h-6 text-[#BCFF2F]" />
-        <h1 className="text-2xl font-semibold text-white">使用统计</h1>
+        <h1 className="text-2xl font-semibold text-white">{t('views:stats.title')}</h1>
       </div>
 
       {/* 统计卡片网格 */}
