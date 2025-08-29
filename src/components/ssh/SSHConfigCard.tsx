@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { format } from 'date-fns'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
@@ -59,6 +60,7 @@ interface SSHConfigCardProps {
 }
 
 export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
@@ -142,7 +144,7 @@ export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) 
                     ? 'bg-[#BCFF2F]/50 text-black cursor-not-allowed' 
                     : 'bg-[#BCFF2F] text-black hover:bg-[#a8e529]'
                 }`}
-                title={isConnecting ? '创建会话中...' : '连接终端'}
+                title={isConnecting ? t('ssh:creatingSession') : t('ssh:connectTerminal')}
               >
                 <Icon 
                   icon={isConnecting ? 'mdi:loading' : 'mdi:console'} 
@@ -154,7 +156,7 @@ export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) 
               <button
                 onClick={() => onEdit(config)}
                 className="w-8 h-8 flex items-center justify-center rounded-md bg-transparent border border-[#333333] text-[#CCCCCC] hover:border-[#BCFF2F] hover:text-[#BCFF2F] transition-all duration-200"
-                title="编辑配置"
+                title={t('ssh:editConfig')}
               >
                 <Icon icon="mdi:pencil" className="w-4 h-4" />
               </button>
@@ -163,7 +165,7 @@ export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) 
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 className="w-8 h-8 flex items-center justify-center rounded-md bg-transparent border border-[#333333] text-[#CCCCCC] hover:border-red-400 hover:text-red-400 transition-all duration-200"
-                title="删除配置"
+                title={t('ssh:deleteConfig')}
               >
                 <Icon icon="mdi:delete" className="w-4 h-4" />
               </button>
@@ -199,11 +201,11 @@ export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) 
                   <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Icon icon="mdi:alert-circle" className="w-8 h-8 text-red-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-[#FFFFFF] mb-2">确认删除配置</h3>
+                  <h3 className="text-lg font-semibold text-[#FFFFFF] mb-2">{t('ssh:confirmDeleteConfig')}</h3>
                   <p className="text-sm text-[#CCCCCC] leading-relaxed">
-                    您确定要删除配置 <span className="text-[#FFFFFF] font-medium">"{config.host}"</span> 吗？
+                    {t('ssh:confirmDeleteConfigDesc')} <span className="text-[#FFFFFF] font-medium">"{config.host}"</span> 吗？
                     <br />
-                    <span className="text-red-400">此操作无法撤销</span>，配置将从区块链上永久移除。
+                    <span className="text-red-400">{t('ssh:cannotUndo')}</span>，{t('ssh:configWillBeRemoved')}
                   </p>
                 </div>
 
@@ -212,14 +214,14 @@ export function SSHConfigCard({ config, onEdit, onDelete }: SSHConfigCardProps) 
                     onClick={() => setShowDeleteConfirm(false)} 
                     className="h-9 px-4 bg-transparent border border-[#333333] text-[#CCCCCC] rounded-md hover:border-[#BCFF2F] hover:text-[#BCFF2F] transition-all duration-200"
                   >
-                    取消
+                    {t('common:cancel')}
                   </button>
                   <button 
                     onClick={handleDeleteConfirm} 
                     className="h-9 px-4 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium transition-colors duration-200 flex items-center space-x-2"
                   >
                     <Icon icon="mdi:delete" className="w-4 h-4" />
-                    <span>确认删除</span>
+                    <span>{t('ssh:confirmDelete')}</span>
                   </button>
                 </div>
               </motion.div>

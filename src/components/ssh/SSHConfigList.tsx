@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { SSHConfigCard } from './SSHConfigCard'
 import type { DecryptedSSHConfig } from '@/types/ssh'
@@ -14,6 +15,7 @@ interface SSHConfigListProps {
 }
 
 export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDelete, onRefresh, isRefreshing = false }: SSHConfigListProps) {
+  const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
 
   // 过滤配置
@@ -64,11 +66,11 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
         <div className="w-20 h-20 bg-neutral-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Icon icon="mdi:server-plus" className="w-10 h-10 text-neutral-500" />
         </div>
-        <h3 className="text-xl font-semibold text-white mb-3">暂无 SSH 配置</h3>
-        <p className="text-neutral-400 mb-6 max-w-md mx-auto leading-relaxed">您还没有添加任何 SSH 连接配置。添加您的第一个配置来开始安全地管理服务器连接。</p>
+        <h3 className="text-xl font-semibold text-white mb-3">{t('ssh:noConfigs')}</h3>
+        <p className="text-neutral-400 mb-6 max-w-md mx-auto leading-relaxed">{t('ssh:noConfigsDesc')}</p>
         <button onClick={onAdd} className="btn-primary">
           <Icon icon="mdi:plus" className="w-4 h-4" />
-          <span>添加首个配置</span>
+          <span>{t('ssh:addFirstConfig')}</span>
         </button>
       </div>
     )
@@ -82,7 +84,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
           {/* 搜索框 */}
           <div className="relative max-w-md flex-1">
             <Icon icon="mdi:magnify" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="搜索配置名称、主机或用户名..." className="input !px-10" />
+            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('ssh:searchPlaceholder')} className="input !px-10" />
             {searchTerm && (
               <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 transform -translate-y-1/2 btn-icon">
                 <Icon icon="mdi:close" className="w-4 h-4" />
@@ -92,10 +94,10 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
 
           {/* 统计信息 */}
           <div className="text-sm text-neutral-400">
-            共 <span className="text-white font-medium">{filteredConfigs.length}</span> 个配置
+            {t('common:total')} <span className="text-white font-medium">{filteredConfigs.length}</span> {t('ssh:configsCount')}
             {searchTerm && (
               <span className="ml-2">
-                • 筛选自 <span className="text-white font-medium">{configs.length}</span> 个
+                • {t('ssh:filteredFrom')} <span className="text-white font-medium">{configs.length}</span> 个
               </span>
             )}
           </div>
@@ -107,7 +109,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
             onClick={onRefresh}
             disabled={isRefreshing || isLoading}
             className="btn-icon hover:bg-lime-400/10 hover:text-lime-400 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="重新加载配置"
+            title={t('ssh:reloadConfigs')}
           >
             <Icon 
               icon="mdi:refresh" 
@@ -118,7 +120,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
           {/* 添加按钮 */}
           <button onClick={onAdd} className="btn-primary">
             <Icon icon="mdi:plus" className="w-4 h-4" />
-            <span>添加配置</span>
+            <span>{t('ssh:addConfig')}</span>
           </button>
         </div>
       </div>
@@ -141,12 +143,12 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
           <div className="w-16 h-16 bg-neutral-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Icon icon="mdi:magnify" className="w-8 h-8 text-neutral-500" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">未找到匹配的配置</h3>
+          <h3 className="text-lg font-semibold text-white mb-2">{t('ssh:noSearchResults')}</h3>
           <p className="text-neutral-400 mb-4">
-            没有找到与 "<span className="text-white font-medium">{searchTerm}</span>" 匹配的配置
+            {t('ssh:noSearchResultsDesc')} "<span className="text-white font-medium">{searchTerm}</span>" {t('ssh:matchingConfigs')}
           </p>
           <button onClick={() => setSearchTerm('')} className="btn-secondary">
-            清除搜索
+            {t('ssh:clearSearch')}
           </button>
         </div>
       )}

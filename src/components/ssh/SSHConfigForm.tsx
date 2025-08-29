@@ -3,29 +3,30 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
 
-// 表单验证 Schema
-const sshConfigSchema = z
+// 表单验证 Schema 工厂函数
+const createSSHConfigSchema = (t: any) => z
   .object({
-    name: z.string().min(1, '配置名称不能为空').max(50, '配置名称不能超过 50 个字符'),
+    name: z.string().min(1, t('ssh:formErrors.nameRequired')).max(50, t('ssh:formErrors.nameMaxLength')),
     host: z
       .string()
-      .min(1, '主机地址不能为空')
+      .min(1, t('ssh:formErrors.hostRequired'))
       .refine((value) => {
         // 验证 IP 地址或域名格式
         const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/
         const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/
         return ipRegex.test(value) || domainRegex.test(value)
-      }, '请输入有效的 IP 地址或域名'),
-    port: z.number().min(1, '端口号不能小于 1').max(65535, '端口号不能大于 65535').int('端口号必须是整数'),
+      }, t('ssh:formErrors.hostInvalid')),
+    port: z.number().min(1, t('ssh:formErrors.portMin')).max(65535, t('ssh:formErrors.portMax')).int(t('ssh:formErrors.portInteger')),
     username: z
       .string()
-      .min(1, '用户名不能为空')
-      .max(32, '用户名不能超过 32 个字符')
-      .regex(/^[a-zA-Z0-9_-]+$/, '用户名只能包含字母、数字、下划线和连字符'),
+      .min(1, t('ssh:formErrors.usernameRequired'))
+      .max(32, t('ssh:formErrors.usernameMaxLength'))
+      .regex(/^[a-zA-Z0-9_-]+$/, t('ssh:formErrors.usernameInvalid')),
     authType: z.enum(['password', 'key'], {
-      required_error: '请选择认证类型',
+      required_error: t('ssh:formErrors.authTypeRequired'),
     }),
     password: z.string().optional(),
     privateKey: z.string().optional(),
@@ -41,12 +42,12 @@ const sshConfigSchema = z
       }
     },
     {
-      message: '请填写对应的认证信息',
+      message: t('ssh:formErrors.authInfoRequired'),
       path: ['authType'],
     }
   )
 
-type FormData = z.infer<typeof sshConfigSchema>
+type FormData = z.infer<ReturnType<typeof createSSHConfigSchema>>
 
 interface SSHConfigFormProps {
   config?: DecryptedSSHConfig
@@ -59,12 +60,14 @@ interface SSHConfigFormProps {
   showActions?: boolean
 }
 
-export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSubmitError, isSubmitting = false, submitLabel = '保存配置', showActions = true }: SSHConfigFormProps) {
+export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSubmitError, isSubmitting = false, submitLabel, showActions = true }: SSHConfigFormProps) {
+  const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [showPassphrase, setShowPassphrase] = useState(false)
 
   const isEditing = !!config
+  const sshConfigSchema = createSSHConfigSchema(t)
 
   const {
     register,
@@ -105,7 +108,7 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
       onSubmitStart?.()
       await onSubmit(data)
     } catch (error) {
-      console.error('表单提交失败:', error)
+      console.error('Form submission failed:', error)
       onSubmitError?.(error)
     }
   }
@@ -125,15 +128,15 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
         <div className="space-y-2">
           <h3 className="text-base font-semibold text-white flex items-center space-x-2">
             <Icon icon="mdi:information" className="w-4 h-4 text-lime-400" />
-            <span>基础信息</span>
+            <span>{t('ssh:basicInfo')}</span>
           </h3>
 
           {/* 配置名称 */}
           <div className="space-y-1">
             <label className="block text-sm font-medium text-neutral-200">
-              配置名称 <span className="text-red-400">*</span>
+              {t('ssh:configName')} <span className="text-red-400">*</span>
             </label>
-            <input {...register('name')} className="input" placeholder="例如: 生产环境服务器" />
+            <input {...register('name')} className="input" placeholder={t('ssh:configNamePlaceholder')} />
             {errors.name && (
               <p className="text-sm text-red-400 flex items-center space-x-1">
                 <Icon icon="mdi:alert-circle" className="w-4 h-4" />
@@ -146,9 +149,9 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-2 space-y-1">
               <label className="block text-sm font-medium text-neutral-200">
-                主机地址 <span className="text-red-400">*</span>
+                {t('ssh:host')} <span className="text-red-400">*</span>
               </label>
-              <input {...register('host')} className="input" placeholder="192.168.1.100 或 example.com" />
+              <input {...register('host')} className="input" placeholder={t('ssh:hostPlaceholder')} />
               {errors.host && (
                 <p className="text-sm text-red-400 flex items-center space-x-1">
                   <Icon icon="mdi:alert-circle" className="w-4 h-4" />
@@ -159,7 +162,7 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
 
             <div className="space-y-1">
               <label className="block text-sm font-medium text-neutral-200">
-                端口 <span className="text-red-400">*</span>
+                {t('ssh:port')} <span className="text-red-400">*</span>
               </label>
               <input {...register('port', { valueAsNumber: true })} type="number" className="input" placeholder="22" min="1" max="65535" />
               {errors.port && (
@@ -174,9 +177,9 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
           {/* 用户名 */}
           <div className="space-y-1">
             <label className="block text-sm font-medium text-neutral-200">
-              用户名 <span className="text-red-400">*</span>
+              {t('ssh:username')} <span className="text-red-400">*</span>
             </label>
-            <input {...register('username')} className="input" placeholder="root, admin, ubuntu 等" />
+            <input {...register('username')} className="input" placeholder={t('ssh:usernamePlaceholder')} />
             {errors.username && (
               <p className="text-sm text-red-400 flex items-center space-x-1">
                 <Icon icon="mdi:alert-circle" className="w-4 h-4" />
@@ -190,13 +193,13 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
         <div className="space-y-2">
           <h3 className="text-base font-semibold text-white flex items-center space-x-2">
             <Icon icon="mdi:key" className="w-4 h-4 text-lime-400" />
-            <span>认证配置</span>
+            <span>{t('ssh:authConfig')}</span>
           </h3>
 
           {/* 认证类型选择 */}
           <div className="space-y-1">
             <label className="block text-sm font-medium text-neutral-200">
-              认证方式 <span className="text-red-400">*</span>
+              {t('ssh:authMethod')} <span className="text-red-400">*</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -207,8 +210,8 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
                 }`}
               >
                 <Icon icon="mdi:lock" className="w-6 h-6 mx-auto mb-1" />
-                <div className="text-sm font-medium">密码认证</div>
-                <div className="text-xs text-neutral-400 mt-1">使用用户名和密码</div>
+                <div className="text-sm font-medium">{t('ssh:passwordAuth')}</div>
+                <div className="text-xs text-neutral-400 mt-1">{t('ssh:passwordAuthDesc')}</div>
               </button>
 
               <button
@@ -219,8 +222,8 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
                 }`}
               >
                 <Icon icon="mdi:key-variant" className="w-6 h-6 mx-auto mb-1" />
-                <div className="text-sm font-medium">密钥认证</div>
-                <div className="text-xs text-neutral-400 mt-1">使用私钥文件</div>
+                <div className="text-sm font-medium">{t('ssh:keyAuth')}</div>
+                <div className="text-xs text-neutral-400 mt-1">{t('ssh:keyAuthDesc')}</div>
               </button>
             </div>
             {errors.authType && (
@@ -235,10 +238,10 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
           {authType === 'password' && (
             <div className="space-y-1">
               <label className="block text-sm font-medium text-neutral-200">
-                密码 <span className="text-red-400">*</span>
+                {t('ssh:password')} <span className="text-red-400">*</span>
               </label>
               <div className="relative">
-                <input {...register('password')} type={showPassword ? 'text' : 'password'} className="input pr-12" placeholder="输入 SSH 登录密码" />
+                <input {...register('password')} type={showPassword ? 'text' : 'password'} className="input pr-12" placeholder={t('ssh:passwordPlaceholder')} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 btn-icon">
                   <Icon icon={showPassword ? 'mdi:eye-off' : 'mdi:eye'} className="w-4 h-4" />
                 </button>
@@ -258,23 +261,21 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
               {/* 私钥 */}
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-neutral-200">
-                  私钥内容 <span className="text-red-400">*</span>
+                  {t('ssh:privateKey')} <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <textarea
                     {...register('privateKey')}
                     className="input min-h-32 font-mono text-sm resize-y"
-                    placeholder="-----BEGIN OPENSSH PRIVATE KEY-----
-请粘贴完整的私钥内容...
------END OPENSSH PRIVATE KEY-----"
+                    placeholder={t('ssh:privateKeyPlaceholder')}
                     style={{ display: showPrivateKey ? 'block' : 'none' }}
                   />
                   {!showPrivateKey && (
                     <div className="input min-h-32 flex items-center justify-center cursor-pointer border-dashed" onClick={() => setShowPrivateKey(true)}>
                       <div className="text-center text-neutral-400">
                         <Icon icon="mdi:key-variant" className="w-8 h-8 mx-auto mb-1" />
-                        <p className="text-sm">点击显示私钥输入框</p>
-                        <p className="text-xs mt-1">私钥将被端到端加密存储</p>
+                        <p className="text-sm">{t('ssh:clickToShowPrivateKey')}</p>
+                        <p className="text-xs mt-1">{t('ssh:privateKeySecurityNote')}</p>
                       </div>
                     </div>
                   )}
@@ -295,10 +296,10 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
               {/* 私钥密码 (可选) */}
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-neutral-200">
-                  私钥密码 <span className="text-neutral-500">(可选)</span>
+                  {t('ssh:passphrase')} <span className="text-neutral-500">({t('common:optional')})</span>
                 </label>
                 <div className="relative">
-                  <input {...register('passphrase')} type={showPassphrase ? 'text' : 'password'} className="input pr-12" placeholder="如果私钥有密码保护，请输入" />
+                  <input {...register('passphrase')} type={showPassphrase ? 'text' : 'password'} className="input pr-12" placeholder={t('ssh:passphrasePlaceholder')} />
                   <button type="button" onClick={() => setShowPassphrase(!showPassphrase)} className="absolute right-3 top-1/2 transform -translate-y-1/2 btn-icon">
                     <Icon icon={showPassphrase ? 'mdi:eye-off' : 'mdi:eye'} className="w-4 h-4" />
                   </button>
@@ -313,11 +314,11 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
           <div className="flex items-start space-x-2">
             <Icon icon="mdi:shield-check" className="w-4 h-4 text-lime-400 mt-0.5" />
             <div className="text-xs text-neutral-300 leading-relaxed">
-              <p className="font-medium text-lime-400 mb-1">🔒 安全保障</p>
+              <p className="font-medium text-lime-400 mb-1">{t('ssh:securityTitle')}</p>
               <ul className="space-y-0.5 text-xs">
-                <li>• 端到端加密，使用您的钱包地址</li>
-                <li>• 数据安全存储在区块链上</li>
-                <li>• 只有您的钱包可以解密访问</li>
+                <li>{t('ssh:securityFeature1')}</li>
+                <li>{t('ssh:securityFeature2')}</li>
+                <li>{t('ssh:securityFeature3')}</li>
               </ul>
             </div>
           </div>
@@ -327,19 +328,19 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
         {showActions && (
           <div className="flex items-center justify-end space-x-2 pt-2 border-t border-neutral-800">
             <button type="button" onClick={onCancel} disabled={isSubmitting} className="btn-secondary disabled:opacity-50">
-              <span>取消</span>
+              <span>{t('common:cancel')}</span>
             </button>
 
             <button type="submit" disabled={!isValid || isSubmitting} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
               {isSubmitting ? (
                 <>
                   <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
-                  <span>{isEditing ? '更新中...' : '提交中...'}</span>
+                  <span>{isEditing ? t('ssh:updating') : t('ssh:submitting')}</span>
                 </>
               ) : (
                 <>
                   <Icon icon={isEditing ? 'mdi:check' : 'mdi:plus'} className="w-4 h-4" />
-                  <span>{submitLabel}</span>
+                  <span>{submitLabel || t('ssh:saveConfig')}</span>
                 </>
               )}
             </button>

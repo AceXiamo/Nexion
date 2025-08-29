@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { SSHConfigForm } from './SSHConfigForm'
 import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
@@ -18,6 +19,7 @@ export function SSHConfigModal({
   onSubmit,
   isSubmitting = false,
 }: SSHConfigModalProps) {
+  const { t } = useTranslation()
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [showDiscardWarning, setShowDiscardWarning] = useState(false)
 
@@ -38,7 +40,7 @@ export function SSHConfigModal({
       onClose()
     } catch (error) {
       // 错误处理由父组件处理
-      console.error('提交配置失败:', error)
+      console.error(t('ssh:submitError'), error)
     }
   }
 
@@ -70,12 +72,12 @@ export function SSHConfigModal({
           <div className="p-4 pb-2 flex-shrink-0">
             <DialogHeader>
               <DialogTitle className="text-white text-lg">
-                {isEditing ? '编辑 SSH 配置' : '新建 SSH 配置'}
+                {isEditing ? t('ssh:editConfigModal') : t('ssh:newConfigModal')}
               </DialogTitle>
               <DialogDescription className="text-gray-400 text-sm">
                 {isEditing 
-                  ? '修改现有的 SSH 连接配置信息' 
-                  : '创建新的 SSH 连接配置，所有信息将被安全加密存储'
+                  ? t('ssh:editConfigDesc') 
+                  : t('ssh:newConfigDesc')
                 }
               </DialogDescription>
             </DialogHeader>
@@ -99,7 +101,7 @@ export function SSHConfigModal({
               disabled={isSubmitting}
               className="btn-secondary disabled:opacity-50"
             >
-              <span>取消</span>
+              <span>{t('common:cancel')}</span>
             </button>
             
             <button
@@ -111,10 +113,10 @@ export function SSHConfigModal({
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2"></div>
-                  <span>{isEditing ? '更新中...' : '提交中...'}</span>
+                  <span>{isEditing ? t('ssh:updating') : t('ssh:submitting')}</span>
                 </>
               ) : (
-                <span>{isEditing ? '更新配置' : '创建配置'}</span>
+                <span>{isEditing ? t('ssh:updateConfig') : t('ssh:createConfig')}</span>
               )}
             </button>
           </div>
@@ -142,9 +144,9 @@ export function SSHConfigModal({
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold text-white mb-2">放弃更改</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">{t('ssh:discardChanges')}</h3>
               <p className="text-sm text-neutral-400 leading-relaxed">
-                您有未保存的更改，确定要放弃这些更改并关闭配置表单吗？
+                {t('ssh:discardChangesDesc')}
               </p>
             </div>
             
@@ -153,13 +155,13 @@ export function SSHConfigModal({
                 onClick={() => setShowDiscardWarning(false)}
                 className="btn-secondary"
               >
-                继续编辑
+                {t('ssh:continueEditing')}
               </button>
               <button
                 onClick={handleDiscardChanges}
                 className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-lg font-medium transition-colors"
               >
-                放弃更改
+                {t('ssh:discardChangesConfirm')}
               </button>
             </div>
           </div>

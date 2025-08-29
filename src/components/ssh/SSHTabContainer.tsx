@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { SSHTabBar } from './SSHTabBar'
 import { SSHTerminal } from './SSHTerminal'
 import { SSHConfigForm } from './SSHConfigForm'
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Terminal, Plus } from 'lucide-react'
 
 export function SSHTabContainer() {
+  const { t } = useTranslation()
   const {
     sessions,
     activeSessionId,
@@ -118,10 +120,10 @@ export function SSHTabContainer() {
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
             <Terminal className="w-16 h-16 text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold text-gray-300 mb-2">
-              没有活跃的 SSH 连接
+              {t('ssh:noActiveConnections')}
             </h3>
             <p className="text-gray-500 mb-6 max-w-md">
-              创建你的第一个 SSH 连接，开始远程服务器管理之旅。
+              {t('ssh:noActiveConnectionsDesc')}
             </p>
             <Button
               onClick={handleCreateSession}
@@ -129,7 +131,7 @@ export function SSHTabContainer() {
               className="bg-lime-400 hover:bg-lime-500 text-black font-medium"
             >
               <Plus className="w-4 h-4 mr-2" />
-              创建 SSH 连接
+              {t('ssh:createSSHConnection')}
             </Button>
           </div>
         ) : (
@@ -149,16 +151,16 @@ export function SSHTabContainer() {
       <Dialog open={showConnectionDialog} onOpenChange={setShowConnectionDialog}>
         <DialogContent className="sm:max-w-md bg-neutral-900 border-neutral-700">
           <DialogHeader>
-            <DialogTitle className="text-white">选择 SSH 配置</DialogTitle>
+            <DialogTitle className="text-white">{t('ssh:selectConfig')}</DialogTitle>
             <DialogDescription className="text-gray-400">
-              从已保存的配置中选择一个来创建新的连接
+              {t('ssh:selectConfigDesc')}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-2">
             {configsLoading ? (
               <div className="text-center py-2 text-gray-400">
-                加载配置中...
+                {t('ssh:loadingConfigs')}
               </div>
             ) : configs.length > 0 ? (
               <div className="space-y-2">
@@ -179,7 +181,7 @@ export function SSHTabContainer() {
               </div>
             ) : (
               <div className="text-center py-2 text-gray-400">
-                还没有保存的配置
+                {t('ssh:noSavedConfigs')}
               </div>
             )}
             
@@ -193,14 +195,14 @@ export function SSHTabContainer() {
                 }}
                 className="flex-1 border-neutral-600 text-white hover:bg-neutral-800"
               >
-                新建配置
+                {t('ssh:newConfig')}
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => setShowConnectionDialog(false)}
                 className="text-gray-400 hover:text-white hover:bg-neutral-800"
               >
-                取消
+                {t('common:cancel')}
               </Button>
             </div>
           </div>
@@ -214,12 +216,12 @@ export function SSHTabContainer() {
           <div className="p-4 pb-2 flex-shrink-0">
             <DialogHeader>
               <DialogTitle className="text-white text-lg">
-                {editingConfig ? '编辑 SSH 配置' : '新建 SSH 配置'}
+                {editingConfig ? t('ssh:editConfigModal') : t('ssh:newConfigModal')}
               </DialogTitle>
               <DialogDescription className="text-gray-400 text-sm">
                 {editingConfig 
-                  ? '修改现有的 SSH 连接配置信息' 
-                  : '创建新的 SSH 连接配置，所有信息将被安全加密存储'
+                  ? t('ssh:editConfigDesc') 
+                  : t('ssh:newConfigDesc')
                 }
               </DialogDescription>
             </DialogHeader>
@@ -243,7 +245,7 @@ export function SSHTabContainer() {
               disabled={isSubmittingForm}
               className="btn-secondary disabled:opacity-50"
             >
-              <span>取消</span>
+              <span>{t('common:cancel')}</span>
             </button>
             
             <button
@@ -255,10 +257,10 @@ export function SSHTabContainer() {
               {isSubmittingForm ? (
                 <>
                   <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2"></div>
-                  <span>提交中...</span>
+                  <span>{t('ssh:submitting')}</span>
                 </>
               ) : (
-                <span>{editingConfig ? '更新配置' : '创建配置'}</span>
+                <span>{editingConfig ? t('ssh:updateConfig') : t('ssh:createConfig')}</span>
               )}
             </button>
           </div>
