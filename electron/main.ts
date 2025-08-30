@@ -59,25 +59,11 @@ function createWindow() {
   // Show window when ready to prevent visual flash
   win.once('ready-to-show', () => {
     win?.show()
-    
-    // Open DevTools in development
-    if (VITE_DEV_SERVER_URL) {
-      win?.webContents.openDevTools()
-    }
   })
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
-    
-    // Log wallet detection for debugging
-    win?.webContents.executeJavaScript(`
-      console.log('Wallet detection:', {
-        ethereum: typeof window.ethereum,
-        okxwallet: typeof window.okxwallet,
-        metaMask: typeof window.MetaMask
-      });
-    `).catch(console.error)
   })
 
   if (VITE_DEV_SERVER_URL) {
