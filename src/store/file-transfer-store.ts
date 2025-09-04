@@ -14,7 +14,7 @@ const path = {
 
 interface FileTransferActions {
   // Modal actions
-  openModal: (sessionId: string) => void
+  openModal: (sessionId: string, initialLocalPath?: string, initialRemotePath?: string) => void
   closeModal: () => void
 
   // Path actions
@@ -74,10 +74,42 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
   subscribeWithSelector((set, get) => ({
     ...initialState,
 
-    openModal: (sessionId: string) => {
+    openModal: async (sessionId: string, initialLocalPath?: string, initialRemotePath?: string) => {
+      let localPath = initialLocalPath
+      let remotePath = initialRemotePath
+
+      // Get smart default paths if not provided
+      if (!localPath) {
+        try {
+          const homeResult = await window.ipcRenderer?.system?.getUserHomeDirectory()
+          if (homeResult?.success && homeResult.homeDir) {
+            localPath = homeResult.homeDir
+          }
+        } catch (error) {
+          console.warn('Failed to get user home directory:', error)
+        }
+      }
+
+      if (!remotePath) {
+        try {
+          const dirResult = await window.ipcRenderer?.ssh?.getCurrentDirectory(sessionId)
+          if (dirResult?.success && dirResult.directory) {
+            remotePath = dirResult.directory
+          }
+        } catch (error) {
+          console.warn('Failed to get remote current directory:', error)
+        }
+      }
+
+      // Fallback to original defaults
+      const finalLocalPath = localPath || get().localPath
+      const finalRemotePath = remotePath || get().remotePath
+
       set({
         isOpen: true,
         currentSession: sessionId,
+        localPath: finalLocalPath,
+        remotePath: finalRemotePath,
         errors: {},
       })
 
@@ -85,9 +117,9 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
       get().setupProgressListener()
 
       // Load initial file listings
-      const { loadLocalFiles, loadRemoteFiles, localPath, remotePath } = get()
-      loadLocalFiles(localPath)
-      loadRemoteFiles(remotePath)
+      const { loadLocalFiles, loadRemoteFiles } = get()
+      loadLocalFiles(finalLocalPath)
+      loadRemoteFiles(finalRemotePath)
     },
 
     closeModal: () => {
