@@ -38,6 +38,7 @@ export function FileTransferModal() {
       title="文件传输"
       size="full"
       closeOnOverlayClick={false}
+      closeOnEscape={true}
     >
       <div className="flex flex-col h-[80vh] max-h-[800px]">
         {/* Header Controls */}
