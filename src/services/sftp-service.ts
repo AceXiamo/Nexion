@@ -62,7 +62,7 @@ export class SftpService implements SftpConnection {
   async uploadFile(
     localPath: string, 
     remotePath: string, 
-    onProgress?: (progress: number) => void
+    taskId: string
   ): Promise<void> {
     if (!this.isConnected) {
       throw new Error('SFTP not connected')
@@ -76,7 +76,7 @@ export class SftpService implements SftpConnection {
       this.sessionId, 
       localPath, 
       remotePath,
-      onProgress
+      taskId
     )
     
     if (!result.success) {
@@ -87,7 +87,7 @@ export class SftpService implements SftpConnection {
   async downloadFile(
     remotePath: string, 
     localPath: string, 
-    onProgress?: (progress: number) => void
+    taskId: string
   ): Promise<void> {
     if (!this.isConnected) {
       throw new Error('SFTP not connected')
@@ -101,7 +101,7 @@ export class SftpService implements SftpConnection {
       this.sessionId, 
       remotePath, 
       localPath,
-      onProgress
+      taskId
     )
     
     if (!result.success) {
