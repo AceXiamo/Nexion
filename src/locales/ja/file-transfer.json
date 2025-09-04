@@ -1,0 +1,16 @@
+{
+  "upload": "アップロード",
+  "download": "ダウンロード",
+  "transfer": "転送",
+  "progress": "進行状況",
+  "completed": "完了",
+  "failed": "失敗",
+  "cancelled": "キャンセル済み",
+  "selectFiles": "ファイル選択",
+  "dragDrop": "ファイルをドラッグ&ドロップ",
+  "remotePath": "リモートパス",
+  "localPath": "ローカルパス",
+  "fileSize": "ファイルサイズ",
+  "transferSpeed": "転送速度",
+  "timeRemaining": "残り時間"
+}

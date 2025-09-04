@@ -1,0 +1,14 @@
+{
+  "general": "Une erreur s'est produite",
+  "network": "Erreur réseau",
+  "connection": "Erreur de connexion",
+  "authentication": "Erreur d'authentification",
+  "timeout": "Erreur de délai d'expiration",
+  "invalidCredentials": "Identifiants invalides",
+  "permissionDenied": "Accès refusé",
+  "fileNotFound": "Fichier introuvable",
+  "invalidFormat": "Format invalide",
+  "serverError": "Erreur serveur",
+  "clientError": "Erreur client",
+  "unknownError": "Erreur inconnue"
+}

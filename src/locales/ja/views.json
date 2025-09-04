@@ -1,0 +1,77 @@
+{
+  "connections": {
+    "connectWallet": "ウォレット接続",
+    "connectWalletDesc": "Web3ウォレットを接続してセキュアなSSH接続マネージャーの使用を開始してください。すべての設定データは暗号化されてブロックチェーンに保存され、データのセキュリティとプライバシー保護を保証します。",
+    "decentralizedStorage": "分散ストレージ",
+    "endToEndEncryption": "エンドツーエンド暗号化",
+    "sshSecureConnection": "SSHセキュア接続",
+    "completeAuthentication": "認証完了",
+    "authenticationDesc": "セキュリティのため、ウォレットアイデンティティのデジタル署名検証が必要です。検証完了後、SSH接続設定の作成と管理を開始できます。",
+    "clickVerifyButton": "上記の「アイデンティティ検証」ボタンをクリックしてセットアップを完了してください"
+  },
+  "terminal": {
+    "connectWalletToStart": "ウォレット接続で開始",
+    "connectWalletDesc": "SSHターミナルを使用するには、OKXウォレットまたはその他のWalletConnect対応ウォレットを接続してください。すべての接続は安全な暗号化チャネルを通じて行われます。",
+    "secureConnection": "セキュア接続",
+    "endToEndEncryption": "エンドツーエンド暗号化",
+    "needRegistration": "ウォレット登録が必要",
+    "registrationDesc": "SSHターミナルを使用するには、まずウォレットアドレスを登録してください。登録プロセスは迅速で簡単です。",
+    "clickConnectButton": "右上のウォレット接続ボタンをクリックして登録を開始",
+    "loadingConfig": "設定読み込み中...",
+    "sessionNotFound": "セッションが見つかりません",
+    "sessionNotFoundDesc": "ID「{sessionId}」のSSHセッションが見つかりませんでした。閉じられたか、存在しない可能性があります。",
+    "backToConfigList": "設定一覧に戻る",
+    "connectingTo": "{name}に接続中...",
+    "waitingConnection": "接続待機中...",
+    "connectionFailed": "接続に失敗しました。再度お試しください",
+    "reconnect": "再接続",
+    "connectNow": "今すぐ接続"
+  },
+  "about": {
+    "version": "v0.1.0 - ベータ",
+    "productIntro": "製品紹介",
+    "productDesc": "Web3 SSH Managerは、ブロックチェーンベースのSSH設定管理ツールです。従来のSSH管理とWeb3技術を組み合わせ、分散型で安全かつ便利なサーバーアクセス管理ソリューションを提供します。",
+    "coreFeatures": "コア機能",
+    "features": {
+      "unifiedAuth": {
+        "title": "統一認証",
+        "description": "従来のSSHキー管理の代わりにWeb3ウォレットを使用"
+      },
+      "decentralizedStorage": {
+        "title": "分散ストレージ",
+        "description": "設定データを暗号化してブロックチェーンに保存"
+      },
+      "secureConnection": {
+        "title": "セキュア接続",
+        "description": "エンドツーエンド暗号化でデータ伝送のセキュリティを保護"
+      },
+      "crossPlatform": {
+        "title": "クロスプラットフォーム対応",
+        "description": "Windows、macOS、Linuxシステムをサポート"
+      }
+    },
+    "techStack": "技術スタック",
+    "frontend": "フロントエンド技術",
+    "blockchain": "ブロックチェーン",
+    "security": "セキュリティ技術",
+    "contact": "お問い合わせ",
+    "github": "GitHubリポジトリ",
+    "website": "公式ウェブサイト",
+    "email": "メールでお問い合わせ",
+    "copyright": "著作権情報",
+    "license": "オープンソースライセンス",
+    "changelog": "変更履歴",
+    "releaseDate": "2024-08-29",
+    "contactEmail": "xiamo@qwq.link",
+    "releaseFeatures": {
+      "basicSSH": "基本SSH設定管理",
+      "walletIntegration": "OKXウォレット統合と認証",
+      "testnetSupport": "X Layerテストネットサポート",
+      "encryption": "エンドツーエンド暗号化保護"
+    }
+  },
+  "stats": {
+    "title": "使用統計",
+    "description": "SSH使用と接続統計を表示"
+  }
+}

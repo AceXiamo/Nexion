@@ -1,0 +1,16 @@
+{
+  "upload": "Téléverser",
+  "download": "Télécharger",
+  "transfer": "Transfert",
+  "progress": "Progression",
+  "completed": "Terminé",
+  "failed": "Échoué",
+  "cancelled": "Annulé",
+  "selectFiles": "Sélectionner les fichiers",
+  "dragDrop": "Glisser-déposer les fichiers",
+  "remotePath": "Chemin distant",
+  "localPath": "Chemin local",
+  "fileSize": "Taille du fichier",
+  "transferSpeed": "Vitesse de transfert",
+  "timeRemaining": "Temps restant"
+}

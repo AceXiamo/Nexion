@@ -1,0 +1,39 @@
+{
+  "connect": "Connecter le portefeuille",
+  "disconnect": "Déconnecter",
+  "connecting": "Connexion en cours",
+  "connected": "Connecté",
+  "register": "S'inscrire",
+  "registering": "Inscription en cours",
+  "registered": "Inscrit",
+  "switchNetwork": "Changer de réseau",
+  "networkError": "Erreur réseau",
+  "connectedWallet": "Portefeuille connecté",
+  "walletProtocol": "Protocole WalletConnect",
+  "walletAddress": "Adresse du portefeuille :",
+  "networkStatus": "État du réseau :",
+  "wrongNetwork": "Mauvais réseau",
+  "disconnectWallet": "Déconnecter le portefeuille",
+  "scanToConnect": "Scanner pour connecter le portefeuille",
+  "connectWallet": "Connecter le portefeuille",
+  "scanQRCode": "Scannez le code QR avec votre portefeuille",
+  "qrCodeInstructions": "Ouvrez votre application de portefeuille et scannez ce code QR pour vous connecter en toute sécurité.",
+  "supportedWallets": "Portefeuilles pris en charge",
+  "copyConnectionURI": "Copier l'URI de connexion",
+  "connectionGuide": "Guide de connexion",
+  "connectionSteps": [
+    "Cliquez sur le bouton 'Scanner pour connecter le portefeuille' pour ouvrir le code QR",
+    "Utilisez votre application de portefeuille mobile pour scanner le code QR",
+    "Confirmez la demande de connexion sur votre portefeuille mobile",
+    "Le système basculera automatiquement vers X Layer Testnet"
+  ],
+  "recommendedWallets": "Portefeuilles recommandés",
+  "walletList": "OKX Wallet, MetaMask, Trust Wallet, TokenPocket",
+  "registration": {
+    "title": "Bienvenue sur Nexion",
+    "description": "Veuillez d'abord enregistrer votre adresse de portefeuille pour commencer à utiliser le service de gestion de configuration SSH. Le processus d'inscription est entièrement gratuit, ne nécessitant que des frais de réseau minimaux (environ 0,0006 OKB).",
+    "walletRequired": "Connexion du portefeuille requise",
+    "registerButton": "Enregistrer le portefeuille maintenant",
+    "registering": "Inscription en cours..."
+  }
+}

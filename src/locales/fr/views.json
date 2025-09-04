@@ -1,0 +1,77 @@
+{
+  "connections": {
+    "connectWallet": "Connecter le Portefeuille",
+    "connectWalletDesc": "Connectez votre portefeuille Web3 pour commencer à utiliser le gestionnaire de connexions SSH sécurisées. Toutes les données de configuration seront chiffrées et stockées sur la blockchain, garantissant la sécurité des données et la protection de la vie privée.",
+    "decentralizedStorage": "Stockage Décentralisé",
+    "endToEndEncryption": "Chiffrement de Bout en Bout",
+    "sshSecureConnection": "Connexion SSH Sécurisée",
+    "completeAuthentication": "Authentification Complète",
+    "authenticationDesc": "Pour des raisons de sécurité, la vérification de signature numérique de votre identité de portefeuille est requise. Une fois la vérification terminée, vous pourrez commencer à créer et gérer les configurations de connexion SSH.",
+    "clickVerifyButton": "Cliquez sur le bouton \"Vérifier l'Identité\" ci-dessus pour terminer la configuration"
+  },
+  "terminal": {
+    "connectWalletToStart": "Connecter le Portefeuille pour Commencer",
+    "connectWalletDesc": "Veuillez connecter votre portefeuille OKX ou autre portefeuille compatible WalletConnect pour utiliser le terminal SSH. Toutes vos connexions passeront par des canaux chiffrés sécurisés.",
+    "secureConnection": "Connexion Sécurisée",
+    "endToEndEncryption": "Chiffrement de Bout en Bout",
+    "needRegistration": "Enregistrement de Portefeuille Requis",
+    "registrationDesc": "Veuillez d'abord enregistrer votre adresse de portefeuille pour utiliser le terminal SSH. Le processus d'enregistrement est rapide et simple.",
+    "clickConnectButton": "Cliquez sur le bouton de connexion du portefeuille dans le coin supérieur droit pour commencer l'enregistrement",
+    "loadingConfig": "Chargement de la configuration...",
+    "sessionNotFound": "Session Introuvable",
+    "sessionNotFoundDesc": "La session SSH avec l'ID \"{sessionId}\" n'a pas été trouvée. Elle a peut-être été fermée ou n'existe pas.",
+    "backToConfigList": "Retour à la Liste des Configurations",
+    "connectingTo": "Connexion à {name}...",
+    "waitingConnection": "En attente de connexion...",
+    "connectionFailed": "Échec de la connexion, veuillez réessayer",
+    "reconnect": "Reconnecter",
+    "connectNow": "Se Connecter Maintenant"
+  },
+  "about": {
+    "version": "v0.1.0 - Bêta",
+    "productIntro": "Introduction du Produit",
+    "productDesc": "Web3 SSH Manager est un outil de gestion de configuration SSH basé sur la blockchain. Il combine la gestion SSH traditionnelle avec la technologie Web3 pour fournir une solution de gestion d'accès serveur décentralisée, sécurisée et pratique.",
+    "coreFeatures": "Fonctionnalités Principales",
+    "features": {
+      "unifiedAuth": {
+        "title": "Authentification Unifiée",
+        "description": "Utiliser un portefeuille Web3 au lieu de la gestion traditionnelle des clés SSH"
+      },
+      "decentralizedStorage": {
+        "title": "Stockage Décentralisé",
+        "description": "Données de configuration chiffrées et stockées sur la blockchain"
+      },
+      "secureConnection": {
+        "title": "Connexion Sécurisée",
+        "description": "Le chiffrement de bout en bout protège la sécurité de la transmission des données"
+      },
+      "crossPlatform": {
+        "title": "Support Multi-Plateforme",
+        "description": "Prend en charge les systèmes Windows, macOS, Linux"
+      }
+    },
+    "techStack": "Pile Technologique",
+    "frontend": "Technologie Frontend",
+    "blockchain": "Blockchain",
+    "security": "Technologie de Sécurité",
+    "contact": "Nous Contacter",
+    "github": "Dépôt GitHub",
+    "website": "Site Web Officiel",
+    "email": "Contact Email",
+    "copyright": "Informations de Copyright",
+    "license": "Licence Open Source",
+    "changelog": "Journal des Modifications",
+    "releaseDate": "2024-08-29",
+    "contactEmail": "xiamo@qwq.link",
+    "releaseFeatures": {
+      "basicSSH": "Gestion de configuration SSH de base",
+      "walletIntegration": "Intégration et authentification du portefeuille OKX",
+      "testnetSupport": "Support du testnet X Layer",
+      "encryption": "Protection par chiffrement de bout en bout"
+    }
+  },
+  "stats": {
+    "title": "Statistiques d'Utilisation",
+    "description": "Afficher vos statistiques d'utilisation SSH et de connexion"
+  }
+}

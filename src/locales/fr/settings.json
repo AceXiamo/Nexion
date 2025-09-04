@@ -1,0 +1,104 @@
+{
+  "language": "Paramètres de langue",
+  "theme": "Paramètres de thème", 
+  "general": "Paramètres généraux",
+  "security": "Paramètres de sécurité",
+  "advanced": "Paramètres avancés",
+  "network": "Paramètres réseau",
+  "appearance": "Thème d'apparence",
+  "appearanceDesc": "Choisir le thème d'apparence de l'application",
+  "languageDesc": "Sélectionner la langue de l'interface",
+  "autoSync": "Synchronisation automatique",
+  "autoSyncDesc": "Synchroniser automatiquement les données de configuration blockchain",
+  "desktopNotifications": "Notifications de bureau",
+  "desktopNotificationsDesc": "Afficher l'état de connexion et les notifications système",
+  "startupVerification": "Vérification au démarrage",
+  "startupVerificationDesc": "Exiger la vérification de signature de portefeuille au démarrage",
+  "rpcEndpoint": "Point de terminaison RPC",
+  "rpcEndpointDesc": "Point de terminaison de connexion réseau X Layer",
+  "gasOptimization": "Optimisation Gas",
+  "gasOptimizationDesc": "Optimiser automatiquement les frais de Gas de transaction",
+  "requestTimeout": "Délai d'expiration des requêtes",
+  "requestTimeoutDesc": "Durée du délai d'expiration des requêtes réseau (secondes)",
+  "localEncryption": "Chiffrement local",
+  "localEncryptionDesc": "Utiliser un mot de passe supplémentaire pour chiffrer les données locales",
+  "operationLogs": "Journaux d'opération",
+  "operationLogsDesc": "Enregistrer tous les journaux d'opération pour audit",
+  "clearData": "Effacer les données",
+  "clearDataDesc": "Effacer tous les caches et configurations locaux",
+  "connected": "Connecté",
+  "configure": "Configurer",
+  "clear": "Effacer",
+  "darkTheme": "Thème sombre",
+  "lightTheme": "Thème clair",
+  "autoTheme": "Suivre le système",
+  "seconds": "secondes",
+  "keyboardShortcuts": "Raccourcis clavier",
+  "keyboardShortcutsDesc": "Personnaliser les raccourcis clavier de l'application",
+  "enableShortcuts": "Activer les raccourcis",
+  "enableShortcutsDesc": "Activer ou désactiver globalement les raccourcis clavier",
+  "enabled": "Activé",
+  "categorySession": "Gestion de session",
+  "categoryNavigation": "Navigation", 
+  "categoryGeneral": "Fonctions générales",
+  "shortcutCustomized": "Personnalisé",
+  "shortcutNotSet": "Non défini",
+  "shortcuts": {
+    "switchToTab1": {
+      "name": "Aller à l'onglet 1",
+      "description": "Passer au 1er onglet"
+    },
+    "switchToTab2": {
+      "name": "Aller à l'onglet 2",
+      "description": "Passer au 2e onglet"
+    },
+    "switchToTab3": {
+      "name": "Aller à l'onglet 3",
+      "description": "Passer au 3e onglet"
+    },
+    "switchToTab4": {
+      "name": "Aller à l'onglet 4",
+      "description": "Passer au 4e onglet"
+    },
+    "switchToTab5": {
+      "name": "Aller à l'onglet 5",
+      "description": "Passer au 5e onglet"
+    },
+    "switchToTab6": {
+      "name": "Aller à l'onglet 6",
+      "description": "Passer au 6e onglet"
+    },
+    "switchToTab7": {
+      "name": "Aller à l'onglet 7",
+      "description": "Passer au 7e onglet"
+    },
+    "switchToTab8": {
+      "name": "Aller à l'onglet 8",
+      "description": "Passer au 8e onglet"
+    },
+    "switchToTab9": {
+      "name": "Aller à l'onglet 9",
+      "description": "Passer au 9e onglet"
+    },
+    "nextTab": {
+      "name": "Onglet suivant",
+      "description": "Passer à l'onglet suivant"
+    },
+    "previousTab": {
+      "name": "Onglet précédent",
+      "description": "Passer à l'onglet précédent"
+    },
+    "newSession": {
+      "name": "Nouvelle session",
+      "description": "Créer une nouvelle session SSH"
+    },
+    "closeSession": {
+      "name": "Fermer la session",
+      "description": "Fermer la session actuelle"
+    },
+    "duplicateSession": {
+      "name": "Dupliquer la session",
+      "description": "Dupliquer la configuration de session actuelle pour créer une nouvelle session"
+    }
+  }
+}

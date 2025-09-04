@@ -1,0 +1,14 @@
+{
+  "general": "エラーが発生しました",
+  "network": "ネットワークエラー",
+  "connection": "接続エラー",
+  "authentication": "認証エラー",
+  "timeout": "タイムアウトエラー",
+  "invalidCredentials": "無効な認証情報",
+  "permissionDenied": "アクセス拒否",
+  "fileNotFound": "ファイルが見つかりません",
+  "invalidFormat": "無効な形式",
+  "serverError": "サーバーエラー",
+  "clientError": "クライアントエラー",
+  "unknownError": "不明なエラー"
+}

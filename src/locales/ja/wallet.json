@@ -1,0 +1,39 @@
+{
+  "connect": "ウォレット接続",
+  "disconnect": "切断",
+  "connecting": "接続中",
+  "connected": "接続済み",
+  "register": "登録",
+  "registering": "登録中",
+  "registered": "登録済み",
+  "switchNetwork": "ネットワーク切り替え",
+  "networkError": "ネットワークエラー",
+  "connectedWallet": "接続済みウォレット",
+  "walletProtocol": "WalletConnect プロトコル",
+  "walletAddress": "ウォレットアドレス：",
+  "networkStatus": "ネットワーク状態：",
+  "wrongNetwork": "間違ったネットワーク",
+  "disconnectWallet": "ウォレット切断",
+  "scanToConnect": "ウォレット接続をスキャン",
+  "connectWallet": "ウォレット接続",
+  "scanQRCode": "ウォレットでQRコードをスキャン",
+  "qrCodeInstructions": "ウォレットアプリを開いて、このQRコードをスキャンして安全に接続してください。",
+  "supportedWallets": "対応ウォレット",
+  "copyConnectionURI": "接続URIをコピー",
+  "connectionGuide": "接続ガイド",
+  "connectionSteps": [
+    "「ウォレット接続をスキャン」ボタンをクリックしてQRコードを開く",
+    "モバイルウォレットアプリでQRコードをスキャンする",
+    "モバイルウォレットで接続リクエストを確認する",
+    "システムが自動的にX Layer Testnetに切り替わります"
+  ],
+  "recommendedWallets": "推奨ウォレット",
+  "walletList": "OKX Wallet、MetaMask、Trust Wallet、TokenPocket",
+  "registration": {
+    "title": "Nexionへようこそ",
+    "description": "SSH設定管理サービスをご利用いただくには、まずウォレットアドレスを登録してください。登録は完全に無料で、最小限のネットワーク手数料（約0.0006 OKB）のみが必要です。",
+    "walletRequired": "ウォレット接続が必要です",
+    "registerButton": "今すぐウォレットを登録",
+    "registering": "登録中..."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "ok": "OK",
+  "cancel": "Annuler",
+  "confirm": "Confirmer",
+  "delete": "Supprimer",
+  "edit": "Modifier",
+  "save": "Enregistrer",
+  "close": "Fermer",
+  "open": "Ouvrir",
+  "loading": "Chargement...",
+  "error": "Erreur",
+  "success": "Succès",
+  "warning": "Avertissement",
+  "info": "Information",
+  "yes": "Oui",
+  "no": "Non",
+  "retry": "Réessayer",
+  "back": "Retour",
+  "next": "Suivant",
+  "previous": "Précédent",
+  "submit": "Soumettre",
+  "reset": "Réinitialiser"
+}

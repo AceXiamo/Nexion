@@ -1,0 +1,104 @@
+{
+  "language": "言語設定",
+  "theme": "テーマ設定", 
+  "general": "一般設定",
+  "security": "セキュリティ設定",
+  "advanced": "高度な設定",
+  "network": "ネットワーク設定",
+  "appearance": "外観テーマ",
+  "appearanceDesc": "アプリケーションの外観テーマを選択",
+  "languageDesc": "アプリケーションの言語を選択",
+  "autoSync": "自動同期",
+  "autoSyncDesc": "ブロックチェーン設定データを自動同期",
+  "desktopNotifications": "デスクトップ通知",
+  "desktopNotificationsDesc": "接続状態とシステム通知を表示",
+  "startupVerification": "起動時認証",
+  "startupVerificationDesc": "アプリケーション起動時にウォレット署名認証を要求",
+  "rpcEndpoint": "RPC エンドポイント",
+  "rpcEndpointDesc": "X Layer ネットワーク接続エンドポイント",
+  "gasOptimization": "Gas 最適化",
+  "gasOptimizationDesc": "トランザクション Gas 手数料を自動最適化",
+  "requestTimeout": "リクエストタイムアウト",
+  "requestTimeoutDesc": "ネットワークリクエストタイムアウト時間（秒）",
+  "localEncryption": "ローカル暗号化",
+  "localEncryptionDesc": "追加パスワードでローカルデータを暗号化",
+  "operationLogs": "操作ログ",
+  "operationLogsDesc": "監査のためにすべての操作ログを記録",
+  "clearData": "データクリア",
+  "clearDataDesc": "すべてのローカルキャッシュと設定をクリア",
+  "connected": "接続済み",
+  "configure": "設定",
+  "clear": "クリア",
+  "darkTheme": "ダークテーマ",
+  "lightTheme": "ライトテーマ",
+  "autoTheme": "システムに従う",
+  "seconds": "秒",
+  "keyboardShortcuts": "キーボードショートカット",
+  "keyboardShortcutsDesc": "アプリケーションのキーボードショートカットをカスタマイズ",
+  "enableShortcuts": "ショートカット有効化",
+  "enableShortcutsDesc": "キーボードショートカット機能のグローバル有効/無効",
+  "enabled": "有効",
+  "categorySession": "セッション管理",
+  "categoryNavigation": "ナビゲーション", 
+  "categoryGeneral": "一般機能",
+  "shortcutCustomized": "カスタマイズ済み",
+  "shortcutNotSet": "未設定",
+  "shortcuts": {
+    "switchToTab1": {
+      "name": "タブ 1 に切り替え",
+      "description": "1番目のタブに切り替え"
+    },
+    "switchToTab2": {
+      "name": "タブ 2 に切り替え",
+      "description": "2番目のタブに切り替え"
+    },
+    "switchToTab3": {
+      "name": "タブ 3 に切り替え",
+      "description": "3番目のタブに切り替え"
+    },
+    "switchToTab4": {
+      "name": "タブ 4 に切り替え",
+      "description": "4番目のタブに切り替え"
+    },
+    "switchToTab5": {
+      "name": "タブ 5 に切り替え",
+      "description": "5番目のタブに切り替え"
+    },
+    "switchToTab6": {
+      "name": "タブ 6 に切り替え",
+      "description": "6番目のタブに切り替え"
+    },
+    "switchToTab7": {
+      "name": "タブ 7 に切り替え",
+      "description": "7番目のタブに切り替え"
+    },
+    "switchToTab8": {
+      "name": "タブ 8 に切り替え",
+      "description": "8番目のタブに切り替え"
+    },
+    "switchToTab9": {
+      "name": "タブ 9 に切り替え",
+      "description": "9番目のタブに切り替え"
+    },
+    "nextTab": {
+      "name": "次のタブ",
+      "description": "次のタブに切り替え"
+    },
+    "previousTab": {
+      "name": "前のタブ",
+      "description": "前のタブに切り替え"
+    },
+    "newSession": {
+      "name": "新しいセッション",
+      "description": "新しい SSH セッションを作成"
+    },
+    "closeSession": {
+      "name": "セッションを閉じる",
+      "description": "現在のセッションを閉じる"
+    },
+    "duplicateSession": {
+      "name": "セッション複製",
+      "description": "現在のセッション設定を複製して新しいセッションを作成"
+    }
+  }
+}

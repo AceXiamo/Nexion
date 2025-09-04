@@ -1,0 +1,37 @@
+{
+  "connections": "Connexions SSH",
+  "connectionsDesc": "Gérer les configurations de connexions sécurisées",
+  "settings": "Paramètres",
+  "settingsDesc": "Préférences et configurations de l'application",
+  "stats": "Statistiques",
+  "statsDesc": "Analyses d'utilisation des connexions",
+  "about": "À propos",
+  "aboutDesc": "Informations de version et aide",
+  "appTitle": "Nexion",
+  "appSubtitle": "Sécurité Web3",
+  "networkStatus": "X Layer Testnet",
+  "secureTerminal": "Terminal sécurisé",
+  "web3SecureConnection": "Connexion sécurisée Web3",
+  "backToMainMenu": "Retour au menu principal",
+  "sessionList": "Liste des sessions",
+  "connected": "Connecté",
+  "connecting": "Connexion en cours",
+  "connectionError": "Erreur de connexion",
+  "disconnected": "Déconnecté",
+  "reconnect": "Reconnecter",
+  "closeConnection": "Fermer la connexion",
+  "addConnection": "Ajouter une connexion",
+  "mainMenu": "Menu principal",
+  "pageTitle": {
+    "connections": "Gestion des connexions SSH",
+    "settings": "Paramètres",
+    "stats": "Statistiques d'utilisation",
+    "about": "À propos"
+  },
+  "pageDescription": {
+    "connections": "Gérer vos configurations et connexions SSH",
+    "settings": "Paramètres de l'application et préférences personnelles",
+    "stats": "Afficher vos statistiques d'utilisation SSH",
+    "about": "En savoir plus sur Nexion"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "connections": "SSH接続",
+  "connectionsDesc": "セキュア接続設定を管理",
+  "settings": "設定",
+  "settingsDesc": "アプリケーション環境設定と設定",
+  "stats": "統計",
+  "statsDesc": "接続使用分析",
+  "about": "アプリについて",
+  "aboutDesc": "バージョン情報とヘルプ",
+  "appTitle": "Nexion",
+  "appSubtitle": "Web3セキュリティ",
+  "networkStatus": "X Layer テストネット",
+  "secureTerminal": "セキュアターミナル",
+  "web3SecureConnection": "Web3セキュア接続",
+  "backToMainMenu": "メインメニューに戻る",
+  "sessionList": "セッション一覧",
+  "connected": "接続済み",
+  "connecting": "接続中",
+  "connectionError": "接続エラー",
+  "disconnected": "切断済み",
+  "reconnect": "再接続",
+  "closeConnection": "接続を閉じる",
+  "addConnection": "接続を追加",
+  "mainMenu": "メインメニュー",
+  "pageTitle": {
+    "connections": "SSH接続管理",
+    "settings": "設定",
+    "stats": "使用統計",
+    "about": "アプリについて"
+  },
+  "pageDescription": {
+    "connections": "SSH設定と接続を管理",
+    "settings": "アプリケーション設定と個人設定",
+    "stats": "SSH使用統計を表示",
+    "about": "Nexionについて学ぶ"
+  }
+}
