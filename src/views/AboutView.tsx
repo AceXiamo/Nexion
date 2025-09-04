@@ -66,7 +66,7 @@ export function AboutView() {
                   iconColor: 'text-pink-400',
                 },
                 {
-                  icon: 'token-branded:cosmos',
+                  icon: 'lucide:sync',
                   title: '跨设备同步',
                   description: '无论在哪台设备上，只要连接钱包就能访问你的所有SSH配置',
                   iconColor: 'text-indigo-400',
