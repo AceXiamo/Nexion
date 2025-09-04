@@ -68,7 +68,7 @@ export function AboutView() {
                 {
                   icon: 'token-branded:cosmos',
                   title: '跨设备同步',
-                  description: '配置存储在区块链上，无论在哪台设备上，只要连接钱包就能访问你的所有SSH配置',
+                  description: '无论在哪台设备上，只要连接钱包就能访问你的所有SSH配置',
                   iconColor: 'text-indigo-400',
                 },
               ].map((feature, index) => (
