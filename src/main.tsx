@@ -7,11 +7,11 @@ import './types/electron'
 import './i18n'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <Web3Provider>
       <App />
     </Web3Provider>
-  </React.StrictMode>,
+  // </React.StrictMode>,
 )
 
 // Use contextBridge

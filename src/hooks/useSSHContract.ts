@@ -8,7 +8,7 @@ import { xLayerTestnet } from '@/lib/web3-config'
 export function useSSHContract() {
   const { account, chainId, sendTransaction } = useWalletStore()
   const contractAddress = getContractAddress(chainId || xLayerTestnet.id)
-  
+
   const [isPending, setIsPending] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
   const [isConfirmed, setIsConfirmed] = useState(false)
@@ -16,10 +16,10 @@ export function useSSHContract() {
 
   // Create clients
   const currentChain = chainId === xLayerTestnet.id ? xLayerTestnet : xLayerTestnet
-  
+
   const publicClient = createPublicClient({
     chain: currentChain,
-    transport: http()
+    transport: http(),
   })
 
   // Read operations with React Query-like interface
@@ -29,29 +29,31 @@ export function useSSHContract() {
     const [error, setError] = useState<Error | null>(null)
     const lastAddress = useRef<string>()
 
-    const refetch = useCallback(async () => {
+    const refetch = useCallback(async (): Promise<boolean | undefined> => {
       if (!userAddress || !contractAddress) {
         setData(undefined)
-        return Promise.resolve()
+        return Promise.resolve(undefined)
       }
 
       setIsLoading(true)
       setError(null)
-      
+      let registered = false
       try {
         const result = await publicClient.readContract({
           address: contractAddress as `0x${string}`,
           abi: SSH_MANAGER_ABI,
           functionName: 'isRegisteredUser',
-          args: [userAddress as `0x${string}`]
+          args: [userAddress as `0x${string}`],
         })
         setData(result as boolean)
+        registered = result as boolean
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Failed to check registration')
         setError(error)
         console.error('Error checking user registration:', error)
       } finally {
         setIsLoading(false)
+        return registered
       }
     }, [userAddress, contractAddress])
 
@@ -65,7 +67,7 @@ export function useSSHContract() {
       data,
       isLoading,
       error,
-      refetch
+      refetch,
     }
   }
 
@@ -83,30 +85,33 @@ export function useSSHContract() {
 
       setIsLoading(true)
       setError(null)
+      let results: SSHConfig[] = []
       
       try {
         const result = await publicClient.readContract({
           address: contractAddress as `0x${string}`,
           abi: SSH_MANAGER_ABI,
           functionName: 'getSSHConfigs',
-          args: [userAddress as `0x${string}`]
+          args: [userAddress as `0x${string}`],
         })
-        
+
         // Transform the result to match expected SSHConfig format
         const configs = (result as any[]).map((config: any) => ({
           encryptedData: config.encryptedData,
           timestamp: BigInt(config.timestamp),
           configId: BigInt(config.configId),
-          isActive: config.isActive
+          isActive: config.isActive,
         }))
-        
+
         setData(configs)
+        results = configs
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Failed to fetch SSH configs')
         setError(error)
         console.error('Error fetching SSH configs:', error)
       } finally {
         setIsLoading(false)
+        return results
       }
     }, [userAddress, contractAddress])
 
@@ -120,7 +125,7 @@ export function useSSHContract() {
       data,
       isLoading,
       error,
-      refetch
+      refetch,
     }
   }
 
@@ -138,21 +143,21 @@ export function useSSHContract() {
 
       setIsLoading(true)
       setError(null)
-      
+
       try {
         const result = await publicClient.readContract({
           address: contractAddress as `0x${string}`,
           abi: SSH_MANAGER_ABI,
           functionName: 'getSSHConfig',
-          args: [userAddress as `0x${string}`, configId]
+          args: [userAddress as `0x${string}`, configId],
         })
-        
+
         const config = result as any
         setData({
           encryptedData: config.encryptedData,
           timestamp: BigInt(config.timestamp),
           configId: BigInt(config.configId),
-          isActive: config.isActive
+          isActive: config.isActive,
         })
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Failed to fetch SSH config')
@@ -174,7 +179,7 @@ export function useSSHContract() {
       data,
       isLoading,
       error,
-      refetch
+      refetch,
     }
   }
 
@@ -192,20 +197,20 @@ export function useSSHContract() {
 
       setIsLoading(true)
       setError(null)
-      
+
       try {
         const result = await publicClient.readContract({
           address: contractAddress as `0x${string}`,
           abi: SSH_MANAGER_ABI,
           functionName: 'getUserStats',
-          args: [userAddress as `0x${string}`]
+          args: [userAddress as `0x${string}`],
         })
-        
+
         const stats = result as any
         setData({
           totalConfigs: BigInt(stats.totalConfigs),
           activeConfigs: BigInt(stats.activeConfigs),
-          lastActivity: BigInt(stats.lastActivity)
+          lastActivity: BigInt(stats.lastActivity),
         })
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Failed to fetch user stats')
@@ -226,82 +231,100 @@ export function useSSHContract() {
       data,
       isLoading,
       error,
-      refetch
+      refetch,
     }
   }
 
   // Write operations
-  const executeTransaction = useCallback(async (functionName: string, args: any[] = []) => {
-    if (!account || !contractAddress || !sendTransaction) {
-      throw new Error('Wallet not connected')
-    }
+  const executeTransaction = useCallback(
+    async (functionName: string, args: any[] = []) => {
+      if (!account || !contractAddress || !sendTransaction) {
+        throw new Error('Wallet not connected')
+      }
 
-    setIsPending(true)
-    setIsConfirming(false)
-    setIsConfirmed(false)
-    setHash(undefined)
-
-    try {
-      // Prepare transaction data
-      const data = encodeFunctionData({
-        abi: SSH_MANAGER_ABI,
-        functionName,
-        args
-      })
-
-      const txHash = await sendTransaction({
-        to: contractAddress as `0x${string}`,
-        data
-      })
-
-      setHash(txHash)
-      setIsPending(false)
-      setIsConfirming(true)
-
-      // Wait for confirmation
-      await publicClient.waitForTransactionReceipt({
-        hash: txHash as `0x${string}`,
-        confirmations: 1
-      })
-
-      setIsConfirming(false)
-      setIsConfirmed(true)
-
-      return txHash
-    } catch (error) {
-      setIsPending(false)
+      setIsPending(true)
       setIsConfirming(false)
       setIsConfirmed(false)
-      throw error
-    }
-  }, [account, contractAddress, sendTransaction, publicClient])
+      setHash(undefined)
+
+      try {
+        // Prepare transaction data
+        const data = encodeFunctionData({
+          abi: SSH_MANAGER_ABI,
+          functionName,
+          args,
+        })
+
+        const txHash = await sendTransaction({
+          to: contractAddress as `0x${string}`,
+          data,
+        })
+
+        setHash(txHash)
+        setIsPending(false)
+        setIsConfirming(true)
+
+        // Wait for confirmation
+        await publicClient.waitForTransactionReceipt({
+          hash: txHash as `0x${string}`,
+          confirmations: 1,
+        })
+
+        setIsConfirming(false)
+        setIsConfirmed(true)
+
+        return txHash
+      } catch (error) {
+        setIsPending(false)
+        setIsConfirming(false)
+        setIsConfirmed(false)
+        throw error
+      }
+    },
+    [account, contractAddress, sendTransaction, publicClient]
+  )
 
   const registerUser = useCallback(async () => {
     return executeTransaction('registerUser')
   }, [executeTransaction])
 
-  const addSSHConfig = useCallback(async (encryptedData: string) => {
-    return executeTransaction('addSSHConfig', [encryptedData])
-  }, [executeTransaction])
+  const addSSHConfig = useCallback(
+    async (encryptedData: string) => {
+      return executeTransaction('addSSHConfig', [encryptedData])
+    },
+    [executeTransaction]
+  )
 
-  const updateSSHConfig = useCallback(async (configId: bigint, newEncryptedData: string) => {
-    return executeTransaction('updateSSHConfig', [configId, newEncryptedData])
-  }, [executeTransaction])
+  const updateSSHConfig = useCallback(
+    async (configId: bigint, newEncryptedData: string) => {
+      return executeTransaction('updateSSHConfig', [configId, newEncryptedData])
+    },
+    [executeTransaction]
+  )
 
-  const revokeConfig = useCallback(async (configId: bigint) => {
-    return executeTransaction('revokeConfig', [configId])
-  }, [executeTransaction])
+  const revokeConfig = useCallback(
+    async (configId: bigint) => {
+      return executeTransaction('revokeConfig', [configId])
+    },
+    [executeTransaction]
+  )
 
-  const batchUpdateConfigs = useCallback(async (configIds: bigint[], newEncryptedData: string[]) => {
-    if (configIds.length !== newEncryptedData.length) {
-      throw new Error('Arrays length mismatch')
-    }
-    return executeTransaction('batchUpdateConfigs', [configIds, newEncryptedData])
-  }, [executeTransaction])
+  const batchUpdateConfigs = useCallback(
+    async (configIds: bigint[], newEncryptedData: string[]) => {
+      if (configIds.length !== newEncryptedData.length) {
+        throw new Error('Arrays length mismatch')
+      }
+      return executeTransaction('batchUpdateConfigs', [configIds, newEncryptedData])
+    },
+    [executeTransaction]
+  )
 
-  const batchRevokeConfigs = useCallback(async (configIds: bigint[]) => {
-    return executeTransaction('batchRevokeConfigs', [configIds])
-  }, [executeTransaction])
+  const batchRevokeConfigs = useCallback(
+    async (configIds: bigint[]) => {
+      return executeTransaction('batchRevokeConfigs', [configIds])
+    },
+    [executeTransaction]
+  )
 
   const useGetTotalUsers = () => {
     const [data, setData] = useState<bigint | undefined>()
@@ -313,12 +336,12 @@ export function useSSHContract() {
 
       setIsLoading(true)
       setError(null)
-      
+
       try {
         const result = await publicClient.readContract({
           address: contractAddress as `0x${string}`,
           abi: SSH_MANAGER_ABI,
-          functionName: 'getTotalUsers'
+          functionName: 'getTotalUsers',
         })
         setData(result as bigint)
       } catch (err) {
@@ -339,7 +362,7 @@ export function useSSHContract() {
       data,
       isLoading,
       error,
-      refetch
+      refetch,
     }
   }
 
@@ -353,12 +376,12 @@ export function useSSHContract() {
 
       setIsLoading(true)
       setError(null)
-      
+
       try {
         const result = await publicClient.readContract({
           address: contractAddress as `0x${string}`,
           abi: SSH_MANAGER_ABI,
-          functionName: 'getTotalConfigs'
+          functionName: 'getTotalConfigs',
         })
         setData(result as bigint)
       } catch (err) {
@@ -379,7 +402,7 @@ export function useSSHContract() {
       data,
       isLoading,
       error,
-      refetch
+      refetch,
     }
   }
 

@@ -7,12 +7,16 @@ import { useSSHConfigs } from '@/hooks/useSSHConfigs'
 import { SSHConfigList } from '@/components/ssh/SSHConfigList'
 import { SSHConfigModal } from '@/components/ssh/SSHConfigModal'
 import { useWalletStore } from '@/stores/walletStore'
+import { useUserRegistrationSelectors } from '@/stores/userRegistrationStore'
 import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
 
 export function ConnectionsView() {
   const { t } = useTranslation()
   const { isConnected } = useWalletStore()
   const { isRegistered } = useUserRegistration()
+  
+  // 使用选择器获取更精细的状态控制
+  const { hasRegistrationStatus, shouldShowLoading: shouldShowRegistrationLoading } = useUserRegistrationSelectors()
   
   
   // SSH 配置管理
@@ -109,37 +113,58 @@ export function ConnectionsView() {
         {/* Registration Prompt */}
         <RegistrationPrompt />
 
-        {/* SSH 配置管理区域 */}
-        {isRegistered ? (
-          <SSHConfigList
-            configs={configs}
-            isLoading={isLoadingConfigs}
-            onAdd={handleAddConfig}
-            onEdit={handleEditConfig}
-            onDelete={handleDeleteConfig}
-            onRefresh={refreshConfigs}
-            isRefreshing={isLoadingConfigs}
-          />
-        ) : (
-          <div className="border border-[#1a1a1a] bg-[#0f0f0f] rounded-xl shadow-lg p-12 text-center">
-            <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-orange-500/20">
-              <Icon icon="lucide:user-plus" className="w-8 h-8 text-orange-400" />
+        {/* SSH 配置管理区域 - 优化状态显示以避免闪动 */}
+        {(() => {
+          // 如果没有注册状态且正在加载，显示加载状态
+          if (!hasRegistrationStatus && shouldShowRegistrationLoading) {
+            return (
+              <div className="border border-[#1a1a1a] bg-[#0f0f0f] rounded-xl shadow-lg p-12 text-center">
+                <div className="w-16 h-16 bg-[#BCFF2F]/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-[#BCFF2F]/20">
+                  <Icon icon="lucide:loader-2" className="w-8 h-8 text-[#BCFF2F] animate-spin" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-4">检查身份验证状态...</h3>
+                <p className="text-[#CCCCCC] text-sm">正在验证您的钱包注册状态，请稍候</p>
+              </div>
+            )
+          }
+          
+          // 如果已注册，显示配置列表
+          if (isRegistered) {
+            return (
+              <SSHConfigList
+                configs={configs}
+                isLoading={isLoadingConfigs}
+                onAdd={handleAddConfig}
+                onEdit={handleEditConfig}
+                onDelete={handleDeleteConfig}
+                onRefresh={refreshConfigs}
+                isRefreshing={isLoadingConfigs}
+              />
+            )
+          }
+          
+          // 如果未注册，显示认证提示
+          return (
+            <div className="border border-[#1a1a1a] bg-[#0f0f0f] rounded-xl shadow-lg p-12 text-center">
+              <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-orange-500/20">
+                <Icon icon="lucide:user-plus" className="w-8 h-8 text-orange-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-4">{t('views:connections.completeAuthentication')}</h3>
+              <p className="text-[#CCCCCC] mb-6 max-w-lg mx-auto leading-relaxed">
+                {t('views:connections.authenticationDesc').split('。').map((part, index, array) => (
+                  <span key={index}>
+                    {part}{index < array.length - 1 ? '。' : ''}
+                    {index === 0 && <br />}
+                  </span>
+                ))}
+              </p>
+              <div className="flex items-center justify-center space-x-2 text-sm text-[#888888]">
+                <Icon icon="lucide:info" className="w-4 h-4 text-[#BCFF2F]" />
+                <span>{t('views:connections.clickVerifyButton')}</span>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-4">{t('views:connections.completeAuthentication')}</h3>
-            <p className="text-[#CCCCCC] mb-6 max-w-lg mx-auto leading-relaxed">
-              {t('views:connections.authenticationDesc').split('。').map((part, index, array) => (
-                <span key={index}>
-                  {part}{index < array.length - 1 ? '。' : ''}
-                  {index === 0 && <br />}
-                </span>
-              ))}
-            </p>
-            <div className="flex items-center justify-center space-x-2 text-sm text-[#888888]">
-              <Icon icon="lucide:info" className="w-4 h-4 text-[#BCFF2F]" />
-              <span>{t('views:connections.clickVerifyButton')}</span>
-            </div>
-          </div>
-        )}
+          )
+        })()}
       </div>
 
       {/* SSH 配置模态框 */}

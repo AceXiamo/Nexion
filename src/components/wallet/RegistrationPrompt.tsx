@@ -4,9 +4,9 @@ import { useUserRegistration } from '@/hooks/useUserRegistration'
 
 export function RegistrationPrompt() {
   const { t } = useTranslation()
-  const { showRegistrationPrompt, handleRegister, isRegistering } = useUserRegistration()
+  const { isRegistered, handleRegister, isRegistering } = useUserRegistration()
 
-  if (!showRegistrationPrompt) return null
+  if (isRegistered) return null
 
   return (
     <div className="bg-lime-400/5 border border-lime-400/20 rounded-xl p-6 mb-8">
