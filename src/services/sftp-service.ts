@@ -75,7 +75,8 @@ export class SftpService implements SftpConnection {
     const result = await window.ipcRenderer.sftp.uploadFile(
       this.sessionId, 
       localPath, 
-      remotePath
+      remotePath,
+      onProgress
     )
     
     if (!result.success) {
@@ -99,7 +100,8 @@ export class SftpService implements SftpConnection {
     const result = await window.ipcRenderer.sftp.downloadFile(
       this.sessionId, 
       remotePath, 
-      localPath
+      localPath,
+      onProgress
     )
     
     if (!result.success) {
