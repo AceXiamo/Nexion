@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import type { SSHSessionData } from '@/types/electron'
 import type { DecryptedSSHConfig } from '@/types/ssh'
 import { sessionStore } from '@/store/session-store'
 import '@/types/electron'
 
 export function useSSHSessions() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [sessions, setSessions] = useState<SSHSessionData[]>(() => sessionStore.getAllSessions())
   const [activeSessionId, setActiveSessionId] = useState<string | undefined>(() => sessionStore.getActiveSessionId())
   const [loading, setLoading] = useState(false)
@@ -40,6 +43,8 @@ export function useSSHSessions() {
     try {
       const result = await window.ipcRenderer.ssh.createSession(config)
       if (result.success && result.sessionId) {
+        // Navigate to the new session's terminal page
+        navigate(`/terminal/${result.sessionId}`)
         // Session created successfully, state will be updated by event listener
         return true
       } else {
@@ -52,7 +57,7 @@ export function useSSHSessions() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [navigate])
 
   // Close session
   const closeSession = useCallback(async (sessionId: string): Promise<boolean> => {
@@ -61,6 +66,22 @@ export function useSSHSessions() {
     try {
       const result = await window.ipcRenderer.ssh.closeSession(sessionId)
       if (result.success) {
+        // If we're closing the current active session, navigate appropriately
+        const currentPath = location.pathname
+        const isCurrentSession = currentPath === `/terminal/${sessionId}`
+        
+        if (isCurrentSession) {
+          // Find other sessions to switch to
+          const otherSessions = sessions.filter(s => s.id !== sessionId)
+          if (otherSessions.length > 0) {
+            // Switch to the first available session
+            navigate(`/terminal/${otherSessions[0].id}`)
+          } else {
+            // No other sessions, go back to connections
+            navigate('/connections')
+          }
+        }
+        
         // Session closed successfully, state will be updated by event listener
         return true
       } else {
@@ -71,15 +92,24 @@ export function useSSHSessions() {
       console.error('Failed to close SSH session:', error)
       return false
     }
-  }, [])
+  }, [sessions, location, navigate])
 
   // Switch session
   const switchSession = useCallback(async (sessionId: string): Promise<boolean> => {
     if (!window.ipcRenderer?.ssh) return false
 
+    // Check if session exists
+    const sessionExists = sessions.some(s => s.id === sessionId)
+    if (!sessionExists) {
+      console.error('Session does not exist:', sessionId)
+      return false
+    }
+
     try {
       const result = await window.ipcRenderer.ssh.switchSession(sessionId)
       if (result.success) {
+        // Navigate to the terminal page for this session
+        navigate(`/terminal/${sessionId}`)
         // Switch successful, state will be updated by event listener
         return true
       } else {
@@ -90,7 +120,7 @@ export function useSSHSessions() {
       console.error('Failed to switch SSH session:', error)
       return false
     }
-  }, [])
+  }, [sessions, navigate])
 
   // Send command to active session
   const sendCommand = useCallback(
@@ -228,6 +258,64 @@ export function useSSHSessions() {
     }
   }, [loadSessions])
 
+  // Get current session ID from URL
+  const getCurrentSessionId = useCallback(() => {
+    const currentPath = location.pathname
+    if (currentPath.startsWith('/terminal/')) {
+      return currentPath.split('/terminal/')[1]
+    }
+    return undefined
+  }, [location])
+
+  // Switch to session by index (for Ctrl+1-9 shortcuts)
+  const switchToSessionByIndex = useCallback(async (index: number): Promise<boolean> => {
+    if (index >= 0 && index < sessions.length) {
+      return await switchSession(sessions[index].id)
+    }
+    return false
+  }, [sessions, switchSession])
+
+  // Switch to next session (for Ctrl+Tab)
+  const switchToNextSession = useCallback(async (): Promise<boolean> => {
+    if (sessions.length <= 1) return false
+    const currentSessionId = getCurrentSessionId()
+    const currentIndex = sessions.findIndex(s => s.id === currentSessionId)
+    if (currentIndex === -1) return false
+    const nextIndex = (currentIndex + 1) % sessions.length
+    return await switchSession(sessions[nextIndex].id)
+  }, [sessions, getCurrentSessionId, switchSession])
+
+  // Switch to previous session (for Ctrl+Shift+Tab)
+  const switchToPreviousSession = useCallback(async (): Promise<boolean> => {
+    if (sessions.length <= 1) return false
+    const currentSessionId = getCurrentSessionId()
+    const currentIndex = sessions.findIndex(s => s.id === currentSessionId)
+    if (currentIndex === -1) return false
+    const prevIndex = currentIndex === 0 ? sessions.length - 1 : currentIndex - 1
+    return await switchSession(sessions[prevIndex].id)
+  }, [sessions, getCurrentSessionId, switchSession])
+
+  // Close current session (for Ctrl+W)
+  const closeCurrentSession = useCallback(async (): Promise<boolean> => {
+    const currentSessionId = getCurrentSessionId()
+    if (currentSessionId) {
+      return await closeSession(currentSessionId)
+    }
+    return false
+  }, [getCurrentSessionId, closeSession])
+
+  // Duplicate current session (for Ctrl+Shift+T)
+  const duplicateCurrentSession = useCallback(async (): Promise<boolean> => {
+    const currentSessionId = getCurrentSessionId()
+    if (currentSessionId) {
+      const currentSession = sessions.find(s => s.id === currentSessionId)
+      if (currentSession?.config) {
+        return await createSession(currentSession.config)
+      }
+    }
+    return false
+  }, [getCurrentSessionId, sessions, createSession])
+
   return {
     sessions,
     activeSessionId,
@@ -237,6 +325,13 @@ export function useSSHSessions() {
     switchSession,
     sendCommand,
     resizeTerminal,
+    // Keyboard shortcut helpers
+    getCurrentSessionId,
+    switchToSessionByIndex,
+    switchToNextSession,
+    switchToPreviousSession,
+    closeCurrentSession,
+    duplicateCurrentSession,
     reconnectSession,
     refreshSessions: loadSessions,
   }

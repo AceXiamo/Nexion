@@ -5,6 +5,7 @@ import { SSHTerminal } from './SSHTerminal'
 import { SSHConfigForm } from './SSHConfigForm'
 import { useSSHSessions } from '@/hooks/useSSHSessions'
 import { useSSHConfigs } from '@/hooks/useSSHConfigs'
+import { useShortcutHandler } from '@/hooks/useKeyboardShortcuts'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Terminal, Plus } from 'lucide-react'
@@ -93,14 +94,74 @@ export function SSHTabContainer() {
     }
   }
 
+  // Keyboard shortcut handlers
+  const handleNewSessionShortcut = () => {
+    handleCreateSession()
+  }
+
+  const handleCloseSessionShortcut = () => {
+    if (activeSessionId) {
+      closeSession(activeSessionId)
+    }
+  }
+
+  const handleDuplicateSessionShortcut = async () => {
+    if (activeSessionId) {
+      const activeSession = sessions.find((s) => s.id === activeSessionId)
+      if (activeSession?.config) {
+        await createSession(activeSession.config)
+      }
+    }
+  }
+
+  const handleSwitchToTabShortcut = (tabIndex: number) => {
+    if (sessions[tabIndex]) {
+      switchSession(sessions[tabIndex].id)
+    }
+  }
+
+  const handleNextTabShortcut = () => {
+    if (sessions.length <= 1) return
+    const currentIndex = sessions.findIndex((s) => s.id === activeSessionId)
+    if (currentIndex === -1) return
+    const nextIndex = (currentIndex + 1) % sessions.length
+    switchSession(sessions[nextIndex].id)
+  }
+
+  const handlePreviousTabShortcut = () => {
+    if (sessions.length <= 1) return
+    const currentIndex = sessions.findIndex((s) => s.id === activeSessionId)
+    if (currentIndex === -1) return
+    const prevIndex = currentIndex === 0 ? sessions.length - 1 : currentIndex - 1
+    switchSession(sessions[prevIndex].id)
+  }
+
+  // Register keyboard shortcuts
+  useShortcutHandler('newSession', handleNewSessionShortcut, [])
+  useShortcutHandler('closeSession', handleCloseSessionShortcut, [activeSessionId])
+  useShortcutHandler('duplicateSession', handleDuplicateSessionShortcut, [activeSessionId, sessions])
+  useShortcutHandler('nextTab', handleNextTabShortcut, [sessions, activeSessionId])
+  useShortcutHandler('previousTab', handlePreviousTabShortcut, [sessions, activeSessionId])
+
+  // Register tab switching shortcuts (Ctrl+1-9)
+  useShortcutHandler('switchToTab1', () => handleSwitchToTabShortcut(0), [sessions])
+  useShortcutHandler('switchToTab2', () => handleSwitchToTabShortcut(1), [sessions])
+  useShortcutHandler('switchToTab3', () => handleSwitchToTabShortcut(2), [sessions])
+  useShortcutHandler('switchToTab4', () => handleSwitchToTabShortcut(3), [sessions])
+  useShortcutHandler('switchToTab5', () => handleSwitchToTabShortcut(4), [sessions])
+  useShortcutHandler('switchToTab6', () => handleSwitchToTabShortcut(5), [sessions])
+  useShortcutHandler('switchToTab7', () => handleSwitchToTabShortcut(6), [sessions])
+  useShortcutHandler('switchToTab8', () => handleSwitchToTabShortcut(7), [sessions])
+  useShortcutHandler('switchToTab9', () => handleSwitchToTabShortcut(8), [sessions])
+
   return (
     <div className="flex flex-col h-full bg-black">
       {/* SSH Tab Bar */}
-      <SSHTabBar 
-        sessions={sessions} 
-        activeSessionId={activeSessionId} 
-        onCreateSession={handleCreateSession} 
-        onSwitchSession={switchSession} 
+      <SSHTabBar
+        sessions={sessions}
+        activeSessionId={activeSessionId}
+        onCreateSession={handleCreateSession}
+        onSwitchSession={switchSession}
         onCloseSession={closeSession}
         onOpenFileTransfer={handleOpenFileTransfer}
       />

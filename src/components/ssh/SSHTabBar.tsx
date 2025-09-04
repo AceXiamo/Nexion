@@ -64,9 +64,10 @@ export function SSHTabBar({ sessions, activeSessionId, onCreateSession, onSwitch
 
       {/* SSH Tab list */}
       <div className="flex-1 flex items-center gap-1 overflow-x-auto">
-        {sessions.map((session) => {
+        {sessions.map((session, index) => {
           const isActive = session.id === activeSessionId
           const statusColor = getStatusColor(session.status)
+          const tabNumber = index + 1
 
           return (
             <div
@@ -80,6 +81,13 @@ export function SSHTabBar({ sessions, activeSessionId, onCreateSession, onSwitch
               `}
               title={`${session.name} - ${session.status}`}
             >
+              {/* Tab number indicator */}
+              {tabNumber <= 9 && (
+                <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center text-[10px] text-neutral-400 font-mono">
+                  {tabNumber}
+                </div>
+              )}
+
               {/* Status icon */}
               <div className="flex-shrink-0">{getStatusIcon(session.status)}</div>
 
