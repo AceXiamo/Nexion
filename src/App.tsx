@@ -9,10 +9,14 @@ import { TerminalContainer } from '@/components/TerminalContainer'
 import { sshEventDispatcher } from '@/services/ssh-event-dispatcher'
 import { sessionStore } from '@/store/session-store'
 import { terminalPersistenceManager } from '@/services/terminal-persistence-manager'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
 function AppContent() {
   const location = useLocation()
   const navigate = useNavigate()
+  
+  // 初始化键盘快捷键管理器
+  useKeyboardShortcuts()
 
   // 初始化全局SSH事件分发器和会话状态管理
   useEffect(() => {

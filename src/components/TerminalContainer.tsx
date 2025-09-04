@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { useSSHSessions } from '@/hooks/useSSHSessions'
+import { useShortcutHandler } from '@/hooks/useKeyboardShortcuts'
 import { SSHTerminal } from '@/components/ssh/SSHTerminal'
 import { Button } from '@/components/ui/button'
 import { Terminal, Plus, RefreshCw } from 'lucide-react'
@@ -14,7 +15,16 @@ import { Terminal, Plus, RefreshCw } from 'lucide-react'
 export function TerminalContainer() {
   const { t } = useTranslation()
   const { sessionId } = useParams<{ sessionId: string }>()
-  const { sessions, reconnectSession, loading } = useSSHSessions()
+  const { 
+    sessions, 
+    reconnectSession, 
+    loading,
+    switchToSessionByIndex,
+    switchToNextSession,
+    switchToPreviousSession,
+    closeCurrentSession,
+    duplicateCurrentSession 
+  } = useSSHSessions()
   const navigate = useNavigate()
 
   // Find current session
@@ -25,6 +35,29 @@ export function TerminalContainer() {
     if (!sessionId) return
     await reconnectSession(sessionId)
   }
+
+  // Handle new session creation
+  const handleNewSession = () => {
+    navigate('/connections')
+  }
+
+  // Register keyboard shortcuts
+  useShortcutHandler('newSession', handleNewSession, [navigate])
+  useShortcutHandler('closeSession', closeCurrentSession, [closeCurrentSession])
+  useShortcutHandler('duplicateSession', duplicateCurrentSession, [duplicateCurrentSession])
+  useShortcutHandler('nextTab', switchToNextSession, [switchToNextSession])
+  useShortcutHandler('previousTab', switchToPreviousSession, [switchToPreviousSession])
+
+  // Register tab switching shortcuts (Ctrl+1-9)
+  useShortcutHandler('switchToTab1', () => switchToSessionByIndex(0), [switchToSessionByIndex])
+  useShortcutHandler('switchToTab2', () => switchToSessionByIndex(1), [switchToSessionByIndex])
+  useShortcutHandler('switchToTab3', () => switchToSessionByIndex(2), [switchToSessionByIndex])
+  useShortcutHandler('switchToTab4', () => switchToSessionByIndex(3), [switchToSessionByIndex])
+  useShortcutHandler('switchToTab5', () => switchToSessionByIndex(4), [switchToSessionByIndex])
+  useShortcutHandler('switchToTab6', () => switchToSessionByIndex(5), [switchToSessionByIndex])
+  useShortcutHandler('switchToTab7', () => switchToSessionByIndex(6), [switchToSessionByIndex])
+  useShortcutHandler('switchToTab8', () => switchToSessionByIndex(7), [switchToSessionByIndex])
+  useShortcutHandler('switchToTab9', () => switchToSessionByIndex(8), [switchToSessionByIndex])
 
   // If session data is loading
   if (loading) {

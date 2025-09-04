@@ -130,37 +130,49 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                 <div className="space-y-2">
                   {!isCollapsed && <h3 className="text-sm font-semibold text-[#888888] uppercase tracking-wide px-4">{t('navigation:sessionList')}</h3>}
 
-                  {sessions.map((session) => (
-                    <div key={session.id} className="relative group">
-                      <button
-                        onClick={() => handleSessionClick(session.id)}
-                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                          currentSessionId === session.id ? 'bg-[#272727] text-white shadow-lg border-[#BCFF2F]' : 'text-[#CCCCCC] hover:bg-[#0f0f0f] hover:text-white hover:shadow-md'
-                        }`}
-                        title={isCollapsed ? session.name : undefined}
-                      >
-                        <Icon
-                          icon={getConnectionStatusIcon(session.status)}
-                          className={`w-5 h-5 flex-shrink-0 transition-all duration-200 ${currentSessionId === session.id ? 'text-[#BCFF2F]' : getConnectionStatusColor(session.status)} ${
-                            session.status === 'connecting' ? 'animate-spin' : ''
+                  {sessions.map((session, index) => {
+                    const sessionNumber = index + 1
+                    
+                    return (
+                      <div key={session.id} className="relative group">
+                        <button
+                          onClick={() => handleSessionClick(session.id)}
+                          className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                            currentSessionId === session.id ? 'bg-[#272727] text-white shadow-lg border-[#BCFF2F]' : 'text-[#CCCCCC] hover:bg-[#0f0f0f] hover:text-white hover:shadow-md'
                           }`}
-                        />
-                        {!isCollapsed && (
-                          <div className="flex-1 text-left min-w-0">
-                            <div className={`text-sm font-medium truncate ${currentSessionId === session.id ? 'text-white' : 'text-[#CCCCCC]'}`}>{session.name}</div>
-                            <div className="text-xs text-[#888888] mt-0.5">
-                              {session.status === 'connected'
-                                ? t('navigation:connected')
-                                : session.status === 'connecting'
-                                ? t('navigation:connecting')
-                                : session.status === 'error'
-                                ? t('navigation:connectionError')
-                                : t('navigation:disconnected')}
-                              {session.error && session.status === 'error' && <span className="ml-1 text-red-400">• {session.error}</span>}
+                          title={isCollapsed ? session.name : undefined}
+                        >
+                          {/* Session number indicator */}
+                          {!isCollapsed && sessionNumber <= 9 && (
+                            <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-[10px] text-[#666666] font-mono">
+                              {sessionNumber}
                             </div>
-                          </div>
-                        )}
-                      </button>
+                          )}
+                          
+                          <Icon
+                            icon={getConnectionStatusIcon(session.status)}
+                            className={`w-5 h-5 flex-shrink-0 transition-all duration-200 ${currentSessionId === session.id ? 'text-[#BCFF2F]' : getConnectionStatusColor(session.status)} ${
+                              session.status === 'connecting' ? 'animate-spin' : ''
+                            }`}
+                          />
+                          {!isCollapsed && (
+                            <div className="flex-1 text-left min-w-0">
+                              <div className={`text-sm font-medium truncate ${currentSessionId === session.id ? 'text-white' : 'text-[#CCCCCC]'}`}>
+                                {session.name}
+                              </div>
+                              <div className="text-xs text-[#888888] mt-0.5">
+                                {session.status === 'connected'
+                                  ? t('navigation:connected')
+                                  : session.status === 'connecting'
+                                  ? t('navigation:connecting')
+                                  : session.status === 'error'
+                                  ? t('navigation:connectionError')
+                                  : t('navigation:disconnected')}
+                                {session.error && session.status === 'error' && <span className="ml-1 text-red-400">• {session.error}</span>}
+                              </div>
+                            </div>
+                          )}
+                        </button>
 
                       {/* Session action buttons (shown on hover) */}
                       {!isCollapsed && (
@@ -201,8 +213,9 @@ export function DynamicSidebar({ activeTab, onTabChange }: DynamicSidebarProps) 
                           </button>
                         </div>
                       )}
-                    </div>
-                  ))}
+                      </div>
+                    )
+                  })}
 
                   {/* Add Connection Button */}
                   <button
