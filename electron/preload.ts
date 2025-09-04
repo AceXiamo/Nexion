@@ -10,6 +10,10 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args
     return ipcRenderer.off(channel, ...omit)
   },
+  removeListener(...args: Parameters<typeof ipcRenderer.removeListener>) {
+    const [channel, listener] = args
+    return ipcRenderer.removeListener(channel, listener)
+  },
   send(...args: Parameters<typeof ipcRenderer.send>) {
     const [channel, ...omit] = args
     return ipcRenderer.send(channel, ...omit)
@@ -46,8 +50,8 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     connect: (sessionId: string) => ipcRenderer.invoke('sftp:connect', sessionId),
     disconnect: (sessionId: string) => ipcRenderer.invoke('sftp:disconnect', sessionId),
     listFiles: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:listFiles', sessionId, path),
-    uploadFile: (sessionId: string, localPath: string, remotePath: string) => ipcRenderer.invoke('sftp:uploadFile', sessionId, localPath, remotePath),
-    downloadFile: (sessionId: string, remotePath: string, localPath: string) => ipcRenderer.invoke('sftp:downloadFile', sessionId, remotePath, localPath),
+    uploadFile: (sessionId: string, localPath: string, remotePath: string, taskId: string) => ipcRenderer.invoke('sftp:uploadFile', sessionId, localPath, remotePath, taskId),
+    downloadFile: (sessionId: string, remotePath: string, localPath: string, taskId: string) => ipcRenderer.invoke('sftp:downloadFile', sessionId, remotePath, localPath, taskId),
     createDirectory: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:mkdir', sessionId, path),
     deleteFile: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:unlink', sessionId, path),
     deleteDirectory: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:rmdir', sessionId, path),

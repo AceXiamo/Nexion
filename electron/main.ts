@@ -100,7 +100,7 @@ app.on('activate', () => {
 
 // Initialize SSH session manager
 function initSSHManager() {
-  sshManager = new SSHSessionManager()
+  sshManager = new SSHSessionManager(win?.webContents)
   
   // Listen to session events and forward them to the renderer process
   sshManager.on('session-created', (sessionData) => {
@@ -573,7 +573,7 @@ ipcMain.handle('sftp:rmdir', async (_event, sessionId: string, remotePath: strin
   }
 })
 
-ipcMain.handle('sftp:uploadFile', async (_event, sessionId: string, localPath: string, remotePath: string) => {
+ipcMain.handle('sftp:uploadFile', async (_event, sessionId: string, localPath: string, remotePath: string, taskId: string) => {
   try {
     if (!sshManager) {
       throw new Error('SSH manager not initialized')
@@ -584,7 +584,7 @@ ipcMain.handle('sftp:uploadFile', async (_event, sessionId: string, localPath: s
       throw new Error('SSH session not connected')
     }
     
-    await sshManager.uploadFile(sessionId, localPath, remotePath)
+    await sshManager.uploadFile(sessionId, localPath, remotePath, taskId)
     return { success: true }
   } catch (error) {
     return {
@@ -594,7 +594,7 @@ ipcMain.handle('sftp:uploadFile', async (_event, sessionId: string, localPath: s
   }
 })
 
-ipcMain.handle('sftp:downloadFile', async (_event, sessionId: string, remotePath: string, localPath: string) => {
+ipcMain.handle('sftp:downloadFile', async (_event, sessionId: string, remotePath: string, localPath: string, taskId: string) => {
   try {
     if (!sshManager) {
       throw new Error('SSH manager not initialized')
@@ -605,7 +605,7 @@ ipcMain.handle('sftp:downloadFile', async (_event, sessionId: string, remotePath
       throw new Error('SSH session not connected')
     }
     
-    await sshManager.downloadFile(sessionId, remotePath, localPath)
+    await sshManager.downloadFile(sessionId, remotePath, localPath, taskId)
     return { success: true }
   } catch (error) {
     return {

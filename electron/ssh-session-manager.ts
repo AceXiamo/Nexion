@@ -1,6 +1,7 @@
 import { Client, ClientChannel, SFTPWrapper } from 'ssh2'
 import { EventEmitter } from 'events'
 import type { DecryptedSSHConfig } from '../src/types/ssh'
+import type { WebContents } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -46,9 +47,15 @@ export interface SSHSessionData {
 export class SSHSessionManager extends EventEmitter {
   private sessions = new Map<string, SSHSession>()
   private activeSessionId?: string
+  private webContents?: WebContents
+  private lastProgressUpdate = new Map<string, number>()
+  private readonly PROGRESS_UPDATE_INTERVAL = 1000 // Update every 1000ms
 
-  constructor() {
+  constructor(webContents?: WebContents) {
     super()
+    this.webContents = webContents
+    // Increase max listeners to avoid warnings
+    this.setMaxListeners(20)
   }
 
   /**
@@ -467,6 +474,8 @@ export class SSHSessionManager extends EventEmitter {
     }
     this.sessions.clear()
     this.activeSessionId = undefined
+    // Clear all progress tracking
+    this.lastProgressUpdate.clear()
   }
 
   /**
@@ -474,6 +483,32 @@ export class SSHSessionManager extends EventEmitter {
    */
   getSessionObject(sessionId: string): SSHSession | undefined {
     return this.sessions.get(sessionId)
+  }
+
+  /**
+   * Send throttled progress update to renderer process
+   */
+  private sendProgressUpdate(taskId: string, progress: number, transferred: number): void {
+    if (!this.webContents) return
+
+    const now = Date.now()
+    const lastUpdate = this.lastProgressUpdate.get(taskId) || 0
+    
+    // Only send update if enough time has passed since last update, or if progress is 100%
+    if (now - lastUpdate >= this.PROGRESS_UPDATE_INTERVAL || progress === 100) {
+      this.lastProgressUpdate.set(taskId, now)
+      
+      this.webContents.send('file-transfer-progress', {
+        taskId,
+        progress,
+        transferred
+      })
+
+      // Clean up progress tracking when transfer is complete
+      if (progress === 100) {
+        this.lastProgressUpdate.delete(taskId)
+      }
+    }
   }
 
   /**
@@ -583,7 +618,7 @@ export class SSHSessionManager extends EventEmitter {
   /**
    * Upload file to remote server
    */
-  async uploadFile(sessionId: string, localPath: string, remotePath: string, onProgress?: (progress: number) => void): Promise<void> {
+  async uploadFile(sessionId: string, localPath: string, remotePath: string, taskId: string): Promise<void> {
     const sftp = await this.getSFTP(sessionId)
 
     return new Promise((resolve, reject) => {
@@ -609,8 +644,10 @@ export class SSHSessionManager extends EventEmitter {
       readStream.on('data', (chunk) => {
         uploadedSize += chunk.length
         const progress = Math.round((uploadedSize / totalSize) * 100)
-        console.log('progress', progress)
-        onProgress?.(progress)
+        const transferred = uploadedSize
+        
+        // 发送节流的进度事件到渲染进程
+        this.sendProgressUpdate(taskId, progress, transferred)
       })
 
       readStream.pipe(writeStream)
@@ -620,7 +657,7 @@ export class SSHSessionManager extends EventEmitter {
   /**
    * Download file from remote server
    */
-  async downloadFile(sessionId: string, remotePath: string, localPath: string, onProgress?: (progress: number) => void): Promise<void> {
+  async downloadFile(sessionId: string, remotePath: string, localPath: string, taskId: string): Promise<void> {
     const sftp = await this.getSFTP(sessionId)
 
     return new Promise((resolve, reject) => {
@@ -645,7 +682,10 @@ export class SSHSessionManager extends EventEmitter {
         readStream.on('data', (chunk: any) => {
           downloadedSize += chunk.length
           const progress = Math.round((downloadedSize / totalSize) * 100)
-          onProgress?.(progress)
+          const transferred = downloadedSize
+          
+          // 发送节流的进度事件到渲染进程
+          this.sendProgressUpdate(taskId, progress, transferred)
         })
 
         readStream.pipe(writeStream)
