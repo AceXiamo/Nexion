@@ -329,15 +329,6 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
     )
   }
 
-  if (files.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-gray-400">
-        <Icon icon="mdi:folder-open" className="w-8 h-8 mb-2" />
-        <span className="text-sm">此文件夹为空</span>
-      </div>
-    )
-  }
-
   return (
     <>
       <div
@@ -359,20 +350,27 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
           </div>
         )}
 
-        <div className="p-2 space-y-1">
-          {files.map((file, index) => (
-            <FileItemComponent
-              key={file.path}
-              file={file}
-              isSelected={selectedFiles.has(file.path)}
-              isDragged={draggedFiles.has(file.path)}
-              onClick={(e) => handleFileClick(file, index, e)}
-              onDoubleClick={() => handleFileDoubleClick(file)}
-              onContextMenu={(e) => handleFileContextMenu(e, file)}
-              onDragStart={(e) => handleDragStart(e, file)}
-            />
-          ))}
-        </div>
+        {files.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-400">
+            <Icon icon="mdi:folder-open" className="w-8 h-8 mb-2" />
+            <span className="text-sm">此文件夹为空</span>
+          </div>
+        ) : (
+          <div className="p-2 space-y-1">
+            {files.map((file, index) => (
+              <FileItemComponent
+                key={file.path}
+                file={file}
+                isSelected={selectedFiles.has(file.path)}
+                isDragged={draggedFiles.has(file.path)}
+                onClick={(e) => handleFileClick(file, index, e)}
+                onDoubleClick={() => handleFileDoubleClick(file)}
+                onContextMenu={(e) => handleFileContextMenu(e, file)}
+                onDragStart={(e) => handleDragStart(e, file)}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Context Menu */}
         <ContextMenu items={getContextMenuItems()} position={position} isOpen={isOpen} onClose={closeContextMenu} />
