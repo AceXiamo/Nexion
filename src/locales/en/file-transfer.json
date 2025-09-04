@@ -5,19 +5,16 @@
     "remotePanel": "Remote Files"
   },
   "actions": {
-    "goBack": "Go Up",
-    "upload": "Upload Files",
+    "goBack": "Go Back",
     "deleteSelected": "Delete Selected",
-    "refresh": "Refresh"
-  },
-  "status": {
-    "loading": "Loading...",
-    "emptyFolder": "This folder is empty",
-    "itemsCount": "items",
-    "selectedCount": "selected"
-  },
-  "dragDrop": {
-    "dropHint": "Drop to transfer files"
+    "refresh": "Refresh",
+    "sortBy": "Sort By",
+    "sortByName": "Name",
+    "sortByTime": "Time",
+    "sortAsc": "Ascending",
+    "sortDesc": "Descending",
+    "showHiddenFiles": "Show Hidden Files",
+    "hideHiddenFiles": "Hide Hidden Files"
   },
   "contextMenu": {
     "openFolder": "Open Folder",
@@ -26,22 +23,23 @@
     "uploadFile": "Upload File",
     "uploadFolder": "Upload Folder"
   },
+  "status": {
+    "loading": "Loading...",
+    "emptyFolder": "Folder is empty",
+    "itemsCount": "items",
+    "selectedCount": "selected"
+  },
   "delete": {
     "confirmTitle": "Confirm Delete",
-    "confirmMessage": "Are you sure you want to delete the following files? This action cannot be undone.",
-    "confirmSingleMessage": "Are you sure you want to delete \"{{fileName}}\"? This action cannot be undone.",
-    "folderWarning": "Warning: This is a folder and all its contents will be permanently deleted.",
-    "confirmButton": "Confirm Delete"
+    "confirmMessage": "Are you sure you want to delete the following files?",
+    "confirmSingleMessage": "Are you sure you want to delete {{fileName}}?",
+    "confirmButton": "Delete",
+    "folderWarning": "Deleting a folder will remove all its contents"
+  },
+  "dragDrop": {
+    "dropHint": "Drop files here"
   },
   "errors": {
-    "loadLocalFilesFailed": "Failed to load local files",
-    "loadRemoteFilesFailed": "Failed to load remote files",
-    "deleteLocalFilesFailed": "Failed to delete local files",
-    "deleteRemoteFilesFailed": "Failed to delete remote files",
-    "uploadFailed": "Upload failed",
-    "downloadFailed": "Download failed",
-    "createFolderFailed": "Failed to create folder",
-    "getWorkingDirectoryFailed": "Failed to get working directory",
-    "getHomeDirectoryFailed": "Failed to get user home directory"
+    "deleteLocalFilesFailed": "Failed to delete local files"
   }
 }

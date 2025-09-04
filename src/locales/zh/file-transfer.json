@@ -6,42 +6,40 @@
   },
   "actions": {
     "goBack": "返回上级",
-    "upload": "上传文件",
     "deleteSelected": "删除选中",
-    "refresh": "刷新"
-  },
-  "status": {
-    "loading": "加载中...",
-    "emptyFolder": "此文件夹为空",
-    "itemsCount": "项目",
-    "selectedCount": "已选中"
-  },
-  "dragDrop": {
-    "dropHint": "释放以传输文件"
+    "refresh": "刷新",
+    "sortBy": "排序方式",
+    "sortByName": "名称",
+    "sortByTime": "时间",
+    "sortAsc": "升序",
+    "sortDesc": "降序",
+    "showHiddenFiles": "显示隐藏文件",
+    "hideHiddenFiles": "隐藏隐藏文件"
   },
   "contextMenu": {
     "openFolder": "打开文件夹",
     "downloadFile": "下载文件",
     "downloadFolder": "下载文件夹",
-    "uploadFile": "上传文件", 
+    "uploadFile": "上传文件",
     "uploadFolder": "上传文件夹"
+  },
+  "status": {
+    "loading": "加载中...",
+    "emptyFolder": "文件夹为空",
+    "itemsCount": "项",
+    "selectedCount": "已选中"
   },
   "delete": {
     "confirmTitle": "确认删除",
-    "confirmMessage": "确定要删除以下文件吗？此操作无法撤销。",
-    "confirmSingleMessage": "确定要删除 \"{{fileName}}\" 吗？此操作无法撤销。",
-    "folderWarning": "警告：这是一个文件夹，其中的所有内容将被永久删除。",
-    "confirmButton": "确认删除"
+    "confirmMessage": "确定要删除以下文件吗？",
+    "confirmSingleMessage": "确定要删除 {{fileName}} 吗？",
+    "confirmButton": "删除",
+    "folderWarning": "删除文件夹将同时删除其中的所有内容"
+  },
+  "dragDrop": {
+    "dropHint": "拖放文件到这里"
   },
   "errors": {
-    "loadLocalFilesFailed": "加载本地文件失败",
-    "loadRemoteFilesFailed": "加载远程文件失败",
-    "deleteLocalFilesFailed": "删除本地文件失败",
-    "deleteRemoteFilesFailed": "删除远程文件失败",
-    "uploadFailed": "上传失败",
-    "downloadFailed": "下载失败",
-    "createFolderFailed": "创建文件夹失败",
-    "getWorkingDirectoryFailed": "获取工作目录失败",
-    "getHomeDirectoryFailed": "获取用户主目录失败"
+    "deleteLocalFilesFailed": "删除本地文件失败"
   }
 }
