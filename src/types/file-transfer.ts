@@ -16,6 +16,7 @@ export interface TransferTask {
   fileName: string
   fileSize: number
   transferred: number
+  progress?: number
   status: 'pending' | 'transferring' | 'completed' | 'error' | 'paused'
   error?: string
   startTime?: Date
@@ -47,8 +48,8 @@ export interface SftpConnection {
   connect(): Promise<void>
   disconnect(): void
   listFiles(path: string): Promise<FileItem[]>
-  uploadFile(localPath: string, remotePath: string, onProgress?: (progress: number) => void): Promise<void>
-  downloadFile(remotePath: string, localPath: string, onProgress?: (progress: number) => void): Promise<void>
+  uploadFile(localPath: string, remotePath: string): Promise<void>
+  downloadFile(remotePath: string, localPath: string): Promise<void>
   createDirectory(path: string): Promise<void>
   deleteFile(path: string): Promise<void>
   deleteDirectory(path: string): Promise<void>
