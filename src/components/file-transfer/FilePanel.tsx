@@ -7,6 +7,7 @@ import { PathBreadcrumb } from './PathBreadcrumb'
 import { useFileTransferStore } from '@/store/file-transfer-store'
 import type { FileItem } from '@/types/file-transfer'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 // Note: Using path-browserify for browser compatibility
 const path = {
   join: (...parts: string[]) => parts.join('/').replace(/\/+/g, '/'),
@@ -32,9 +33,10 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [filesToDelete, setFilesToDelete] = useState<{ files: Set<string>; fileNames: string }>({ files: new Set(), fileNames: '' })
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation(['fileTransfer', 'common'])
 
   const isLocal = type === 'local'
-  const panelTitle = isLocal ? '本地文件' : '远程文件'
+  const panelTitle = isLocal ? t('fileTransfer:modal.localPanel') : t('fileTransfer:modal.remotePanel')
   const panelIcon = isLocal ? 'mdi:laptop' : 'mdi:server'
   const panelColor = isLocal ? 'text-blue-400' : 'text-orange-400'
 
@@ -111,7 +113,7 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
         setSelectedFiles(new Set())
       } catch (error) {
         console.error('Failed to delete local files:', error)
-        store.setLocalError('删除文件失败')
+        store.setLocalError(t('fileTransfer:errors.deleteLocalFilesFailed'))
       }
     } else {
       // Delete remote files using SFTP
@@ -157,12 +159,12 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
 
         {/* Action Buttons */}
         <div className="flex items-center gap-1 ml-2">
-          <Button variant="ghost" size="sm" onClick={handleGoUp} disabled={isLoading || currentPath === '/'} title="返回上级">
+          <Button variant="ghost" size="sm" onClick={handleGoUp} disabled={isLoading || currentPath === '/'} title={t('fileTransfer:actions.goBack')}>
             <Icon icon="mdi:arrow-up" className="w-4 h-4" />
           </Button>
 
           {selectedFiles.size > 0 && (
-            <Button variant="ghost" size="sm" onClick={handleDeleteClick} disabled={isLoading} title="删除选中">
+            <Button variant="ghost" size="sm" onClick={handleDeleteClick} disabled={isLoading} title={t('fileTransfer:actions.deleteSelected')}>
               <Icon icon="mdi:delete" className="w-4 h-4 text-red-400" />
             </Button>
           )}
@@ -214,8 +216,8 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
       <div className="px-3 py-2 border-t border-neutral-800 text-xs text-gray-400">
         <div className="flex items-center justify-between">
           <span>
-            {files.length} 项目
-            {selectedFiles.size > 0 && ` (${selectedFiles.size} 已选中)`}
+            {files.length} {t('fileTransfer:status.itemsCount')}
+            {selectedFiles.size > 0 && ` (${selectedFiles.size} ${t('fileTransfer:status.selectedCount')})`}
           </span>
 
           <div className="flex items-center gap-2">{isLoading && <Icon icon="mdi:loading" className="w-3 h-3 animate-spin text-lime-400" />}</div>
@@ -229,7 +231,7 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        title="确认删除"
+        title={t('fileTransfer:delete.confirmTitle')}
         size="sm"
         disableContentAnimation={true}
         disableBackdropBlur={true}
@@ -241,7 +243,7 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
             </div>
             <div className="flex-1">
               <p className="text-white text-sm">
-                确定要删除以下文件吗？此操作无法撤销。
+                {t('fileTransfer:delete.confirmMessage')}
               </p>
               <div className="mt-2 p-2 bg-neutral-800 rounded text-xs text-gray-300 max-h-20 overflow-y-auto">
                 {filesToDelete.fileNames}
@@ -255,13 +257,13 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
               onClick={() => setShowDeleteModal(false)}
               className="text-gray-400 hover:text-white"
             >
-              取消
+              {t('common:cancel')}
             </Button>
             <Button
               onClick={handleDeleteConfirm}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              确认删除
+              {t('fileTransfer:delete.confirmButton')}
             </Button>
           </div>
         </div>

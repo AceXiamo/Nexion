@@ -1,12 +1,14 @@
 import { Modal } from '@/components/ui/Modal'
 import { FilePanel } from './FilePanel'
 import { useFileTransferStore } from '@/store/file-transfer-store'
+import { useTranslation } from 'react-i18next'
 
 export function FileTransferModal() {
   const { isOpen, closeModal, currentSession, localPath, remotePath, localFiles, remoteFiles, isLoading, errors, setLocalPath, setRemotePath } = useFileTransferStore()
+  const { t } = useTranslation('fileTransfer')
 
   return (
-    <Modal isOpen={isOpen && !!currentSession} onClose={closeModal} title="文件传输" size="2xl" closeOnOverlayClick={false} closeOnEscape={true} disableContentAnimation={true}>
+    <Modal isOpen={isOpen && !!currentSession} onClose={closeModal} title={t('modal.title')} size="2xl" closeOnOverlayClick={false} closeOnEscape={true} disableContentAnimation={true}>
       {currentSession && (
         <div className="flex flex-col h-[60vh] max-h-[800px]">
           {/* Main Content Area */}

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useFileTransferStore } from '@/store/file-transfer-store'
 import type { FileItem } from '@/types/file-transfer'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 // Note: Using path-browserify for browser compatibility
 const path = {
   join: (...parts: string[]) => parts.join('/').replace(/\/+/g, '/'),
@@ -34,6 +35,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation(['fileTransfer', 'common'])
 
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu()
 
@@ -166,7 +168,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
       if (contextFile.type === 'directory') {
         items.push({
           id: 'open',
-          label: '打开文件夹',
+          label: t('fileTransfer:contextMenu.openFolder'),
           icon: 'mdi:folder-open',
           onClick: () => handleOpenFile(contextFile),
         })
@@ -175,14 +177,14 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
       if (type === 'remote') {
         items.push({
           id: 'download',
-          label: contextFile.type === 'directory' ? '下载文件夹' : '下载文件',
+          label: contextFile.type === 'directory' ? t('fileTransfer:contextMenu.downloadFolder') : t('fileTransfer:contextMenu.downloadFile'),
           icon: 'mdi:download',
           onClick: () => handleDownload(contextFile),
         })
       } else {
         items.push({
           id: 'upload',
-          label: contextFile.type === 'directory' ? '上传文件夹' : '上传文件',
+          label: contextFile.type === 'directory' ? t('fileTransfer:contextMenu.uploadFolder') : t('fileTransfer:contextMenu.uploadFile'),
           icon: 'mdi:upload',
           onClick: () => handleUpload(contextFile),
         })
@@ -190,7 +192,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
 
       items.push({
         id: 'delete',
-        label: '删除',
+        label: t('common:delete'),
         icon: 'mdi:delete',
         onClick: () => handleDeleteClick(contextFile),
         danger: true,
@@ -199,7 +201,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
       // Background context menu (no file selected)
       items.push({
         id: 'refresh',
-        label: '刷新',
+        label: t('fileTransfer:actions.refresh'),
         icon: 'mdi:refresh',
         onClick: handleRefresh,
       })
@@ -311,7 +313,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-400">
         <Icon icon="mdi:loading" className="w-8 h-8 animate-spin mb-2" />
-        <span className="text-sm">加载中...</span>
+        <span className="text-sm">{t('fileTransfer:status.loading')}</span>
       </div>
     )
   }
@@ -332,7 +334,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
           <div className="absolute inset-0 flex items-center justify-center bg-lime-400/20 border-2 border-dashed border-lime-400/50 pointer-events-none z-10">
             <div className="flex flex-col items-center text-lime-400">
               <Icon icon="mdi:download" className="w-8 h-8 mb-2" />
-              <span className="text-sm font-medium">释放以传输文件</span>
+              <span className="text-sm font-medium">{t('fileTransfer:dragDrop.dropHint')}</span>
             </div>
           </div>
         )}
@@ -340,7 +342,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
         {files.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400">
             <Icon icon="mdi:folder-open" className="w-8 h-8 mb-2" />
-            <span className="text-sm">此文件夹为空</span>
+            <span className="text-sm">{t('fileTransfer:status.emptyFolder')}</span>
           </div>
         ) : (
           <div className="p-2 space-y-1">
@@ -367,7 +369,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        title="确认删除"
+        title={t('fileTransfer:delete.confirmTitle')}
         size="sm"
         disableContentAnimation={true}
         disableBackdropBlur={true}
@@ -379,11 +381,11 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
             </div>
             <div className="flex-1">
               <p className="text-white text-sm">
-                确定要删除 <span className="font-medium text-lime-400">"{fileToDelete?.name}"</span> 吗？此操作无法撤销。
+                {t('fileTransfer:delete.confirmSingleMessage', { fileName: fileToDelete?.name })}
               </p>
               {fileToDelete?.type === 'directory' && (
                 <p className="mt-1 text-xs text-gray-400">
-                  警告：这是一个文件夹，其中的所有内容将被永久删除。
+                  {t('fileTransfer:delete.folderWarning')}
                 </p>
               )}
             </div>
@@ -395,13 +397,13 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
               onClick={() => setShowDeleteModal(false)}
               className="text-gray-400 hover:text-white"
             >
-              取消
+              {t('common:cancel')}
             </Button>
             <Button
               onClick={handleDeleteConfirm}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              确认删除
+              {t('fileTransfer:delete.confirmButton')}
             </Button>
           </div>
         </div>
