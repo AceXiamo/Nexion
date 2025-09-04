@@ -35,7 +35,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
   const lastAccountRef = useRef<string | null>(null)
 
   // Get configuration data from the blockchain
-  const { data: rawConfigs, isLoading: isContractLoading, refetch: refetchConfigs } = sshContract.useGetSSHConfigs(account)
+  const { data: rawConfigs, isLoading: isContractLoading, refetch: refetchConfigs } = sshContract.useGetSSHConfigs(account!)
 
   // Store state and actions
   const {
@@ -136,7 +136,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
       account,
       async () => {
         const result = await refetchConfigs()
-        return result.data || []
+        return result || []
       },
       processRawConfigs,
       true // force refresh
@@ -310,7 +310,7 @@ export function useSSHConfig(configId: string) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { data: rawConfig, isLoading: isContractLoading } = sshContract.useGetSSHConfig(account, BigInt(configId))
+  const { data: rawConfig, isLoading: isContractLoading } = sshContract.useGetSSHConfig(account!, BigInt(configId))
 
   const fetchConfig = useCallback(async () => {
     if (!account || !rawConfig || !configId || !isConnected || !signMessage) return
