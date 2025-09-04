@@ -24,6 +24,7 @@ export interface SSHSession {
   maxReconnectAttempts: number
   connectionTime?: number
   bytesTransferred: number
+  currentWorkingDirectory?: string
 }
 
 export interface SSHSessionData {
@@ -39,6 +40,7 @@ export interface SSHSessionData {
   reconnectAttempts: number
   connectionTime?: number
   bytesTransferred: number
+  currentWorkingDirectory?: string
 }
 
 /**
@@ -359,6 +361,7 @@ export class SSHSessionManager extends EventEmitter {
       reconnectAttempts: session.reconnectAttempts,
       connectionTime: session.connectionTime,
       bytesTransferred: session.bytesTransferred,
+      currentWorkingDirectory: session.currentWorkingDirectory,
     }
   }
 
@@ -509,6 +512,57 @@ export class SSHSessionManager extends EventEmitter {
         this.lastProgressUpdate.delete(taskId)
       }
     }
+  }
+
+  /**
+   * Get current working directory for session
+   */
+  async getCurrentWorkingDirectory(sessionId: string): Promise<string> {
+    const session = this.sessions.get(sessionId)
+    if (!session || !session.connection || session.status !== 'connected') {
+      throw new Error('SSH session not connected')
+    }
+
+    // Return cached directory if available
+    if (session.currentWorkingDirectory) {
+      return session.currentWorkingDirectory
+    }
+
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Get working directory timeout'))
+      }, 5000)
+
+      let output = ''
+      
+      session.connection!.exec('pwd', (err, stream) => {
+        if (err) {
+          clearTimeout(timeout)
+          reject(err)
+          return
+        }
+
+        stream.on('close', (code: number) => {
+          clearTimeout(timeout)
+          if (code === 0) {
+            const directory = output.trim()
+            // Cache the result
+            session.currentWorkingDirectory = directory
+            resolve(directory)
+          } else {
+            reject(new Error(`Command failed with code ${code}`))
+          }
+        })
+
+        stream.on('data', (data: Buffer) => {
+          output += data.toString()
+        })
+
+        stream.stderr.on('data', (data: Buffer) => {
+          console.error('pwd stderr:', data.toString())
+        })
+      })
+    })
   }
 
   /**

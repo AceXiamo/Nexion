@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import { SSHSessionManager } from './ssh-session-manager'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -354,6 +355,36 @@ ipcMain.handle('ssh-test-connection', async (_event, config) => {
     return {
       success: false,
       message: `SSH module loading failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    }
+  }
+})
+
+// System paths IPC handlers
+ipcMain.handle('system:getUserHomeDirectory', async () => {
+  try {
+    const homeDir = os.homedir()
+    return { success: true, homeDir }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('ssh-get-current-directory', async (_event, sessionId: string) => {
+  try {
+    if (!sshManager) {
+      throw new Error('SSH manager not initialized')
+    }
+    
+    const directory = await sshManager.getCurrentWorkingDirectory(sessionId)
+    console.log('ssh-get-current-directory', directory)
+    return { success: true, directory }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })

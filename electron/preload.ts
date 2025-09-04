@@ -32,6 +32,7 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     resizeSession: (sessionId: string, cols: number, rows: number) => ipcRenderer.invoke('ssh-resize-session', sessionId, cols, rows),
     getAllSessions: () => ipcRenderer.invoke('ssh-get-all-sessions'),
     getActiveSession: () => ipcRenderer.invoke('ssh-get-active-session'),
+    getCurrentDirectory: (sessionId: string) => ipcRenderer.invoke('ssh-get-current-directory', sessionId),
     reconnectSession: (sessionId: string) => ipcRenderer.invoke('ssh-reconnect-session', sessionId),
     testConnection: (config: any) => ipcRenderer.invoke('ssh-test-connection', config),
   },
@@ -55,6 +56,11 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     createDirectory: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:mkdir', sessionId, path),
     deleteFile: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:unlink', sessionId, path),
     deleteDirectory: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:rmdir', sessionId, path),
+  },
+
+  // System 相关方法
+  system: {
+    getUserHomeDirectory: () => ipcRenderer.invoke('system:getUserHomeDirectory'),
   },
 })
 
