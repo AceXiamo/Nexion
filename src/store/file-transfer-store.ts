@@ -8,8 +8,8 @@ const path = {
   join: (...parts: string[]) => parts.join('/').replace(/\/+/g, '/'),
   basename: (filePath: string) => filePath.split('/').pop() || '',
   posix: {
-    join: (...parts: string[]) => parts.join('/').replace(/\/+/g, '/')
-  }
+    join: (...parts: string[]) => parts.join('/').replace(/\/+/g, '/'),
+  },
 }
 
 interface FileTransferActions {
@@ -20,7 +20,7 @@ interface FileTransferActions {
   // Path actions
   setLocalPath: (path: string) => void
   setRemotePath: (path: string) => void
-  
+
   // File listing actions
   loadLocalFiles: (path: string) => Promise<void>
   loadRemoteFiles: (path: string) => Promise<void>
@@ -54,9 +54,9 @@ const initialState: FileTransferState = {
   transferQueue: [],
   isLoading: {
     local: false,
-    remote: false
+    remote: false,
   },
-  errors: {}
+  errors: {},
 }
 
 export const useFileTransferStore = create<FileTransferState & FileTransferActions>()(
@@ -64,12 +64,12 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
     ...initialState,
 
     openModal: (sessionId: string) => {
-      set({ 
-        isOpen: true, 
+      set({
+        isOpen: true,
         currentSession: sessionId,
-        errors: {} 
+        errors: {},
       })
-      
+
       // Load initial file listings
       const { loadLocalFiles, loadRemoteFiles, localPath, remotePath } = get()
       loadLocalFiles(localPath)
@@ -77,13 +77,11 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
     },
 
     closeModal: () => {
-      set({ 
-        isOpen: false, 
+      set({
+        isOpen: false,
         currentSession: null,
         errors: {},
-        transferQueue: get().transferQueue.filter(task => 
-          task.status === 'transferring' || task.status === 'pending'
-        )
+        transferQueue: get().transferQueue.filter((task) => task.status === 'transferring' || task.status === 'pending'),
       })
     },
 
@@ -98,8 +96,8 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
     },
 
     loadLocalFiles: async (dirPath: string) => {
-      set(state => ({ isLoading: { ...state.isLoading, local: true } }))
-      
+      set((state) => ({ isLoading: { ...state.isLoading, local: true } }))
+
       try {
         // Use Node.js fs API through Electron IPC
         if (!window.ipcRenderer?.invoke) {
@@ -107,11 +105,11 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
         }
 
         const result = await window.ipcRenderer.invoke('fs:readdir', dirPath)
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Failed to read directory')
         }
-        
+
         const fileItems: FileItem[] = result.files.map((file: any) => ({
           name: file.name,
           type: file.type,
@@ -119,23 +117,23 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
           permissions: file.permissions ? file.permissions.toString(8) : '',
           modifiedAt: new Date(file.modifiedAt),
           path: file.path,
-          isHidden: file.isHidden
+          isHidden: file.isHidden,
         }))
 
-        set({ 
+        set({
           localFiles: fileItems.sort((a, b) => {
             if (a.type === b.type) return a.name.localeCompare(b.name)
             return a.type === 'directory' ? -1 : 1
           }),
-          localPath: dirPath
+          localPath: dirPath,
         })
-        
+
         get().setLocalError()
       } catch (error) {
         console.error('Failed to load local files:', error)
         get().setLocalError(error instanceof Error ? error.message : 'Failed to load local files')
       } finally {
-        set(state => ({ isLoading: { ...state.isLoading, local: false } }))
+        set((state) => ({ isLoading: { ...state.isLoading, local: false } }))
       }
     },
 
@@ -143,73 +141,66 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
       const { currentSession } = get()
       if (!currentSession) return
 
-      set(state => ({ isLoading: { ...state.isLoading, remote: true } }))
-      
+      set((state) => ({ isLoading: { ...state.isLoading, remote: true } }))
+
       try {
         const sftpService = await sftpServiceManager.connectService(currentSession)
         const files = await sftpService.listFiles(dirPath)
-        
-        set({ 
+
+        set({
           remoteFiles: files.sort((a, b) => {
             if (a.type === b.type) return a.name.localeCompare(b.name)
             return a.type === 'directory' ? -1 : 1
           }),
-          remotePath: dirPath
+          remotePath: dirPath,
         })
-        
+
         get().setRemoteError()
       } catch (error) {
         console.error('Failed to load remote files:', error)
         get().setRemoteError(error instanceof Error ? error.message : 'Failed to load remote files')
       } finally {
-        set(state => ({ isLoading: { ...state.isLoading, remote: false } }))
+        set((state) => ({ isLoading: { ...state.isLoading, remote: false } }))
       }
     },
 
     refreshFiles: async () => {
       const { localPath, remotePath } = get()
-      await Promise.all([
-        get().loadLocalFiles(localPath),
-        get().loadRemoteFiles(remotePath)
-      ])
+      await Promise.all([get().loadLocalFiles(localPath), get().loadRemoteFiles(remotePath)])
     },
 
     addTransferTask: (task: Omit<TransferTask, 'id'>) => {
       const id = uuidv4()
       const newTask: TransferTask = {
-        ...task,
         id,
         status: 'pending',
         transferred: 0,
-        startTime: new Date()
+        startTime: new Date(),
+        ...task, // Spread task last to preserve any existing values
       }
-      
-      set(state => ({
-        transferQueue: [...state.transferQueue, newTask]
+
+      set((state) => ({
+        transferQueue: [...state.transferQueue, newTask],
       }))
-      
+
       return id
     },
 
     updateTransferTask: (id: string, updates: Partial<TransferTask>) => {
-      set(state => ({
-        transferQueue: state.transferQueue.map(task =>
-          task.id === id ? { ...task, ...updates } : task
-        )
+      set((state) => ({
+        transferQueue: state.transferQueue.map((task) => (task.id === id ? { ...task, ...updates } : task)),
       }))
     },
 
     removeTransferTask: (id: string) => {
-      set(state => ({
-        transferQueue: state.transferQueue.filter(task => task.id !== id)
+      set((state) => ({
+        transferQueue: state.transferQueue.filter((task) => task.id !== id),
       }))
     },
 
     clearCompletedTasks: () => {
-      set(state => ({
-        transferQueue: state.transferQueue.filter(task => 
-          task.status !== 'completed' && task.status !== 'error'
-        )
+      set((state) => ({
+        transferQueue: state.transferQueue.filter((task) => task.status !== 'completed' && task.status !== 'error'),
       }))
     },
 
@@ -218,41 +209,46 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
       if (!currentSession) return
 
       const sftpService = await sftpServiceManager.connectService(currentSession)
-      
+
       for (const { localPath, remotePath } of files) {
         const fileName = path.basename(localPath)
         const stats = await window.ipcRenderer!.invoke('fs:stat', localPath)
-        
+
         const taskId = get().addTransferTask({
           type: 'upload',
           source: localPath,
           destination: remotePath,
           fileName,
-          fileSize: stats.size,
+          fileSize: Number(stats.size) || 0,
           transferred: 0,
-          status: 'pending'
+          status: 'pending',
         })
 
         try {
           get().updateTransferTask(taskId, { status: 'transferring' })
-          
+
           await sftpService.uploadFile(localPath, remotePath, (progress) => {
+            const progressValue = Number(progress) || 0
+            const fileSize = Number(stats.size) || 0
+            const transferred = Math.round((fileSize * progressValue) / 100)
+            console.log('progressValue', progressValue)
+            console.log('transferred', transferred)
             get().updateTransferTask(taskId, {
-              transferred: Math.round(stats.size * progress / 100),
-              speed: progress
+              transferred: isNaN(transferred) ? 0 : transferred,
+              speed: progressValue,
             })
           })
 
-          get().updateTransferTask(taskId, { 
-            status: 'completed', 
+          get().updateTransferTask(taskId, {
+            status: 'completed',
             endTime: new Date(),
-            transferred: stats.size
+            transferred: Number(stats.size) || 0,
           })
         } catch (error) {
           get().updateTransferTask(taskId, {
             status: 'error',
             error: error instanceof Error ? error.message : 'Upload failed',
-            endTime: new Date()
+            endTime: new Date(),
           })
         }
       }
@@ -266,12 +262,12 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
       if (!currentSession) return
 
       const sftpService = await sftpServiceManager.connectService(currentSession)
-      
+
       for (const { remotePath, localPath } of files) {
         const fileName = path.basename(remotePath)
-        const remoteFile = get().remoteFiles.find(f => f.path === remotePath)
-        const fileSize = remoteFile?.size || 0
-        
+        const remoteFile = get().remoteFiles.find((f) => f.path === remotePath)
+        const fileSize = Number(remoteFile?.size) || 0
+
         const taskId = get().addTransferTask({
           type: 'download',
           source: remotePath,
@@ -279,29 +275,31 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
           fileName,
           fileSize,
           transferred: 0,
-          status: 'pending'
+          status: 'pending',
         })
 
         try {
           get().updateTransferTask(taskId, { status: 'transferring' })
-          
+
           await sftpService.downloadFile(remotePath, localPath, (progress) => {
+            const progressValue = Number(progress) || 0
+            const transferred = Math.round((fileSize * progressValue) / 100)
             get().updateTransferTask(taskId, {
-              transferred: Math.round(fileSize * progress / 100),
-              speed: progress
+              transferred: isNaN(transferred) ? 0 : transferred,
+              speed: progressValue,
             })
           })
 
-          get().updateTransferTask(taskId, { 
-            status: 'completed', 
+          get().updateTransferTask(taskId, {
+            status: 'completed',
             endTime: new Date(),
-            transferred: fileSize
+            transferred: fileSize,
           })
         } catch (error) {
           get().updateTransferTask(taskId, {
             status: 'error',
             error: error instanceof Error ? error.message : 'Download failed',
-            endTime: new Date()
+            endTime: new Date(),
           })
         }
       }
@@ -316,8 +314,8 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
 
       try {
         const sftpService = await sftpServiceManager.connectService(currentSession)
-        const file = get().remoteFiles.find(f => f.path === filePath)
-        
+        const file = get().remoteFiles.find((f) => f.path === filePath)
+
         if (file?.type === 'directory') {
           await sftpService.deleteDirectory(filePath)
         } else {
@@ -338,7 +336,7 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
       try {
         const sftpService = await sftpServiceManager.connectService(currentSession)
         await sftpService.createDirectory(dirPath)
-        
+
         // Refresh remote files after creation
         await get().loadRemoteFiles(get().remotePath)
       } catch (error) {
@@ -347,19 +345,19 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
     },
 
     setLocalError: (error?: string) => {
-      set(state => ({
-        errors: { ...state.errors, local: error }
+      set((state) => ({
+        errors: { ...state.errors, local: error },
       }))
     },
 
     setRemoteError: (error?: string) => {
-      set(state => ({
-        errors: { ...state.errors, remote: error }
+      set((state) => ({
+        errors: { ...state.errors, remote: error },
       }))
     },
 
     clearErrors: () => {
       set({ errors: {} })
-    }
+    },
   }))
 )
