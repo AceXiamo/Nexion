@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DynamicSidebar } from './DynamicSidebar'
 import { Header } from './Header'
+import { FloatingTransferProgress } from '../file-transfer/FloatingTransferProgress'
 
 interface LayoutProps {
   children: ReactNode
@@ -60,6 +61,9 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
           </div>
         </main>
       </div>
+      
+      {/* Floating Transfer Progress */}
+      <FloatingTransferProgress />
     </div>
   )
 }
