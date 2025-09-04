@@ -12,6 +12,7 @@ export interface SSHSessionData {
   reconnectAttempts: number
   connectionTime?: number
   bytesTransferred: number
+  currentWorkingDirectory?: string
 }
 
 export interface SSHIPCResponse<T = any> {
@@ -38,6 +39,7 @@ declare global {
         resizeSession: (sessionId: string, cols: number, rows: number) => Promise<SSHIPCResponse>
         getAllSessions: () => Promise<SSHIPCResponse<SSHSessionData[]>>
         getActiveSession: () => Promise<SSHIPCResponse<{ sessionId: string | null }>>
+        getCurrentDirectory: (sessionId: string) => Promise<SSHIPCResponse<{ directory: string }>>
         reconnectSession: (sessionId: string) => Promise<SSHIPCResponse>
         testConnection: (config: any) => Promise<any>
       }
@@ -51,6 +53,10 @@ declare global {
         createDirectory: (sessionId: string, path: string) => Promise<void>
         deleteFile: (sessionId: string, path: string) => Promise<void>
         deleteDirectory: (sessionId: string, path: string) => Promise<void>
+      }
+
+      system: {
+        getUserHomeDirectory: () => Promise<{ success: boolean; homeDir?: string; error?: string }>
       }
     }
     
