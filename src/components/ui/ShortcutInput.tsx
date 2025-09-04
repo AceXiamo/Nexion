@@ -118,15 +118,6 @@ export const ShortcutInput: React.FC<ShortcutInputProps> = ({ value, onChange, o
     }, 100)
   }, [stopRecording])
 
-  const handleClear = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation()
-      onChange('')
-      setError('')
-    },
-    [onChange]
-  )
-
   useEffect(() => {
     return () => {
       if (recordingTimeoutRef.current) {
