@@ -1,6 +1,7 @@
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useState, useId } from 'react'
 import { Icon } from '@iconify/react'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
+import { modalManager } from '@/lib/modal-manager'
 
 interface ModalProps {
   isOpen: boolean
@@ -11,22 +12,57 @@ interface ModalProps {
   showCloseButton?: boolean
   closeOnOverlayClick?: boolean
   closeOnEscape?: boolean
+  disableContentAnimation?: boolean
+  disableBackdropBlur?: boolean
 }
 
-export function Modal({ isOpen, onClose, title, children, size = 'md', showCloseButton = true, closeOnOverlayClick = true, closeOnEscape = true }: ModalProps) {
-  // Handle ESC key to close
-  useEffect(() => {
-    if (!closeOnEscape || !isOpen) return
+export function Modal({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children, 
+  size = 'md', 
+  showCloseButton = true, 
+  closeOnOverlayClick = true, 
+  closeOnEscape = true,
+  disableContentAnimation = false,
+  disableBackdropBlur = false
+}: ModalProps) {
+  const modalId = useId()
+  const [isClosing, setIsClosing] = useState(false)
+  const [shouldRender, setShouldRender] = useState(false)
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose()
+  // Handle modal registration and ESC key
+  useEffect(() => {
+    if (isOpen) {
+      if (closeOnEscape) {
+        modalManager.register(modalId, onClose)
       }
+      setShouldRender(true)
+      setIsClosing(false)
     }
 
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [isOpen, onClose, closeOnEscape])
+    return () => {
+      modalManager.unregister(modalId)
+    }
+  }, [isOpen, modalId, onClose, closeOnEscape])
+
+  // Handle closing with animation delay
+  useEffect(() => {
+    if (!isOpen && shouldRender) {
+      setIsClosing(true)
+      // 延迟移除DOM，等待动画完成
+      const timer = setTimeout(() => {
+        setShouldRender(false)
+        setIsClosing(false)
+      }, 250) // 匹配动画时长
+      
+      return () => clearTimeout(timer)
+    } else if (isOpen) {
+      setShouldRender(true)
+      setIsClosing(false)
+    }
+  }, [isOpen, shouldRender])
 
   // Prevent background scrolling
   useEffect(() => {
@@ -70,6 +106,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', showClose
       onClose()
     }
   }
+
+  const zIndex = modalManager.getZIndex(modalId)
 
   // Animation variant configuration
   const overlayVariants: Variants = {
@@ -119,7 +157,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', showClose
     },
   }
 
-  const contentVariants = {
+  const contentVariants = disableContentAnimation ? {} : {
     hidden: {
       opacity: 0,
       y: 10,
@@ -136,10 +174,18 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', showClose
 
   return (
     <AnimatePresence mode="wait">
-      {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto" key="modal">
+      {shouldRender && (
+        <div className="fixed inset-0 overflow-y-auto" key="modal" style={{ zIndex }}>
           {/* Animated overlay */}
-          <motion.div key="overlay" className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={handleOverlayClick} variants={overlayVariants} initial="hidden" animate="visible" exit="exit" />
+          <motion.div 
+            key="overlay" 
+            className={`fixed inset-0 bg-black/60 ${disableBackdropBlur ? '' : 'backdrop-blur-sm'}`}
+            onClick={handleOverlayClick} 
+            variants={overlayVariants} 
+            initial="hidden" 
+            animate={isOpen && !isClosing ? "visible" : "exit"}
+            exit="exit" 
+          />
 
           {/* Modal container */}
           <div className="flex min-h-screen items-center justify-center p-4">
@@ -152,16 +198,28 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', showClose
               `}
               variants={modalVariants}
               initial="hidden"
-              animate="visible"
+              animate={isOpen && !isClosing ? "visible" : "exit"}
               exit="exit"
             >
               {/* Modal header */}
               {(title || showCloseButton) && (
-                <motion.div key="modal-header" className="flex items-center justify-between p-6 pb-0" variants={contentVariants}>
+                <motion.div 
+                  key="modal-header" 
+                  className="flex items-center justify-between p-6 pb-0" 
+                  variants={contentVariants}
+                  initial={disableContentAnimation ? false : "hidden"}
+                  animate={disableContentAnimation ? false : "visible"}
+                >
                   {title && <h2 className="text-xl font-bold text-white">{title}</h2>}
 
                   {showCloseButton && (
-                    <motion.button onClick={onClose} className="btn-icon ml-auto" aria-label="Close" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <motion.button 
+                      onClick={onClose} 
+                      className="btn-icon ml-auto" 
+                      aria-label="Close" 
+                      whileHover={{ scale: 1.05 }} 
+                      whileTap={{ scale: 0.95 }}
+                    >
                       <Icon icon="mdi:close" className="w-5 h-5" />
                     </motion.button>
                   )}
@@ -169,7 +227,13 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', showClose
               )}
 
               {/* Modal content */}
-              <motion.div key="modal-body" className="flex-1 overflow-y-auto" variants={contentVariants}>
+              <motion.div 
+                key="modal-body" 
+                className="flex-1 overflow-y-auto" 
+                variants={contentVariants}
+                initial={disableContentAnimation ? false : "hidden"}
+                animate={disableContentAnimation ? false : "visible"}
+              >
                 <div className="p-6">{children}</div>
               </motion.div>
             </motion.div>
