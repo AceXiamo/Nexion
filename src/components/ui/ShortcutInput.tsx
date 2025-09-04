@@ -1,148 +1,156 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { keyboardShortcutManager } from '../../services/keyboard-shortcut-manager';
+import React, { useState, useRef, useCallback, useEffect } from 'react'
+import { keyboardShortcutManager } from '../../services/keyboard-shortcut-manager'
 
 interface ShortcutInputProps {
-  value: string;
-  onChange: (shortcut: string) => void;
-  onValidate?: (shortcut: string) => boolean;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
+  value: string
+  onChange: (shortcut: string) => void
+  onValidate?: (shortcut: string) => boolean
+  placeholder?: string
+  disabled?: boolean
+  className?: string
 }
 
-export const ShortcutInput: React.FC<ShortcutInputProps> = ({
-  value,
-  onChange,
-  onValidate,
-  placeholder = '点击录制快捷键...',
-  disabled = false,
-  className = ''
-}) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [currentKeys, setCurrentKeys] = useState<Set<string>>(new Set());
-  const [error, setError] = useState<string>('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const recordingTimeoutRef = useRef<NodeJS.Timeout>();
+export const ShortcutInput: React.FC<ShortcutInputProps> = ({ value, onChange, onValidate, placeholder = '点击录制快捷键...', disabled = false, className = '' }) => {
+  const [isRecording, setIsRecording] = useState(false)
+  const [currentKeys, setCurrentKeys] = useState<Set<string>>(new Set())
+  const [error, setError] = useState<string>('')
+  const inputRef = useRef<HTMLInputElement>(null)
+  const recordingTimeoutRef = useRef<NodeJS.Timeout>()
 
-  const displayValue = value ? keyboardShortcutManager.formatShortcutForDisplay(value) : '';
+  const displayValue = value ? keyboardShortcutManager.formatShortcutForDisplay(value) : ''
 
   const startRecording = useCallback(() => {
-    if (disabled) return;
-    
-    setIsRecording(true);
-    setCurrentKeys(new Set());
-    setError('');
-    
+    if (disabled) return
+
+    setIsRecording(true)
+    setCurrentKeys(new Set())
+    setError('')
+
     if (inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus()
     }
 
     if (recordingTimeoutRef.current) {
-      clearTimeout(recordingTimeoutRef.current);
+      clearTimeout(recordingTimeoutRef.current)
     }
-    
+
     recordingTimeoutRef.current = setTimeout(() => {
-      setIsRecording(false);
-    }, 5000);
-  }, [disabled]);
+      setIsRecording(false)
+    }, 5000)
+  }, [disabled])
 
   const stopRecording = useCallback(() => {
-    setIsRecording(false);
-    setCurrentKeys(new Set());
-    
+    setIsRecording(false)
+    setCurrentKeys(new Set())
+
     if (recordingTimeoutRef.current) {
-      clearTimeout(recordingTimeoutRef.current);
+      clearTimeout(recordingTimeoutRef.current)
     }
-  }, []);
+  }, [])
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (!isRecording) return;
-    
-    event.preventDefault();
-    event.stopPropagation();
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (!isRecording) return
 
-    const keys = new Set(currentKeys);
-    
-    if (event.ctrlKey) keys.add('Ctrl');
-    if (event.metaKey) keys.add('Cmd');
-    if (event.altKey) keys.add('Alt');
-    if (event.shiftKey) keys.add('Shift');
-    
-    if (!['Control', 'Meta', 'Alt', 'Shift', 'Cmd'].includes(event.key)) {
-      let key = event.key;
-      if (key === ' ') {
-        key = 'Space';
-      } else if (key.length === 1) {
-        key = key.toUpperCase();
+      event.preventDefault()
+      event.stopPropagation()
+
+      // Handle ESC key to cancel recording
+      if (event.key === 'Escape') {
+        stopRecording()
+        return
       }
-      keys.add(key);
-    }
 
-    setCurrentKeys(keys);
-  }, [isRecording, currentKeys]);
+      const keys = new Set(currentKeys)
 
-  const handleKeyUp = useCallback((event: React.KeyboardEvent) => {
-    if (!isRecording) return;
-    
-    event.preventDefault();
-    event.stopPropagation();
+      if (event.ctrlKey) keys.add('Ctrl')
+      if (event.metaKey) keys.add('Cmd')
+      if (event.altKey) keys.add('Alt')
+      if (event.shiftKey) keys.add('Shift')
 
-    if (currentKeys.size > 1) {
-      const shortcut = Array.from(currentKeys).join('+');
-      
-      if (keyboardShortcutManager.isValidShortcut(shortcut)) {
-        if (onValidate && !onValidate(shortcut)) {
-          setError('此快捷键已被占用');
-          setTimeout(() => setError(''), 2000);
-        } else {
-          onChange(shortcut);
-          setError('');
+      if (!['Control', 'Meta', 'Alt', 'Shift', 'Cmd', 'Escape'].includes(event.key)) {
+        let key = event.key
+        if (key === ' ') {
+          key = 'Space'
+        } else if (key.length === 1) {
+          key = key.toUpperCase()
         }
-      } else {
-        setError('无效的快捷键组合');
-        setTimeout(() => setError(''), 2000);
+        keys.add(key)
       }
-      
-      stopRecording();
-    }
-  }, [isRecording, currentKeys, onChange, onValidate, stopRecording]);
+
+      setCurrentKeys(keys)
+    },
+    [isRecording, currentKeys, stopRecording]
+  )
+
+  const handleKeyUp = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (!isRecording) return
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (currentKeys.size > 1) {
+        const shortcut = Array.from(currentKeys).join('+')
+
+        if (keyboardShortcutManager.isValidShortcut(shortcut)) {
+          if (onValidate && !onValidate(shortcut)) {
+            setError('此快捷键已被占用')
+            setTimeout(() => setError(''), 2000)
+          } else {
+            onChange(shortcut)
+            setError('')
+          }
+        } else {
+          setError('无效的快捷键组合')
+          setTimeout(() => setError(''), 2000)
+        }
+
+        stopRecording()
+      }
+    },
+    [isRecording, currentKeys, onChange, onValidate, stopRecording]
+  )
 
   const handleBlur = useCallback(() => {
     setTimeout(() => {
-      stopRecording();
-    }, 100);
-  }, [stopRecording]);
+      stopRecording()
+    }, 100)
+  }, [stopRecording])
 
-  const handleClear = useCallback((event: React.MouseEvent) => {
-    event.stopPropagation();
-    onChange('');
-    setError('');
-  }, [onChange]);
+  const handleClear = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation()
+      onChange('')
+      setError('')
+    },
+    [onChange]
+  )
 
   useEffect(() => {
     return () => {
       if (recordingTimeoutRef.current) {
-        clearTimeout(recordingTimeoutRef.current);
+        clearTimeout(recordingTimeoutRef.current)
       }
-    };
-  }, []);
+    }
+  }, [])
 
-  const currentDisplay = isRecording && currentKeys.size > 0 
-    ? Array.from(currentKeys).join('+')
-    : '';
+  const currentDisplay = isRecording && currentKeys.size > 0 ? Array.from(currentKeys).join('+') : ''
 
   return (
-    <div className={`relative ${className}`}>
-      <div 
+    <div className={`relative w-32 ${className}`}>
+      <div
         className={`
-          flex items-center justify-between border rounded-lg px-3 py-2 min-h-[40px]
-          ${disabled 
-            ? 'bg-[#0f0f0f] border-[#333333] cursor-not-allowed' 
-            : isRecording 
-              ? 'bg-[#1a2332] border-[#BCFF2F] ring-2 ring-[#BCFF2F] ring-opacity-30' 
+          flex items-center justify-between border rounded-md px-4 py-2 min-h-[36px]
+          transition-all duration-200 ease-in-out
+          ${
+            disabled
+              ? 'bg-[#000000] border-[#333333] cursor-not-allowed opacity-40'
+              : isRecording
+              ? 'bg-[#000000] border-[#BCFF2F] shadow-[inset_0_0_0_1px_rgba(188,255,47,0.3)]'
               : error
-                ? 'bg-[#2a1a1a] border-red-500'
-                : 'bg-[#1a1a1a] border-[#333333] hover:border-[#555555] cursor-pointer'
+              ? 'bg-[#000000] border-red-500 shadow-[inset_0_0_0_1px_rgba(239,68,68,0.3)]'
+              : 'bg-[#000000] border-[#333333] hover:border-[#BCFF2F] cursor-pointer'
           }
         `}
         onClick={startRecording}
@@ -163,38 +171,12 @@ export const ShortcutInput: React.FC<ShortcutInputProps> = ({
             ${isRecording ? 'text-[#BCFF2F]' : error ? 'text-red-400' : 'text-white'}
           `}
         />
-        
+
         <div className="flex items-center space-x-2">
-          {isRecording && (
-            <span className="text-xs text-[#BCFF2F] animate-pulse">
-              录制中...
-            </span>
-          )}
-          
-          {value && !isRecording && (
-            <button
-              onClick={handleClear}
-              disabled={disabled}
-              className="text-[#666666] hover:text-[#CCCCCC] text-sm p-1 rounded"
-              title="清除快捷键"
-            >
-              ✕
-            </button>
-          )}
         </div>
       </div>
-      
-      {error && (
-        <div className="absolute top-full left-0 mt-1 text-xs text-red-400">
-          {error}
-        </div>
-      )}
-      
-      {isRecording && (
-        <div className="absolute top-full left-0 mt-1 text-xs text-[#888888]">
-          按 Escape 取消录制
-        </div>
-      )}
+
+      {error && <div className="absolute top-full left-0 mt-1 text-xs text-red-400">{error}</div>}
     </div>
-  );
-};
+  )
+}
