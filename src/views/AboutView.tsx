@@ -1,72 +1,84 @@
 import { Icon } from '@iconify/react'
-import { useTranslation } from 'react-i18next'
 
 export function AboutView() {
-  const { t } = useTranslation()
+  const handleExternalLink = (url: string) => {
+    if (window.electronAPI?.openExternal) {
+      window.electronAPI.openExternal(url)
+    } else {
+      // Fallback for web environment
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      {/* 产品头部 */}
-      <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
+    <div className="space-y-8">
+      {/* 英雄区域 - 产品头部 */}
+      <div className="p-4">
         <div className="flex items-center space-x-4 mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-[#BCFF2F] to-[#9FE827] rounded-xl flex items-center justify-center">
-            <Icon icon="lucide:terminal-square" className="w-8 h-8 text-black" />
+          <div className="w-12 h-12 rounded-lg border border-blue-400/30 flex items-center justify-center overflow-hidden">
+            <img src="/app-icon.png" alt="Nexion Logo" className="w-full h-full object-contain" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">Web3 SSH Manager</h1>
-            <div className="flex items-center space-x-2 mt-1">
-              <span className="text-[#888888]">{t('views:about.version')}</span>
-              <div className="w-2 h-2 bg-[#BCFF2F] rounded-full"></div>
-              <span className="text-xs text-[#BCFF2F]">BETA</span>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent">Nexion</h1>
+            <p className="text-sm text-blue-200/80 mt-1 font-medium">下一代 Web3 SSH 管理器</p>
+            <div className="flex items-center space-x-2 mt-2">
+              <Icon icon="token-branded:ethereum" className="w-3 h-3 text-blue-400" />
+              <span className="text-xs text-blue-300/70">Powered by Web3 Technology</span>
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
           <div>
-            <div className="flex items-center space-x-3 mb-3">
-              <Icon icon="lucide:info" className="w-5 h-5 text-[#BCFF2F]" />
-              <h2 className="text-lg font-semibold text-white">{t('views:about.productIntro')}</h2>
+            <div className="flex items-center space-x-2 mb-2">
+              <Icon icon="fluent-emoji:globe-showing-americas" className="w-5 h-5 text-blue-400" />
+              <h2 className="text-base font-semibold text-blue-100">产品介绍</h2>
             </div>
-            <p className="text-[#CCCCCC] leading-relaxed">
-              {t('views:about.productDesc')}
+            <p className="text-blue-200/70 leading-relaxed text-sm">
+              Nexion 是一款革命性的 SSH 管理工具，将传统服务器管理与 Web3 技术完美融合。 通过区块链技术实现配置的去中心化存储，用加密钱包替代传统密钥管理，
+              为企业和开发者提供更安全、便捷的服务器访问解决方案。
             </p>
           </div>
 
           <div>
-            <div className="flex items-center space-x-3 mb-4">
-              <Icon icon="lucide:star" className="w-5 h-5 text-[#BCFF2F]" />
-              <h2 className="text-lg font-semibold text-white">{t('views:about.coreFeatures')}</h2>
+            <div className="flex items-center space-x-2 mb-3">
+              <Icon icon="fluent-emoji:magnifying-glass-tilted-right" className="w-5 h-5 text-blue-400" />
+              <h2 className="text-base font-semibold text-blue-100">核心特性</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
                 {
-                  icon: 'lucide:wallet',
-                  title: t('views:about.features.unifiedAuth.title'),
-                  description: t('views:about.features.unifiedAuth.description')
+                  icon: 'token-branded:metamask',
+                  title: '钱包身份认证',
+                  description: '使用 Web3 钱包进行安全身份验证，告别传统密钥管理',
+                  iconColor: 'text-orange-400',
                 },
                 {
-                  icon: 'lucide:shield-check',
-                  title: t('views:about.features.decentralizedStorage.title'),
-                  description: t('views:about.features.decentralizedStorage.description')
+                  icon: 'oui:ws-search',
+                  title: '区块链存储',
+                  description: '配置数据加密存储在 X Layer 区块链，永不丢失',
+                  iconColor: 'text-blue-400',
                 },
                 {
-                  icon: 'lucide:lock',
-                  title: t('views:about.features.secureConnection.title'),
-                  description: t('views:about.features.secureConnection.description')
+                  icon: 'token-branded:polkadot',
+                  title: '端到端加密',
+                  description: '军用级加密算法保护所有数据传输和存储',
+                  iconColor: 'text-pink-400',
                 },
                 {
-                  icon: 'lucide:monitor',
-                  title: t('views:about.features.crossPlatform.title'),
-                  description: t('views:about.features.crossPlatform.description')
-                }
+                  icon: 'token-branded:cosmos',
+                  title: '跨设备同步',
+                  description: '配置存储在区块链上，无论在哪台设备上，只要连接钱包就能访问你的所有SSH配置',
+                  iconColor: 'text-indigo-400',
+                },
               ].map((feature, index) => (
-                <div key={index} className="flex items-start space-x-4 p-4 bg-[#272727] border border-[#333333] rounded-lg hover:border-[#BCFF2F]/50 transition-all duration-200">
-                  <div className="w-10 h-10 bg-[#0f0f0f] rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon icon={feature.icon} className="w-5 h-5 text-[#BCFF2F]" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-white">{feature.title}</h3>
-                    <p className="text-sm text-[#888888] mt-1">{feature.description}</p>
+                <div key={index} className="group border border-[#2a2a4a]/30 rounded-lg p-3 hover:border-blue-400/40 transition-all duration-300">
+                  <div className="flex items-center space-x-4">
+                    <Icon icon={feature.icon} className={`w-5 h-5 ${feature.iconColor}`} />
+                    <div className="flex-1">
+                      <h3 className="font-medium text-blue-100 mb-1 text-sm group-hover:text-blue-50 transition-colors duration-300">{feature.title}</h3>
+                      <p className="text-xs text-blue-200/60 leading-relaxed group-hover:text-blue-200/80 transition-colors duration-300">{feature.description}</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -75,114 +87,146 @@ export function AboutView() {
         </div>
       </div>
 
-
       {/* 联系我们 */}
-      <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <Icon icon="lucide:heart" className="w-5 h-5 text-[#BCFF2F]" />
-          <h2 className="text-lg font-semibold text-white">{t('views:about.contact')}</h2>
+      <div className="p-4">
+        <div className="flex items-center space-x-2 mb-4">
+          <Icon icon="fluent-emoji:open-mailbox-with-raised-flag" className="w-5 h-5 text-blue-400" />
+          <h2 className="text-base font-semibold text-blue-100">联系我们</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <p className="text-[#CCCCCC] leading-relaxed">
-              本项目由 Web3 技术爱好者开发，致力于为用户提供更安全、便捷的 SSH 管理体验。
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+          <div className="space-y-3 flex flex-col">
+            <p className="text-blue-200/70 leading-relaxed text-sm">
+              Nexion 由专业的 Web3 技术团队开发，致力于为企业和个人开发者提供 安全、高效的服务器管理解决方案。我们相信去中心化技术将重新定义 基础设施管理的未来。
             </p>
-            <div className="flex items-center space-x-2">
-              <Icon icon="lucide:globe" className="w-4 h-4 text-[#888888]" />
-              <span className="text-sm text-[#888888]">OKX Web3 生态</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Icon icon="lucide:mail" className="w-4 h-4 text-[#888888]" />
-              <span className="text-sm text-[#888888]">{t('views:about.contactEmail')}</span>
+            <div className="space-y-2 mt-auto">
+              <div className="flex items-center space-x-2 p-2 rounded border border-blue-400/20">
+                <Icon icon="lucide:webhook" className="w-3 h-3 text-blue-400" />
+                <span className="text-xs text-blue-200/80">基于 OKX Web3 生态构建</span>
+              </div>
+              <div className="flex items-center space-x-2 p-2 rounded border border-indigo-400/20">
+                <Icon icon="lucide:mail" className="w-3 h-3 text-indigo-400" />
+                <span className="text-xs text-blue-200/80">xiamo@qwq.link</span>
+              </div>
             </div>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Icon icon="lucide:message-circle" className="w-4 h-4 text-[#888888]" />
-              <span className="text-sm text-[#888888]">反馈建议</span>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 p-2 rounded border border-[#2a2a4a]/30 hover:border-blue-400/30 transition-all duration-300">
+              <Icon icon="lucide:headphones" className="w-3 h-3 text-blue-400" />
+              <div>
+                <div className="text-xs font-medium text-blue-100">技术支持</div>
+                <div className="text-xs text-blue-200/60">7x24 专业技术服务</div>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Icon icon="lucide:users" className="w-4 h-4 text-[#888888]" />
-              <span className="text-sm text-[#888888]">社区支持</span>
+            <div className="flex items-center space-x-2 p-2 rounded border border-[#2a2a4a]/30 hover:border-purple-400/30 transition-all duration-300">
+              <Icon icon="lucide:building" className="w-3 h-3 text-purple-400" />
+              <div>
+                <div className="text-xs font-medium text-blue-100">企业服务</div>
+                <div className="text-xs text-blue-200/60">定制化解决方案</div>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Icon icon="lucide:shield" className="w-4 h-4 text-[#888888]" />
-              <span className="text-sm text-[#888888]">安全报告</span>
+            <div className="flex items-center space-x-2 p-2 rounded border border-[#2a2a4a]/30 hover:border-indigo-400/30 transition-all duration-300">
+              <Icon icon="lucide:shield" className="w-3 h-3 text-indigo-400" />
+              <div>
+                <div className="text-xs font-medium text-blue-100">安全报告</div>
+                <div className="text-xs text-blue-200/60">漏洞反馈与奖励</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* 重要链接 */}
-      <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <Icon icon="lucide:external-link" className="w-5 h-5 text-[#BCFF2F]" />
-          <h2 className="text-lg font-semibold text-white">重要链接</h2>
+      <div className="p-4">
+        <div className="flex items-center space-x-2 mb-4">
+          <Icon icon="fluent-emoji:link" className="w-5 h-5 text-blue-400" />
+          <h2 className="text-base font-semibold text-blue-100">重要链接</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <a
-            href="#"
-            className="flex items-center space-x-3 p-4 bg-[#272727] border border-[#333333] rounded-lg hover:border-[#BCFF2F] hover:bg-[#1C260A] transition-all duration-200 group"
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <button
+            onClick={() => handleExternalLink('https://example.com')}
+            className="group border border-[#2a2a4a]/30 rounded p-3 hover:border-blue-400/40 transition-all duration-300 cursor-pointer"
           >
-            <Icon icon="lucide:github" className="w-5 h-5 text-[#CCCCCC] group-hover:text-[#BCFF2F]" />
-            <div>
-              <div className="text-sm font-medium text-white group-hover:text-[#BCFF2F]">{t('views:about.github')}</div>
-              <div className="text-xs text-[#888888]">源码仓库</div>
+            <div className="flex flex-col items-center space-y-2">
+              <Icon icon="lucide:globe" className="w-5 h-5 text-blue-400" />
+              <div className="text-center">
+                <div className="text-xs font-medium text-blue-100 group-hover:text-blue-50 transition-colors duration-300">官方网站</div>
+                <div className="text-xs text-blue-200/60 mt-1">产品主页</div>
+              </div>
             </div>
-          </a>
-          <a
-            href="https://www.oklink.com/xlayer-test"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center space-x-3 p-4 bg-[#272727] border border-[#333333] rounded-lg hover:border-[#BCFF2F] hover:bg-[#1C260A] transition-all duration-200 group"
+          </button>
+
+          <button
+            onClick={() => handleExternalLink('https://github.com/AceXiamo/nexion-contracts')}
+            className="group border border-[#2a2a4a]/30 rounded p-3 hover:border-purple-400/40 transition-all duration-300 cursor-pointer"
           >
-            <Icon icon="lucide:search" className="w-5 h-5 text-[#CCCCCC] group-hover:text-[#BCFF2F]" />
-            <div>
-              <div className="text-sm font-medium text-white group-hover:text-[#BCFF2F]">区块链浏览器</div>
-              <div className="text-xs text-[#888888]">X Layer</div>
+            <div className="flex flex-col items-center space-y-2">
+              <Icon icon="grommet-icons:github" className="w-5 h-5 text-purple-400" />
+              <div className="text-center">
+                <div className="text-xs font-medium text-blue-100 group-hover:text-blue-50 transition-colors duration-300">开源合约</div>
+                <div className="text-xs text-blue-200/60 mt-1">智能合约代码</div>
+              </div>
             </div>
-          </a>
-          <a
-            href="#"
-            className="flex items-center space-x-3 p-4 bg-[#272727] border border-[#333333] rounded-lg hover:border-[#BCFF2F] hover:bg-[#1C260A] transition-all duration-200 group"
+          </button>
+
+          <button
+            onClick={() => handleExternalLink('https://www.oklink.com/xlayer-test')}
+            className="group border border-[#2a2a4a]/30 rounded p-3 hover:border-indigo-400/40 transition-all duration-300 cursor-pointer"
           >
-            <Icon icon="lucide:book-open" className="w-5 h-5 text-[#CCCCCC] group-hover:text-[#BCFF2F]" />
-            <div>
-              <div className="text-sm font-medium text-white group-hover:text-[#BCFF2F]">文档</div>
-              <div className="text-xs text-[#888888]">使用手册</div>
+            <div className="flex flex-col items-center space-y-2">
+              <Icon icon="oui:ws-search" className="w-5 h-5 text-indigo-400" />
+              <div className="text-center">
+                <div className="text-xs font-medium text-blue-100 group-hover:text-blue-50 transition-colors duration-300">区块链浏览器</div>
+                <div className="text-xs text-blue-200/60 mt-1">X Layer 网络</div>
+              </div>
             </div>
-          </a>
-          <a
-            href="#"
-            className="flex items-center space-x-3 p-4 bg-[#272727] border border-[#333333] rounded-lg hover:border-[#BCFF2F] hover:bg-[#1C260A] transition-all duration-200 group"
+          </button>
+
+          <button
+            onClick={() => handleExternalLink('https://example.com/docs')}
+            className="group border border-[#2a2a4a]/30 rounded p-3 hover:border-cyan-400/40 transition-all duration-300 cursor-pointer"
           >
-            <Icon icon="lucide:bug" className="w-5 h-5 text-[#CCCCCC] group-hover:text-[#BCFF2F]" />
-            <div>
-              <div className="text-sm font-medium text-white group-hover:text-[#BCFF2F]">问题反馈</div>
-              <div className="text-xs text-[#888888]">Bug 报告</div>
+            <div className="flex flex-col items-center space-y-2">
+              <Icon icon="lucide:book-open" className="w-5 h-5 text-cyan-400" />
+              <div className="text-center">
+                <div className="text-xs font-medium text-blue-100 group-hover:text-blue-50 transition-colors duration-300">使用文档</div>
+                <div className="text-xs text-blue-200/60 mt-1">帮助中心</div>
+              </div>
             </div>
-          </a>
+          </button>
         </div>
       </div>
 
-      {/* 更新日志 */}
-      <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <Icon icon="lucide:clock" className="w-5 h-5 text-[#BCFF2F]" />
-          <h2 className="text-lg font-semibold text-white">{t('views:about.changelog')}</h2>
+      {/* 版权信息 */}
+      <div className="p-4">
+        <div className="flex items-center space-x-2 mb-4">
+          <Icon icon="token-branded:solana" className="w-5 h-5 text-purple-400" />
+          <h2 className="text-base font-semibold text-blue-100">版权与许可</h2>
         </div>
-        <div className="space-y-4">
-          <div className="border-l-2 border-[#BCFF2F] pl-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="text-sm font-medium text-white">v0.1.0-beta</span>
-              <span className="text-xs text-[#888888]">{t('views:about.releaseDate')}</span>
+
+        <div className="mt-4">
+          <div className="flex items-start">
+            <div className="flex-1">
+              <div className="text-blue-200/80 leading-relaxed">
+                <p className="mb-2 text-sm">
+                  © 2024 <span className="font-semibold bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">Nexion</span>. 保留所有权利。
+                </p>
+                <p className="text-blue-200/70 mb-3 text-xs">
+                  本软件为专有产品，受版权法和国际条约保护。核心智能合约代码已在 GitHub 开源， 采用 Apache 2.0 许可证。应用程序本体为商业软件，未经授权不得复制、分发或修改。
+                </p>
+                <div className="flex items-center space-x-3 pt-2 border-t border-[#2a2a4a]/30">
+                  <div className="flex items-center space-x-1">
+                    <Icon icon="token-branded:apache" className="w-3 h-3 text-orange-400" />
+                    <span className="text-xs text-blue-200/60">Apache 2.0 License</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Icon icon="token-branded:ethereum" className="w-3 h-3 text-blue-400" />
+                    <span className="text-xs text-blue-200/60">Web3 Technology</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <ul className="text-sm text-[#CCCCCC] space-y-1">
-              <li>• {t('views:about.releaseFeatures.basicSSH')}</li>
-              <li>• {t('views:about.releaseFeatures.walletIntegration')}</li>
-              <li>• {t('views:about.releaseFeatures.testnetSupport')}</li>
-              <li>• {t('views:about.releaseFeatures.encryption')}</li>
-            </ul>
           </div>
         </div>
       </div>
