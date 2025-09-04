@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Icon } from '@iconify/react'
 import { FileItem as FileItemComponent } from './FileItem'
 import { ContextMenu, useContextMenu, type ContextMenuItem } from '@/components/ui/ContextMenu'
+import { Modal } from '@/components/ui/Modal'
+import { Button } from '@/components/ui/button'
 import { useFileTransferStore } from '@/store/file-transfer-store'
 import type { FileItem } from '@/types/file-transfer'
 import { cn } from '@/lib/utils'
@@ -29,6 +31,8 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
   const [isDragOver, setIsDragOver] = useState(false)
   const [lastClickedIndex, setLastClickedIndex] = useState<number>(-1)
   const [contextFile, setContextFile] = useState<FileItem | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu()
@@ -120,16 +124,21 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
     }
   }
 
-  const handleDeleteFile = async (file: FileItem) => {
-    if (!confirm(`确定要删除 "${file.name}" 吗？`)) return
+  const handleDeleteClick = (file: FileItem) => {
+    setFileToDelete(file)
+    setShowDeleteModal(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!fileToDelete) return
 
     const store = useFileTransferStore.getState()
     if (type === 'local') {
       try {
-        if (file.type === 'directory') {
-          await window.ipcRenderer?.invoke('fs:rmdir', file.path)
+        if (fileToDelete.type === 'directory') {
+          await window.ipcRenderer?.invoke('fs:rmdir', fileToDelete.path)
         } else {
-          await window.ipcRenderer?.invoke('fs:unlink', file.path)
+          await window.ipcRenderer?.invoke('fs:unlink', fileToDelete.path)
         }
         await store.loadLocalFiles(currentPath)
       } catch (error) {
@@ -137,32 +146,16 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
       }
     } else {
       try {
-        await store.deleteRemoteFile(file.path)
+        await store.deleteRemoteFile(fileToDelete.path)
       } catch (error) {
         console.error('删除远程文件失败:', error)
       }
     }
+
+    setShowDeleteModal(false)
+    setFileToDelete(null)
   }
 
-  const handleCreateFolder = async () => {
-    const folderName = prompt('输入文件夹名称:')
-    if (!folderName?.trim()) return
-
-    const store = useFileTransferStore.getState()
-
-    if (type === 'local') {
-      try {
-        const newFolderPath = path.join(currentPath, folderName)
-        await window.ipcRenderer?.invoke('fs:mkdir', newFolderPath)
-        await store.loadLocalFiles(currentPath)
-      } catch (error) {
-        console.error('创建本地文件夹失败:', error)
-      }
-    } else {
-      const newFolderPath = path.posix.join(currentPath, folderName)
-      await store.createRemoteDirectory(newFolderPath)
-    }
-  }
 
   // Build context menu items
   const getContextMenuItems = (): ContextMenuItem[] => {
@@ -199,7 +192,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
         id: 'delete',
         label: '删除',
         icon: 'mdi:delete',
-        onClick: () => handleDeleteFile(contextFile),
+        onClick: () => handleDeleteClick(contextFile),
         danger: true,
       })
     } else {
@@ -211,12 +204,6 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
         onClick: handleRefresh,
       })
 
-      items.push({
-        id: 'new-folder',
-        label: '新建文件夹',
-        icon: 'mdi:folder-plus',
-        onClick: handleCreateFolder,
-      })
     }
 
     return items
@@ -375,6 +362,50 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
         {/* Context Menu */}
         <ContextMenu items={getContextMenuItems()} position={position} isOpen={isOpen} onClose={closeContextMenu} />
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="确认删除"
+        size="sm"
+        disableContentAnimation={true}
+        disableBackdropBlur={true}
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-1">
+              <Icon icon="mdi:alert-circle" className="w-6 h-6 text-red-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-white text-sm">
+                确定要删除 <span className="font-medium text-lime-400">"{fileToDelete?.name}"</span> 吗？此操作无法撤销。
+              </p>
+              {fileToDelete?.type === 'directory' && (
+                <p className="mt-1 text-xs text-gray-400">
+                  警告：这是一个文件夹，其中的所有内容将被永久删除。
+                </p>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="ghost"
+              onClick={() => setShowDeleteModal(false)}
+              className="text-gray-400 hover:text-white"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              确认删除
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   )
 }

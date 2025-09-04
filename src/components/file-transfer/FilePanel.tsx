@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { Icon } from '@iconify/react'
 import { Button } from '@/components/ui/button'
+import { Modal } from '@/components/ui/Modal'
 import { FileBrowser } from './FileBrowser'
 import { PathBreadcrumb } from './PathBreadcrumb'
 import { useFileTransferStore } from '@/store/file-transfer-store'
@@ -28,6 +29,8 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set())
   const [isEditing, setIsEditing] = useState(false)
   const [editPath, setEditPath] = useState(currentPath)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [filesToDelete, setFilesToDelete] = useState<{ files: Set<string>; fileNames: string }>({ files: new Set(), fileNames: '' })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const isLocal = type === 'local'
@@ -56,12 +59,6 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
     }
   }
 
-  const handleFileUpload = () => {
-    if (isLocal && fileInputRef.current) {
-      fileInputRef.current.click()
-    }
-  }
-
   const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
@@ -82,7 +79,7 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
   }
 
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
     if (selectedFiles.size === 0) return
 
     const fileNames = Array.from(selectedFiles)
@@ -92,14 +89,17 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
       })
       .join(', ')
 
-    if (!confirm(`确定要删除这些文件吗？\n${fileNames}`)) return
+    setFilesToDelete({ files: selectedFiles, fileNames })
+    setShowDeleteModal(true)
+  }
 
+  const handleDeleteConfirm = async () => {
     const store = useFileTransferStore.getState()
 
     if (isLocal) {
       // Delete local files using Electron IPC
       try {
-        for (const filePath of selectedFiles) {
+        for (const filePath of filesToDelete.files) {
           const file = files.find((f) => f.path === filePath)
           if (file?.type === 'directory') {
             await window.ipcRenderer?.invoke('fs:rmdir', filePath)
@@ -116,7 +116,7 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
     } else {
       // Delete remote files using SFTP
       try {
-        for (const filePath of selectedFiles) {
+        for (const filePath of filesToDelete.files) {
           await store.deleteRemoteFile(filePath)
         }
         setSelectedFiles(new Set())
@@ -124,6 +124,9 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
         console.error('Failed to delete remote files:', error)
       }
     }
+
+    setShowDeleteModal(false)
+    setFilesToDelete({ files: new Set(), fileNames: '' })
   }
 
   const getParentPath = (path: string): string => {
@@ -158,15 +161,8 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
             <Icon icon="mdi:arrow-up" className="w-4 h-4" />
           </Button>
 
-          {isLocal && (
-            <Button variant="ghost" size="sm" onClick={handleFileUpload} disabled={isLoading} title="上传文件">
-              <Icon icon="mdi:upload" className="w-4 h-4" />
-            </Button>
-          )}
-
-
           {selectedFiles.size > 0 && (
-            <Button variant="ghost" size="sm" onClick={handleDelete} disabled={isLoading} title="删除选中">
+            <Button variant="ghost" size="sm" onClick={handleDeleteClick} disabled={isLoading} title="删除选中">
               <Icon icon="mdi:delete" className="w-4 h-4 text-red-400" />
             </Button>
           )}
@@ -228,6 +224,48 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
 
       {/* Hidden File Input */}
       {isLocal && <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileInputChange} />}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="确认删除"
+        size="sm"
+        disableContentAnimation={true}
+        disableBackdropBlur={true}
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-1">
+              <Icon icon="mdi:alert-circle" className="w-6 h-6 text-red-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-white text-sm">
+                确定要删除以下文件吗？此操作无法撤销。
+              </p>
+              <div className="mt-2 p-2 bg-neutral-800 rounded text-xs text-gray-300 max-h-20 overflow-y-auto">
+                {filesToDelete.fileNames}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="ghost"
+              onClick={() => setShowDeleteModal(false)}
+              className="text-gray-400 hover:text-white"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              确认删除
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
