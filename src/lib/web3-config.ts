@@ -2,7 +2,7 @@ import { defineChain } from 'viem'
 import { createConfig, http } from 'wagmi'
 import { injected } from 'wagmi/connectors'
 
-// X Layer 测试网配置
+// X Layer Testnet Configuration
 export const xLayerTestnet = defineChain({
   id: 1952,
   name: 'X Layer Testnet',
@@ -25,7 +25,7 @@ export const xLayerTestnet = defineChain({
   testnet: true,
 })
 
-// X Layer 主网配置
+// X Layer Mainnet Configuration
 export const xLayerMainnet = defineChain({
   id: 196,
   name: 'X Layer',
@@ -47,7 +47,7 @@ export const xLayerMainnet = defineChain({
   },
 })
 
-// Wagmi 配置
+// Wagmi Configuration
 export const wagmiConfig = createConfig({
   chains: [xLayerTestnet, xLayerMainnet],
   connectors: [
@@ -99,18 +99,18 @@ export const wagmiConfig = createConfig({
   },
 })
 
-// 智能合约地址
+// Smart Contract Addresses
 export const CONTRACT_ADDRESSES = {
   SSH_MANAGER: {
     [xLayerTestnet.id]: '0x371f6716CD26Bf8e27Dd5322c2B4341Aaf1CedfA',
-    [xLayerMainnet.id]: '', // 主网地址待部署
+    [xLayerMainnet.id]: '', // Mainnet address to be deployed
   },
 } as const
 
-// 默认网络
+// Default Network
 export const DEFAULT_CHAIN = xLayerTestnet
 
-// 类型定义
+// Type Definitions
 declare global {
   interface Window {
     okxwallet?: any

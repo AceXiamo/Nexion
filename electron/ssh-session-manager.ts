@@ -1,6 +1,8 @@
-import { Client, ClientChannel } from 'ssh2'
+import { Client, ClientChannel, SFTPWrapper } from 'ssh2'
 import { EventEmitter } from 'events'
 import type { DecryptedSSHConfig } from '../src/types/ssh'
+import fs from 'node:fs'
+import path from 'node:path'
 
 export interface SSHSession {
   id: string
@@ -10,12 +12,13 @@ export interface SSHSession {
   config: DecryptedSSHConfig
   connection?: Client
   stream?: ClientChannel
+  sftp?: SFTPWrapper
   isActive: boolean
   status: 'connecting' | 'connected' | 'disconnected' | 'error'
   error?: string
   createdAt: Date
   lastActivity: Date
-  // 新增字段
+  // Additional fields
   reconnectAttempts: number
   maxReconnectAttempts: number
   connectionTime?: number
@@ -38,7 +41,7 @@ export interface SSHSessionData {
 }
 
 /**
- * SSH 会话管理器 - 在主进程中管理所有 SSH 连接和终端会话
+ * SSH Session Manager - Manages all SSH connections and terminal sessions in the main process
  */
 export class SSHSessionManager extends EventEmitter {
   private sessions = new Map<string, SSHSession>()
@@ -49,7 +52,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 生成唯一的会话ID
+   * Generate unique session ID
    */
   private generateSessionId(): string {
     const timestamp = Date.now()
@@ -58,8 +61,8 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 生成智能会话名称
-   * 同一配置的多个会话会自动编号：Config-1, Config-2, Config-3...
+   * Generate smart session name
+   * Multiple sessions from the same config will be automatically numbered: Config-1, Config-2, Config-3...
    */
   private generateSessionName(config: DecryptedSSHConfig): string {
     const existingSessions = Array.from(this.sessions.values())
@@ -70,7 +73,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 创建新的 SSH 会话
+   * Create new SSH session
    */
   async createSession(config: DecryptedSSHConfig): Promise<string> {
     const sessionId = this.generateSessionId()
@@ -93,15 +96,15 @@ export class SSHSessionManager extends EventEmitter {
 
     this.sessions.set(sessionId, session)
 
-    // 如果是第一个会话，设置为活跃
+    // Set as active if it's the first session
     if (this.sessions.size === 1) {
       this.setActiveSession(sessionId)
     }
 
-    // 发出会话创建事件
+    // Emit session creation event
     this.emit('session-created', this.getSessionData(session))
 
-    // 异步建立连接
+    // Establish connection asynchronously
     this.connectSession(sessionId).catch((error) => {
       console.error(`Failed to connect session ${sessionId}:`, error)
       session.status = 'error'
@@ -113,7 +116,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 建立 SSH 连接
+   * Establish SSH connection
    */
   private async connectSession(sessionId: string): Promise<void> {
     const session = this.sessions.get(sessionId)
@@ -129,9 +132,9 @@ export class SSHSessionManager extends EventEmitter {
       const timeout = setTimeout(() => {
         conn.end()
         session.status = 'error'
-        session.error = '连接超时'
-        this.emit('session-error', sessionId, '连接超时')
-        reject(new Error('连接超时'))
+        session.error = 'Connection timeout'
+        this.emit('session-error', sessionId, 'Connection timeout')
+        reject(new Error('Connection timeout'))
       }, 15000)
 
       conn.on('ready', () => {
@@ -140,19 +143,19 @@ export class SSHSessionManager extends EventEmitter {
         session.status = 'connected'
         session.lastActivity = new Date()
         session.connectionTime = Date.now() - startTime
-        session.reconnectAttempts = 0 // 重置重连计数
+        session.reconnectAttempts = 0 // Reset reconnect counter
 
-        // 创建 shell 会话
+        // Create shell session
         conn.shell((err: Error | undefined, stream: ClientChannel) => {
           if (err) {
             reject(err)
             return
           }
 
-          // 保存 stream 引用
+          // Save stream reference
           session.stream = stream
 
-          // 监听终端数据
+          // Listen for terminal data
           stream.on('data', (data: Buffer) => {
             session.lastActivity = new Date()
             session.bytesTransferred += data.length
@@ -169,7 +172,7 @@ export class SSHSessionManager extends EventEmitter {
             session.status = 'disconnected'
             this.emit('session-disconnected', sessionId)
             
-            // 尝试自动重连（如果在重连次数限制内）
+            // Attempt automatic reconnection (if within reconnect limit)
             if (session.reconnectAttempts < session.maxReconnectAttempts) {
               this.scheduleReconnect(sessionId)
             }
@@ -187,7 +190,7 @@ export class SSHSessionManager extends EventEmitter {
         session.error = this.categorizeError(err)
         this.emit('session-error', sessionId, session.error)
         
-        // 根据错误类型决定是否重连
+        // Decide whether to reconnect based on error type
         if (this.shouldRetryConnection(err) && session.reconnectAttempts < session.maxReconnectAttempts) {
           this.scheduleReconnect(sessionId)
         }
@@ -196,7 +199,7 @@ export class SSHSessionManager extends EventEmitter {
       })
 
       conn.on('close', () => {
-        // 如果不是主动关闭，尝试重连
+        // If not actively closed, attempt reconnection
         if (session.status !== 'disconnected') {
           session.status = 'disconnected'
           this.emit('session-disconnected', sessionId)
@@ -207,7 +210,7 @@ export class SSHSessionManager extends EventEmitter {
         }
       })
 
-      // 建立连接
+      // Establish connection
       const connectionConfig: Record<string, unknown> = {
         host: config.host,
         port: config.port,
@@ -230,7 +233,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 向指定会话发送命令
+   * Send command to specified session
    */
   sendCommand(sessionId: string, command: string): boolean {
     const session = this.sessions.get(sessionId)
@@ -245,7 +248,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 调整会话终端大小
+   * Resize session terminal
    */
   resizeSession(sessionId: string, cols: number, rows: number): boolean {
     const session = this.sessions.get(sessionId)
@@ -258,7 +261,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 关闭指定会话
+   * Close specified session
    */
   async closeSession(sessionId: string): Promise<void> {
     const session = this.sessions.get(sessionId)
@@ -266,12 +269,12 @@ export class SSHSessionManager extends EventEmitter {
       return
     }
 
-    // 关闭连接
+    // Close connection
     if (session.connection) {
       session.connection.end()
     }
 
-    // 如果这是活跃会话，需要切换到其他会话
+    // If this is the active session, switch to another session
     if (this.activeSessionId === sessionId) {
       const remainingSessions = Array.from(this.sessions.keys()).filter(
         (id) => id !== sessionId
@@ -289,7 +292,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 设置活跃会话
+   * Set active session
    */
   setActiveSession(sessionId: string): boolean {
     const session = this.sessions.get(sessionId)
@@ -297,7 +300,7 @@ export class SSHSessionManager extends EventEmitter {
       return false
     }
 
-    // 取消之前的活跃会话
+    // Deactivate previous active session
     if (this.activeSessionId) {
       const prevActive = this.sessions.get(this.activeSessionId)
       if (prevActive) {
@@ -305,7 +308,7 @@ export class SSHSessionManager extends EventEmitter {
       }
     }
 
-    // 设置新的活跃会话
+    // Set new active session
     session.isActive = true
     this.activeSessionId = sessionId
     
@@ -314,14 +317,14 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 获取活跃会话ID
+   * Get active session ID
    */
   getActiveSessionId(): string | undefined {
     return this.activeSessionId
   }
 
   /**
-   * 获取所有会话的基本信息
+   * Get basic information of all sessions
    */
   getAllSessions(): SSHSessionData[] {
     return Array.from(this.sessions.values()).map(session => 
@@ -330,7 +333,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 获取指定会话信息
+   * Get specified session information
    */
   getSession(sessionId: string): SSHSessionData | undefined {
     const session = this.sessions.get(sessionId)
@@ -338,7 +341,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 提取会话的安全数据（不包含敏感信息）
+   * Extract secure session data (excluding sensitive information)
    */
   private getSessionData(session: SSHSession): SSHSessionData {
     return {
@@ -358,7 +361,7 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 计划重连
+   * Schedule reconnection
    */
   private scheduleReconnect(sessionId: string): void {
     const session = this.sessions.get(sessionId)
@@ -367,7 +370,7 @@ export class SSHSessionManager extends EventEmitter {
     session.reconnectAttempts++
     session.status = 'connecting'
     
-    // 指数退避算法：1s, 2s, 4s, 8s...
+    // Exponential backoff algorithm: 1s, 2s, 4s, 8s...
     const delay = Math.min(1000 * Math.pow(2, session.reconnectAttempts - 1), 10000)
     
     this.emit('session-reconnecting', sessionId, session.reconnectAttempts, delay)
@@ -376,10 +379,10 @@ export class SSHSessionManager extends EventEmitter {
       this.connectSession(sessionId).catch((error) => {
         console.error(`Reconnect attempt ${session.reconnectAttempts} failed for session ${sessionId}:`, error)
         
-        // 如果达到最大重连次数，标记为错误状态
+        // If maximum reconnect attempts reached, mark as error state
         if (session.reconnectAttempts >= session.maxReconnectAttempts) {
           session.status = 'error'
-          session.error = `重连失败 (已尝试 ${session.maxReconnectAttempts} 次)`
+          session.error = `Reconnection failed (attempted ${session.maxReconnectAttempts} times)`
           this.emit('session-error', sessionId, session.error)
         }
       })
@@ -387,58 +390,58 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
-   * 分类错误信息
+   * Categorize error messages
    */
   private categorizeError(error: Error): string {
     const message = error.message || error.toString()
     
     if (message.includes('ENOTFOUND') || message.includes('getaddrinfo')) {
-      return '主机名解析失败，请检查网络连接和主机地址'
+      return 'Hostname resolution failed, please check network connection and host address'
     }
     
     if (message.includes('ECONNREFUSED')) {
-      return '连接被拒绝，请检查端口是否正确或服务是否运行'
+      return 'Connection refused, please check if port is correct or service is running'
     }
     
     if (message.includes('ETIMEDOUT')) {
-      return '连接超时，请检查网络连接'
+      return 'Connection timeout, please check network connection'
     }
     
     if (message.includes('Authentication')) {
-      return '认证失败，请检查用户名、密码或密钥'
+      return 'Authentication failed, please check username, password or key'
     }
     
     if (message.includes('Permission denied')) {
-      return '权限被拒绝，请检查用户权限'
+      return 'Permission denied, please check user permissions'
     }
     
     if (message.includes('Host key verification failed')) {
-      return '主机密钥验证失败，可能是安全风险'
+      return 'Host key verification failed, possible security risk'
     }
     
-    // 默认返回原始错误信息
+    // Return original error message by default
     return message
   }
 
   /**
-   * 判断是否应该重试连接
+   * Determine whether connection should be retried
    */
   private shouldRetryConnection(error: Error): boolean {
     const message = error.message || error.toString()
     
-    // 不重试的错误类型
+    // Error types that should not be retried
     const nonRetryableErrors = [
       'Authentication',
       'Permission denied',
       'Host key verification failed',
-      'EACCES', // 权限错误
+      'EACCES', // Permission error
     ]
     
     return !nonRetryableErrors.some(errorType => message.includes(errorType))
   }
 
   /**
-   * 手动重连会话
+   * Manually reconnect session
    */
   async reconnectSession(sessionId: string): Promise<void> {
     const session = this.sessions.get(sessionId)
@@ -446,22 +449,22 @@ export class SSHSessionManager extends EventEmitter {
       throw new Error(`Session ${sessionId} not found`)
     }
 
-    // 关闭现有连接
+    // Close existing connection
     if (session.connection) {
       session.connection.end()
     }
 
-    // 重置状态
+    // Reset state
     session.reconnectAttempts = 0
     session.status = 'connecting'
     session.error = undefined
 
-    // 重新连接
+    // Reconnect
     await this.connectSession(sessionId)
   }
 
   /**
-   * 清理所有会话
+   * Clean up all sessions
    */
   cleanup(): void {
     for (const [sessionId] of this.sessions) {
@@ -469,5 +472,152 @@ export class SSHSessionManager extends EventEmitter {
     }
     this.sessions.clear()
     this.activeSessionId = undefined
+  }
+
+  /**
+   * Get session object by ID (internal use)
+   */
+  getSessionObject(sessionId: string): SSHSession | undefined {
+    return this.sessions.get(sessionId)
+  }
+
+  /**
+   * Get or create SFTP connection for session
+   */
+  private async getSFTP(sessionId: string): Promise<SFTPWrapper> {
+    const session = this.getSessionObject(sessionId)
+    if (!session || !session.connection || session.status !== 'connected') {
+      throw new Error('SSH session not connected')
+    }
+
+    if (session.sftp) {
+      return session.sftp
+    }
+
+    return new Promise((resolve, reject) => {
+      session.connection!.sftp((err, sftp) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        session.sftp = sftp
+        resolve(sftp)
+      })
+    })
+  }
+
+  /**
+   * List files in remote directory
+   */
+  async listFiles(sessionId: string, remotePath: string): Promise<any[]> {
+    const sftp = await this.getSFTP(sessionId)
+    
+    return new Promise((resolve, reject) => {
+      sftp.readdir(remotePath, (err, list) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        
+        const files = list.map((item: any) => ({
+          name: item.filename,
+          type: item.attrs.isDirectory() ? 'directory' : 'file',
+          size: item.attrs.size,
+          modifiedAt: new Date(item.attrs.mtime * 1000).toISOString(),
+          permissions: item.attrs.mode,
+          isHidden: item.filename.startsWith('.'),
+          path: path.posix.join(remotePath, item.filename)
+        }))
+        
+        resolve(files)
+      })
+    })
+  }
+
+  /**
+   * Create remote directory
+   */
+  async createDirectory(sessionId: string, remotePath: string): Promise<void> {
+    const sftp = await this.getSFTP(sessionId)
+    
+    return new Promise((resolve, reject) => {
+      sftp.mkdir(remotePath, (err) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        resolve()
+      })
+    })
+  }
+
+  /**
+   * Delete remote file
+   */
+  async deleteFile(sessionId: string, remotePath: string): Promise<void> {
+    const sftp = await this.getSFTP(sessionId)
+    
+    return new Promise((resolve, reject) => {
+      sftp.unlink(remotePath, (err) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        resolve()
+      })
+    })
+  }
+
+  /**
+   * Delete remote directory
+   */
+  async deleteDirectory(sessionId: string, remotePath: string): Promise<void> {
+    const sftp = await this.getSFTP(sessionId)
+    
+    return new Promise((resolve, reject) => {
+      sftp.rmdir(remotePath, (err) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        resolve()
+      })
+    })
+  }
+
+  /**
+   * Upload file to remote server
+   */
+  async uploadFile(sessionId: string, localPath: string, remotePath: string): Promise<void> {
+    const sftp = await this.getSFTP(sessionId)
+    
+    return new Promise((resolve, reject) => {
+      const readStream = fs.createReadStream(localPath)
+      const writeStream = sftp.createWriteStream(remotePath)
+      
+      writeStream.on('error', reject)
+      writeStream.on('close', resolve)
+      readStream.on('error', reject)
+      
+      readStream.pipe(writeStream)
+    })
+  }
+
+  /**
+   * Download file from remote server
+   */
+  async downloadFile(sessionId: string, remotePath: string, localPath: string): Promise<void> {
+    const sftp = await this.getSFTP(sessionId)
+    
+    return new Promise((resolve, reject) => {
+      const readStream = sftp.createReadStream(remotePath)
+      const writeStream = fs.createWriteStream(localPath)
+      
+      readStream.on('error', reject)
+      writeStream.on('error', reject)
+      writeStream.on('close', resolve)
+      
+      readStream.pipe(writeStream)
+    })
   }
 }

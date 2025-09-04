@@ -1,5 +1,5 @@
 import React from 'react'
-import { X, Plus, Terminal, AlertTriangle, Loader2 } from 'lucide-react'
+import { X, Plus, Terminal, AlertTriangle, Loader2, FolderSync } from 'lucide-react'
 import type { SSHSessionData } from '@/types/electron'
 import '@/types/electron'
 
@@ -9,6 +9,7 @@ interface SSHTabBarProps {
   onCreateSession: () => void
   onSwitchSession: (sessionId: string) => void
   onCloseSession: (sessionId: string) => void
+  onOpenFileTransfer?: () => void
 }
 
 const getStatusIcon = (status: SSHSessionData['status']) => {
@@ -37,13 +38,7 @@ const getStatusColor = (status: SSHSessionData['status']) => {
   }
 }
 
-export function SSHTabBar({
-  sessions,
-  activeSessionId,
-  onCreateSession,
-  onSwitchSession,
-  onCloseSession,
-}: SSHTabBarProps) {
+export function SSHTabBar({ sessions, activeSessionId, onCreateSession, onSwitchSession, onCloseSession, onOpenFileTransfer }: SSHTabBarProps) {
   const handleTabClose = (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation()
     onCloseSession(sessionId)
@@ -51,30 +46,28 @@ export function SSHTabBar({
 
   return (
     <div className="bg-black/95 border-b border-neutral-800 flex items-center px-2 py-1 min-h-[40px]">
-      {/* 新建 Tab 按钮 */}
+      {/* New Tab button */}
       <button
         onClick={onCreateSession}
         className="flex items-center gap-1 px-3 py-1.5 mr-1 text-xs 
                    bg-neutral-800 hover:bg-neutral-700 rounded-md 
                    text-gray-300 hover:text-white transition-all duration-150
                    border border-neutral-700 hover:border-neutral-600"
-        title="新建 SSH 连接"
+        title="Create new SSH connection"
       >
         <Plus className="w-3 h-3" />
-        <span>新建</span>
+        <span>New</span>
       </button>
 
-      {/* 分隔符 */}
-      {sessions.length > 0 && (
-        <div className="w-px h-6 bg-neutral-700 mx-2" />
-      )}
+      {/* Separator */}
+      {sessions.length > 0 && <div className="w-px h-6 bg-neutral-700 mx-2" />}
 
-      {/* SSH Tab 列表 */}
+      {/* SSH Tab list */}
       <div className="flex-1 flex items-center gap-1 overflow-x-auto">
         {sessions.map((session) => {
           const isActive = session.id === activeSessionId
           const statusColor = getStatusColor(session.status)
-          
+
           return (
             <div
               key={session.id}
@@ -83,69 +76,79 @@ export function SSHTabBar({
                 group relative flex items-center gap-2 px-3 py-1.5 rounded-md 
                 text-xs cursor-pointer select-none transition-all duration-150
                 border min-w-0 max-w-[200px]
-                ${
-                  isActive
-                    ? `${statusColor} text-white shadow-sm`
-                    : 'border-transparent bg-neutral-800 hover:bg-neutral-700 text-gray-300 hover:text-white'
-                }
+                ${isActive ? `${statusColor} text-white shadow-sm` : 'border-transparent bg-neutral-800 hover:bg-neutral-700 text-gray-300 hover:text-white'}
               `}
               title={`${session.name} - ${session.status}`}
             >
-              {/* 状态图标 */}
-              <div className="flex-shrink-0">
-                {getStatusIcon(session.status)}
-              </div>
+              {/* Status icon */}
+              <div className="flex-shrink-0">{getStatusIcon(session.status)}</div>
 
-              {/* 会话名称 */}
-              <span className="truncate flex-1 font-mono">
-                {session.name}
-              </span>
+              {/* Session name */}
+              <span className="truncate flex-1 font-mono">{session.name}</span>
 
-              {/* 关闭按钮 */}
+              {/* Close button */}
               <button
                 onClick={(e) => handleTabClose(e, session.id)}
                 className="flex-shrink-0 opacity-0 group-hover:opacity-100 
                            hover:bg-red-500/20 hover:text-red-400 rounded p-0.5
                            transition-all duration-150"
-                title="关闭连接"
+                title="Close connection"
               >
                 <X className="w-3 h-3" />
               </button>
 
-              {/* 活跃指示器 */}
+              {/* Active indicator */}
               {isActive && (
-                <div className="absolute -bottom-px left-1/2 transform -translate-x-1/2 
-                               w-8 h-0.5 bg-lime-400 rounded-full" />
+                <div
+                  className="absolute -bottom-px left-1/2 transform -translate-x-1/2 
+                               w-8 h-0.5 bg-lime-400 rounded-full"
+                />
               )}
 
-              {/* 错误状态的红色边框强调 */}
-              {session.status === 'error' && (
-                <div className="absolute inset-0 border border-red-400/30 rounded-md pointer-events-none" />
-              )}
+              {/* Red border emphasis for error state */}
+              {session.status === 'error' && <div className="absolute inset-0 border border-red-400/30 rounded-md pointer-events-none" />}
             </div>
           )
         })}
       </div>
 
-      {/* 会话状态摘要 */}
+      {/* Session actions and status summary */}
       {sessions.length > 0 && (
-        <div className="flex items-center gap-2 ml-4 text-xs text-gray-400">
-          <div className="flex items-center gap-1">
-            <Terminal className="w-3 h-3" />
-            <span>{sessions.length}</span>
+        <div className="flex items-center gap-4 ml-4">
+          {/* File Transfer Button */}
+          {activeSessionId && onOpenFileTransfer && (
+            <button
+              onClick={onOpenFileTransfer}
+              className="flex items-center gap-1 px-2 py-1 text-xs 
+                         bg-neutral-800 hover:bg-neutral-700 rounded-md 
+                         text-gray-300 hover:text-white transition-all duration-150
+                         border border-neutral-700 hover:border-neutral-600"
+              title="文件传输"
+            >
+              <FolderSync className="w-3 h-3" />
+              <span>文件</span>
+            </button>
+          )}
+
+          {/* Status Summary */}
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="flex items-center gap-1">
+              <Terminal className="w-3 h-3" />
+              <span>{sessions.length}</span>
+            </div>
+            {sessions.some((s) => s.status === 'connected') && (
+              <div className="flex items-center gap-1 text-lime-400">
+                <div className="w-2 h-2 bg-lime-400 rounded-full" />
+                <span>{sessions.filter((s) => s.status === 'connected').length}</span>
+              </div>
+            )}
+            {sessions.some((s) => s.status === 'error') && (
+              <div className="flex items-center gap-1 text-red-400">
+                <div className="w-2 h-2 bg-red-400 rounded-full" />
+                <span>{sessions.filter((s) => s.status === 'error').length}</span>
+              </div>
+            )}
           </div>
-          {sessions.some(s => s.status === 'connected') && (
-            <div className="flex items-center gap-1 text-lime-400">
-              <div className="w-2 h-2 bg-lime-400 rounded-full" />
-              <span>{sessions.filter(s => s.status === 'connected').length}</span>
-            </div>
-          )}
-          {sessions.some(s => s.status === 'error') && (
-            <div className="flex items-center gap-1 text-red-400">
-              <div className="w-2 h-2 bg-red-400 rounded-full" />
-              <span>{sessions.filter(s => s.status === 'error').length}</span>
-            </div>
-          )}
         </div>
       )}
     </div>

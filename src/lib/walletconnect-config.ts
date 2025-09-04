@@ -1,45 +1,46 @@
 import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi/react'
 import { xLayerTestnet, xLayerMainnet } from './web3-config'
 
-// WalletConnect Project ID - 在生产环境中需要从 https://cloud.walletconnect.com 获取有效ID
-export const WALLETCONNECT_PROJECT_ID = '82704de434624e1e9e7f74890ea8166a'
+// WalletConnect Project ID - a valid ID needs to be obtained from https://cloud.walletconnect.com for production environments
+export const WALLETCONNECT_PROJECT_ID = '3805e25bdd69f068b33004da1054407d'
 
-// 项目元数据
+// Project metadata
 export const projectMetadata = {
-  name: 'Web3 SSH Manager',
-  description: '基于区块链的 SSH 配置管理工具',
-  url: 'https://web3-ssh-manager.local',
+  name: 'Nexion',
+  description: 'A blockchain-based SSH configuration management tool',
+  url: 'https://nexion.local',
   icons: ['https://avatars.githubusercontent.com/u/37784886']
 }
 
-// 支持的链
+// Supported chains
 export const chains = [xLayerTestnet, xLayerMainnet] as const
 
-// 环境检测
+// Environment detection
 export const isElectron = typeof window !== 'undefined' && window.process?.type === 'renderer'
 export const isBrowser = typeof window !== 'undefined' && !isElectron
 
-// WalletConnect Wagmi 配置
+// WalletConnect Wagmi Configuration
 export const walletConnectConfig = defaultWagmiConfig({
   chains,
   projectId: WALLETCONNECT_PROJECT_ID,
   metadata: projectMetadata,
   enableWalletConnect: true,
-  enableInjected: isElectron ? false : true, // 根据环境决定是否启用 injected
-  enableEIP6963: !isElectron,
-  enableCoinbase: !isElectron,
+  enableInjected: false, // Electron 中禁用
+  enableEIP6963: false,  // Electron 中禁用
+  enableCoinbase: false, // Electron 中禁用
+  ssr: false,
 })
 
-// 在模块顶层创建 Web3Modal 实例（仅在浏览器环境）
+// Create a Web3Modal instance at the top level of the module (only in browser environment)
 let web3Modal: ReturnType<typeof createWeb3Modal> | null = null
 
-// 立即初始化 Web3Modal（如果在浏览器环境）
+// Initialize Web3Modal immediately (if in browser environment)
 if (typeof window !== 'undefined') {
   try {
     web3Modal = createWeb3Modal({
       wagmiConfig: walletConnectConfig,
       projectId: WALLETCONNECT_PROJECT_ID,
-      chains,
+      chains: chains as any,
       defaultChain: xLayerTestnet,
       themeMode: 'light',
       themeVariables: {
@@ -47,15 +48,15 @@ if (typeof window !== 'undefined') {
         '--w3m-color-mix-strength': 20,
         '--w3m-border-radius-master': '8px'
       },
+      // Electron 特定配置
+      enableOnramp: false,       // 禁用法币入口
+      enableSwaps: false,        // 禁用交换功能
+      enableAnalytics: false,    // 禁用分析
+      allowUnsupportedChain: true,
       featuredWalletIds: [
-        // OKX Wallet
-        'e7c4d26541a7fd84dbdfa9922d3ad21e936e13a7a0e44385d44f006139e44d3b',
-        // MetaMask
-        'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96',
-        // Trust Wallet
-        '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0',
-        // TokenPocket
-        'e025619980a5a91f30ffa27eb5b3a4b6b1adc9b6732b93e3e9ad0fb2db4e9e2c'
+        'e7c4d26541a7fd84dbdfa9922d3ad21e936e13a7a0e44385d44f006139e44d3b', // OKX
+        'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
+        '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust
       ]
     })
     console.log('Web3Modal initialized successfully')
@@ -68,7 +69,7 @@ export function getWeb3Modal() {
   return web3Modal
 }
 
-// 确保 Web3Modal 已初始化的辅助函数
+// Helper function to ensure Web3Modal is initialized
 export function ensureWeb3Modal() {
   if (!web3Modal && typeof window !== 'undefined') {
     throw new Error('Web3Modal not initialized. This should not happen.')

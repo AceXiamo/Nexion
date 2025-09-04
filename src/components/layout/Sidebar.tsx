@@ -44,20 +44,10 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       isCollapsed ? 'w-16' : 'w-80'
     }`}>
       <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="p-6 border-b border-neutral-800 pt-10 h-[128px]">
-          <div className="flex items-center justify-between">
-            {!isCollapsed && (
-              <div className="flex items-center space-x-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-lime-400 to-lime-500 rounded-xl flex items-center justify-center">
-                  <Icon icon="mdi:shield-lock" className="w-6 h-6 text-black" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-white">{t('navigation:appTitle')}</h1>
-                  <p className="text-sm text-neutral-400">{t('navigation:appSubtitle')}</p>
-                </div>
-              </div>
-            )}
+        {/* Navigation */}
+        <nav className="flex-1 p-6 pt-10">
+          {/* Collapse Button */}
+          <div className="flex justify-end mb-6">
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="btn-icon"
@@ -68,28 +58,25 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               />
             </button>
           </div>
-        </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-6">
           <ul className="space-y-3">
             {navigation.map((item) => (
               <li key={item.id}>
                 <button
                   onClick={() => onTabChange(item.id)}
-                  className={`w-full flex border-0 items-center space-x-4 px-4 py-3 rounded-lg transition-all duration-200 group relative ${
+                  className={`w-full flex items-center space-x-4 px-4 py-3 rounded-lg transition-all duration-300 ease-out group relative transform hover:scale-[1.02] active:scale-[0.98] ${
                     activeTab === item.id
-                      ? 'bg-neutral-800 text-white'
-                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                      ? 'bg-neutral-800 text-white shadow-lg'
+                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white hover:shadow-md'
                   }`}
                   title={isCollapsed ? item.name : undefined}
                 >                  
                   <Icon 
                     icon={item.icon} 
-                    className={`w-5 h-5 flex-shrink-0 ${
+                    className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ease-out ${
                       activeTab === item.id 
-                        ? 'text-lime-400' 
-                        : 'text-neutral-400 group-hover:text-white'
+                        ? 'text-lime-400 scale-110' 
+                        : 'text-neutral-400 group-hover:text-white group-hover:scale-105'
                     }`}
                   />
                   {!isCollapsed && (
@@ -99,9 +86,9 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                       }`}>
                         {item.name}
                       </div>
-                      <div className="text-xs text-neutral-500 mt-0.5">
+                      {/* <div className="text-xs text-neutral-500 mt-0.5">
                         {item.description}
-                      </div>
+                      </div> */}
                     </div>
                   )}
                 </button>
@@ -113,12 +100,13 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         {/* Footer */}
         {!isCollapsed && (
           <div className="p-6 border-t border-neutral-800">
-            <div className="flex items-center justify-between px-4 py-3 bg-neutral-900 rounded-lg">
-              <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-between px-4 py-3 rounded-lg tech-glow-border">
+              
+              <div className="relative flex items-center space-x-3 z-10">
                 <div className="w-2 h-2 bg-lime-400 rounded-full animate-pulse"></div>
                 <span className="text-xs text-neutral-400">{t('navigation:networkStatus')}</span>
               </div>
-              <div className="w-2 h-2 bg-lime-400 rounded-full opacity-60"></div>
+              <div className="relative w-2 h-2 bg-lime-400 rounded-full opacity-60 z-10"></div>
             </div>
           </div>
         )}

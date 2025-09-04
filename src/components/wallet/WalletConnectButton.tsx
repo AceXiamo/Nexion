@@ -124,7 +124,7 @@ export function WalletConnectButton() {
         {/* {isConnecting ? (
           <>
             <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
-            <span>连接中...</span>
+            <span>Connecting...</span>
           </>
         ) : ( */}
           <>
@@ -134,7 +134,7 @@ export function WalletConnectButton() {
         {/* )} */}
       </button>
 
-      {/* 连接说明 - 悬停显示 */}
+      {/* Connection instructions - show on hover */}
       {!isConnected && (
         <div className="absolute right-0 top-full mt-3 w-96 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-800 p-5 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
           <div className="text-sm text-neutral-200">
@@ -143,7 +143,7 @@ export function WalletConnectButton() {
               <span className="font-semibold text-white">{t('wallet:connectionGuide')}</span>
             </div>
             <ol className="list-decimal list-inside space-y-2 text-xs text-neutral-300 leading-relaxed">
-              {(t('wallet:connectionSteps', { returnObjects: true }) as string[]).map((step: string, index: number) => (
+              {(t('wallet:connectionSteps', { returnObjects: true }) as unknown as string[]).map((step: string, index: number) => (
                 <li key={index}>{step}</li>
               ))}
             </ol>

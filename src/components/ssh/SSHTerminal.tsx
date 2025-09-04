@@ -1,8 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { Terminal } from '@xterm/xterm'
-import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
 import '@/types/electron'
+import { sshEventDispatcher } from '@/services/ssh-event-dispatcher'
+import { terminalPersistenceManager } from '@/services/terminal-persistence-manager'
 
 interface SSHTerminalProps {
   sessionId?: string
@@ -12,170 +12,96 @@ interface SSHTerminalProps {
 
 export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps) {
   const terminalRef = useRef<HTMLDivElement>(null)
-  const terminalInstance = useRef<Terminal | null>(null)
-  const fitAddon = useRef<FitAddon | null>(null)
   const currentSessionId = useRef<string | undefined>(sessionId)
 
-  // 初始化终端
+  // Initialize terminal
   useEffect(() => {
-    if (!terminalRef.current) return
+    if (!terminalRef.current || !sessionId) return
 
-    console.log('🚀 初始化终端实例') // 调试日志
+    console.log('🚀 Initialize terminal instance:', sessionId)
 
-    // 创建终端实例
-    const terminal = new Terminal({
-      theme: {
-        background: '#000000',
-        foreground: '#ffffff',
-        cursor: '#BCFF2F',
-        cursorAccent: '#000000',
-        selectionBackground: '#BCFF2F40',
-        black: '#000000',
-        red: '#ff5555',
-        green: '#50fa7b',
-        yellow: '#f1fa8c',
-        blue: '#bd93f9',
-        magenta: '#ff79c6',
-        cyan: '#8be9fd',
-        white: '#f8f8f2',
-        brightBlack: '#6272a4',
-        brightRed: '#ff5555',
-        brightGreen: '#50fa7b',
-        brightYellow: '#f1fa8c',
-        brightBlue: '#bd93f9',
-        brightMagenta: '#ff79c6',
-        brightCyan: '#8be9fd',
-        brightWhite: '#ffffff',
-      },
-      fontFamily: '"SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace',
-      fontSize: 13,
-      lineHeight: 1.2,
-      cursorBlink: true,
-      scrollback: 1000,
-      tabStopWidth: 4,
-      // 添加这些配置
-      convertEol: true, // 自动转换行尾
-      disableStdin: false, // 允许输入
-      screenReaderMode: false, // 关闭屏幕阅读器模式
-      allowProposedApi: true, // 允许使用实验性API
-    })
+    // Create terminal instance
+    const { terminal, fitAddon } = terminalPersistenceManager.getOrCreateTerminal(sessionId)
+    console.log('🚀 Terminal instance:', terminal)
 
-    // 创建自适应插件
-    const fitPlugin = new FitAddon()
-    terminal.loadAddon(fitPlugin)
+    // If terminal is not yet mounted to DOM, mount it
+    if (!terminal.element) {
+      terminal.open(terminalRef.current)
+      fitAddon.fit()
+    } else {
+      // If terminal is already mounted to another DOM node, remount to current node
+      if (terminal.element.parentNode !== terminalRef.current) {
+        if (terminalRef.current) {
+          terminalRef.current.appendChild(terminal.element)
+        } else {
+          terminal.open(terminalRef.current)
+        }
+        fitAddon.fit()
+      }
+    }
 
-    // 打开终端
-    terminal.open(terminalRef.current)
-    fitPlugin.fit()
+    // Register to global event dispatcher
+    sshEventDispatcher.registerTerminal(sessionId, terminal)
 
-    // 保存引用
-    terminalInstance.current = terminal
-    fitAddon.current = fitPlugin
-
-    // 监听用户输入
-    terminal.onData((data) => {
+    // Listen for user input
+    const handleData = (data: string) => {
       if (currentSessionId.current && window.ipcRenderer?.ssh) {
         window.ipcRenderer.ssh.sendCommand(currentSessionId.current, data)
       }
-    })
+    }
 
-    // 监听终端大小变化
-    terminal.onResize(({ cols, rows }) => {
+    // Listen for terminal size changes
+    const handleResize = ({ cols, rows }: { cols: number; rows: number }) => {
       if (currentSessionId.current && onResize) {
         onResize(cols, rows)
         window.ipcRenderer?.ssh.resizeSession(currentSessionId.current, cols, rows)
       }
-    })
-
-    // 初始化时显示欢迎信息
-    if (!sessionId) {
-      terminal.write('\r\n\x1b[1;32m欢迎使用 Web3 SSH Manager\x1b[0m\r\n')
-      terminal.write('请创建 SSH 连接开始使用...\r\n')
     }
+
+    const dataDisposable = terminal.onData(handleData)
+    const resizeDisposable = terminal.onResize(handleResize)
 
     return () => {
-      terminal.dispose()
-      terminalInstance.current = null
-      fitAddon.current = null
-    }
-  }, [])
+      // Unregister from global dispatcher
+      dataDisposable.dispose()
+      resizeDisposable.dispose()
 
-  // 更新当前会话ID
+      sshEventDispatcher.unregisterTerminal(sessionId)
+    }
+  }, [sessionId, onResize])
+
+  // Update current session ID
   useEffect(() => {
     currentSessionId.current = sessionId
-
-    if (terminalInstance.current && sessionId) {
-      // 清空终端并显示连接信息
-      terminalInstance.current.clear()
-    }
+    // Don't clear terminal content, keep session history
   }, [sessionId])
 
-  // 监听会话数据
-  useEffect(() => {
-    if (!window.ipcRenderer) return
+  // sessionId is determined at initialization and should not change, remove duplicate registration logic
 
-    const handleSessionData = (_event: unknown, receivedSessionId: string, data: string) => {
-      console.log('handleSessionData', receivedSessionId, data)
-      if (receivedSessionId === sessionId && terminalInstance.current) {
-        terminalInstance.current.write(data)
-      }
-    }
-
-    const handleSessionConnected = (_event: unknown, connectedSessionId: string) => {
-      if (connectedSessionId === sessionId && terminalInstance.current) {
-        terminalInstance.current.write('\r\n\x1b[1;32m✓ SSH 连接已建立\x1b[0m\r\n')
-      }
-    }
-
-    const handleSessionDisconnected = (_event: unknown, disconnectedSessionId: string) => {
-      if (disconnectedSessionId === sessionId && terminalInstance.current) {
-        terminalInstance.current.write('\r\n\x1b[1;31m✗ SSH 连接已断开\x1b[0m\r\n')
-      }
-    }
-
-    const handleSessionError = (_event: unknown, errorSessionId: string, error: string) => {
-      if (errorSessionId === sessionId && terminalInstance.current) {
-        terminalInstance.current.write(`\r\n\x1b[1;31m✗ 连接错误: ${error}\x1b[0m\r\n`)
-      }
-    }
-
-    // 注册事件监听
-    window.ipcRenderer.on('ssh-session-data', handleSessionData)
-    window.ipcRenderer.on('ssh-session-connected', handleSessionConnected)
-    window.ipcRenderer.on('ssh-session-disconnected', handleSessionDisconnected)
-    window.ipcRenderer.on('ssh-session-error', handleSessionError)
-
-    return () => {
-      window.ipcRenderer?.off('ssh-session-data', handleSessionData)
-      window.ipcRenderer?.off('ssh-session-connected', handleSessionConnected)
-      window.ipcRenderer?.off('ssh-session-disconnected', handleSessionDisconnected)
-      window.ipcRenderer?.off('ssh-session-error', handleSessionError)
-    }
-  }, [sessionId])
-
-  // 处理终端大小调整
+  // Handle terminal size adjustment
   const handleResize = useCallback(() => {
-    if (fitAddon.current && isVisible) {
-      fitAddon.current.fit()
+    if (sessionId && isVisible) {
+      const terminalData = terminalPersistenceManager.getOrCreateTerminal(sessionId)
+      terminalData.fitAddon.fit()
     }
-  }, [isVisible])
+  }, [isVisible, sessionId])
 
-  // 监听窗口大小变化
+  // Listen for window size changes
   useEffect(() => {
     if (!isVisible) return
 
-    // 立即调整大小
+    // Adjust size immediately
     handleResize()
 
-    // 监听窗口大小变化
+    // Listen for window size changes
     window.addEventListener('resize', handleResize)
 
-    // 使用 ResizeObserver 监听容器大小变化
+    // Use ResizeObserver to monitor container size changes
     let resizeObserver: ResizeObserver | null = null
 
     if (terminalRef.current) {
       resizeObserver = new ResizeObserver(() => {
-        // 延迟调整以避免频繁调用
+        // Delayed adjustment to avoid frequent calls
         setTimeout(handleResize, 10)
       })
       resizeObserver.observe(terminalRef.current)
@@ -187,15 +113,16 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
     }
   }, [isVisible, handleResize])
 
-  // 聚焦终端
+  // Focus terminal
   useEffect(() => {
-    if (isVisible && terminalInstance.current) {
-      terminalInstance.current.focus()
+    if (isVisible && sessionId) {
+      const terminalData = terminalPersistenceManager.getOrCreateTerminal(sessionId)
+      terminalData.terminal.focus()
     }
   }, [isVisible, sessionId])
 
   return (
-    <div className={`flex-1 h-full ${isVisible ? 'block' : 'hidden'}`}>
+    <div className={`absolute inset-0 ${isVisible ? 'block' : 'hidden'}`}>
       <div ref={terminalRef} className="w-full h-full" style={{ minHeight: '400px' }} />
     </div>
   )

@@ -28,7 +28,29 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     resizeSession: (sessionId: string, cols: number, rows: number) => ipcRenderer.invoke('ssh-resize-session', sessionId, cols, rows),
     getAllSessions: () => ipcRenderer.invoke('ssh-get-all-sessions'),
     getActiveSession: () => ipcRenderer.invoke('ssh-get-active-session'),
+    reconnectSession: (sessionId: string) => ipcRenderer.invoke('ssh-reconnect-session', sessionId),
     testConnection: (config: any) => ipcRenderer.invoke('ssh-test-connection', config),
+  },
+
+  // File System 相关方法
+  fs: {
+    readdir: (dirPath: string) => ipcRenderer.invoke('fs:readdir', dirPath),
+    stat: (filePath: string) => ipcRenderer.invoke('fs:stat', filePath),
+    mkdir: (dirPath: string) => ipcRenderer.invoke('fs:mkdir', dirPath),
+    unlink: (filePath: string) => ipcRenderer.invoke('fs:unlink', filePath),
+    rmdir: (dirPath: string) => ipcRenderer.invoke('fs:rmdir', dirPath),
+  },
+
+  // SFTP 相关方法
+  sftp: {
+    connect: (sessionId: string) => ipcRenderer.invoke('sftp:connect', sessionId),
+    disconnect: (sessionId: string) => ipcRenderer.invoke('sftp:disconnect', sessionId),
+    listFiles: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:listFiles', sessionId, path),
+    uploadFile: (sessionId: string, localPath: string, remotePath: string) => ipcRenderer.invoke('sftp:uploadFile', sessionId, localPath, remotePath),
+    downloadFile: (sessionId: string, remotePath: string, localPath: string) => ipcRenderer.invoke('sftp:downloadFile', sessionId, remotePath, localPath),
+    createDirectory: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:mkdir', sessionId, path),
+    deleteFile: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:unlink', sessionId, path),
+    deleteDirectory: (sessionId: string, path: string) => ipcRenderer.invoke('sftp:rmdir', sessionId, path),
   },
 })
 
@@ -81,10 +103,10 @@ if (process.env.NODE_ENV === 'development') {
               throw new Error(`Mock wallet: Method ${method} not implemented`)
           }
         },
-        on: (event: string, callback: any) => {
+        on: (event: string) => {
           console.log('Mock wallet: Listening for', event)
         },
-        removeListener: (event: string, callback: any) => {
+        removeListener: (event: string) => {
           console.log('Mock wallet: Removing listener for', event)
         }
       }

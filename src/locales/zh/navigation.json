@@ -7,7 +7,7 @@
   "statsDesc": "连接使用分析",
   "about": "关于",
   "aboutDesc": "版本信息与帮助",
-  "appTitle": "SSH Manager",
+  "appTitle": "Nexion",
   "appSubtitle": "Web3 Security",
   "networkStatus": "X Layer Testnet",
   "secureTerminal": "安全终端",
@@ -21,6 +21,7 @@
   "reconnect": "重连",
   "closeConnection": "关闭连接",
   "addConnection": "添加连接",
+  "mainMenu": "主菜单",
   "pageTitle": {
     "connections": "SSH 连接管理",
     "settings": "设置",
@@ -31,6 +32,6 @@
     "connections": "管理你的 SSH 配置和连接",
     "settings": "应用设置和个人偏好",
     "stats": "查看你的 SSH 使用情况",
-    "about": "了解 Web3 SSH Manager"
+    "about": "了解 Nexion"
   }
 }

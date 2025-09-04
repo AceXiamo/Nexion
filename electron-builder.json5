@@ -3,7 +3,7 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.web3.ssh-manager",
   "asar": true,
-  "productName": "Web3 SSH Manager",
+  "productName": "Nexion",
   "directories": {
     "output": "release/${version}",
     "buildResources": "public"
@@ -16,7 +16,7 @@
     "target": [
       "dmg"
     ],
-    "icon": "app-icon.icns",
+    "icon": "app-icon.png",
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
     "entitlements": "build/entitlements.mac.plist",
     "entitlementsInherit": "build/entitlements.mac.plist",
@@ -32,7 +32,7 @@
         ]
       }
     ],
-    "icon": "app-icon.ico",
+    "icon": "app-icon.png",
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
   "nsis": {
@@ -40,8 +40,8 @@
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false,
-    "installerIcon": "app-icon.ico",
-    "uninstallerIcon": "app-icon.ico",
+    "installerIcon": "app-icon.png",
+    "uninstallerIcon": "app-icon.png",
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true
   },

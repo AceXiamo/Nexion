@@ -6,23 +6,23 @@ import type { SSHConfigInput, DecryptedSSHConfig, SSHConfig } from '@/types/ssh'
 import toast from 'react-hot-toast'
 
 export interface UseSSHConfigsReturn {
-  // 数据状态
+  // Data state
   configs: DecryptedSSHConfig[]
   isLoading: boolean
   error: string | null
 
-  // 统计信息
+  // Statistics
   totalConfigs: number
   activeConfigs: number
 
-  // 操作函数
+  // Action functions
   addConfig: (config: SSHConfigInput) => Promise<void>
   updateConfig: (configId: string, config: SSHConfigInput) => Promise<void>
   deleteConfig: (configId: string) => Promise<void>
   refreshConfigs: () => Promise<void>
   clearMasterKeyCache: () => void
 
-  // 操作状态
+  // Action states
   isAdding: boolean
   isUpdating: boolean
   isDeleting: boolean
@@ -33,7 +33,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
   const { signMessageAsync, error: signError } = useSignMessage()
   const sshContract = useSSHContract()
 
-  // 本地状态
+  // Local state
   const [configs, setConfigs] = useState<DecryptedSSHConfig[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,19 +41,19 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
   const [isUpdating, setIsUpdating] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // 获取区块链上的配置数据
+  // Get configuration data from the blockchain
   const { data: rawConfigs, isLoading: isContractLoading, refetch: refetchConfigs } = sshContract.useGetSSHConfigs(address)
 
-  // 应用启动时清理过期的持久缓存
+  // Clean up expired persistent cache on application startup
   useEffect(() => {
     WalletBasedEncryptionService.cleanupExpiredPersistentCache()
   }, [])
 
-  // 统一处理链上数据的解密和转换
+  // Unified processing of on-chain data decryption and conversion
   const processRawConfigs = useCallback(
     async (rawConfigs: SSHConfig[]): Promise<void> => {
       if (!address || !signMessageAsync || !rawConfigs) {
-        console.log('处理跳过: 缺少必要参数')
+        console.log('Processing skipped: missing necessary parameters')
         return
       }
 
@@ -63,40 +63,40 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
       try {
         const decryptedConfigs: DecryptedSSHConfig[] = []
 
-        console.log(`开始处理 ${rawConfigs.length} 个配置，使用主密钥缓存优化`)
+        console.log(`Start processing ${rawConfigs.length} configurations with master key cache optimization`)
 
-        // 顺序处理所有配置（第一个配置会触发主密钥派生和缓存，后续配置使用缓存）
+        // Process all configurations sequentially (the first configuration will trigger master key derivation and caching, subsequent configurations will use the cache)
         for (const rawConfig of rawConfigs) {
           try {
             const configId = rawConfig.configId.toString()
-            console.log('解密配置 ID:', configId)
-            
-            // 解密配置（会自动使用主密钥缓存）
+            console.log('Decrypting config ID:', configId)
+
+            // Decrypt configuration (will automatically use master key cache)
             const decryptedConfig = await WalletBasedEncryptionService.decryptSSHConfig(
               rawConfig.encryptedData,
               address,
               configId,
               new Date(Number(rawConfig.timestamp) * 1000),
               rawConfig.isActive,
-              signMessageAsync
+              signMessageAsync,
             )
 
             decryptedConfigs.push(decryptedConfig)
-            console.log('配置解密成功:', configId)
+            console.log('Configuration decrypted successfully:', configId)
           } catch (error) {
-            console.error(`配置 ${rawConfig.configId} 解密失败:`, error)
-            
-            // 检查是否是用户取消签名
-            if (error instanceof Error && error.message.includes('用户取消')) {
-              console.log('用户取消签名，停止处理')
-              setError('用户取消了签名操作')
+            console.error(`Failed to decrypt config ${rawConfig.configId}:`, error)
+
+            // Check if the user cancelled the signature
+            if (error instanceof Error && error.message.includes('User rejected the request')) {
+              console.log('User cancelled signature, stopping processing')
+              setError('User cancelled the signature operation')
               return
             }
-            
-            // 添加错误占位符
+
+            // Add error placeholder
             decryptedConfigs.push({
               id: rawConfig.configId.toString(),
-              name: '⚠️ 解密失败',
+              name: '⚠️ Decryption Failed',
               host: 'unknown',
               port: 22,
               username: 'unknown',
@@ -109,79 +109,79 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         }
 
         setConfigs(decryptedConfigs)
-        console.log('配置处理完成，解密配置数量:', decryptedConfigs.length)
-        
-        // 输出缓存状态（调试用）
+        console.log('Configuration processing complete, number of decrypted configs:', decryptedConfigs.length)
+
+        // Output cache status (for debugging)
         const cacheStatus = WalletBasedEncryptionService.getCacheStatus()
-        console.log('主密钥缓存状态:', {
-          内存缓存: `${cacheStatus.memoryCache.cacheSize} 个 [${cacheStatus.memoryCache.cachedAddresses.join(', ')}]`,
-          持久缓存: `${cacheStatus.persistentCache.cacheSize} 个 [${cacheStatus.persistentCache.cachedAddresses.join(', ')}]`
+        console.log('Master key cache status:', {
+          'Memory cache': `${cacheStatus.memoryCache.cacheSize} items [${cacheStatus.memoryCache.cachedAddresses.join(', ')}]`,
+          'Persistent cache': `${cacheStatus.persistentCache.cacheSize} items [${cacheStatus.persistentCache.cachedAddresses.join(', ')}]`,
         })
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '处理配置失败'
+        const errorMessage = error instanceof Error ? error.message : 'Failed to process configurations'
         setError(errorMessage)
-        console.error('处理配置失败:', error)
+        console.error('Failed to process configurations:', error)
       } finally {
         setIsLoading(false)
       }
     },
-    [address, signMessageAsync]
+    [address, signMessageAsync],
   )
 
-  // 手动刷新配置列表（重新获取链上数据）
+  // Manually refresh the configuration list (re-fetch on-chain data)
   const refreshConfigs = useCallback(async () => {
-    console.log('手动刷新配置：重新获取链上数据')
+    console.log('Manually refreshing configs: re-fetching on-chain data')
     await refetchConfigs()
   }, [refetchConfigs])
 
-  // 清理主密钥缓存（调试/故障排除用）
+  // Clear master key cache (for debugging/troubleshooting)
   const clearMasterKeyCache = useCallback(() => {
     if (address) {
       WalletBasedEncryptionService.clearMasterKeyCache(address)
-      console.log('已清理当前钱包的主密钥缓存')
+      console.log('Cleared master key cache for the current wallet')
     }
   }, [address])
 
-  // 添加新配置
+  // Add new configuration
   const addConfig = useCallback(
     async (config: SSHConfigInput) => {
       if (!address || !isConnected) {
-        throw new Error('请先连接钱包')
+        throw new Error('Please connect your wallet first')
       }
 
       if (!signMessageAsync) {
-        throw new Error('签名功能不可用，请检查钱包连接')
+        throw new Error('Signing feature is not available, please check your wallet connection')
       }
 
       setIsAdding(true)
 
       try {
-        // 1. 加密配置数据
+        // 1. Encrypt configuration data
         const encryptedData = await WalletBasedEncryptionService.encryptSSHConfig(config, address, signMessageAsync)
 
-        // 2. 添加到区块链
+        // 2. Add to the blockchain
         await sshContract.addSSHConfig(encryptedData)
 
-        toast.success('SSH 配置提交成功！等待区块链确认...')
+        toast.success('SSH config submitted successfully! Waiting for blockchain confirmation...')
 
-        // 3. 立即刷新一次（可能会获取到新数据）
+        // 3. Refresh immediately once (might get new data)
         setTimeout(async () => {
-          console.log('1秒后自动刷新配置列表')
+          console.log('Auto-refreshing config list after 1 second')
           await refetchConfigs()
         }, 1000)
 
-        // 4. 再次延迟刷新确保获取到数据
+        // 4. Refresh again with a delay to ensure data is fetched
         setTimeout(async () => {
-          console.log('5秒后再次刷新配置列表')
+          console.log('Refreshing config list again after 5 seconds')
           await refetchConfigs()
         }, 5000)
       } catch (error) {
-        let errorMessage = '添加配置失败'
+        let errorMessage = 'Failed to add configuration'
 
         if (error instanceof Error) {
           errorMessage = error.message
         } else if (signError) {
-          errorMessage = '签名失败，请重试'
+          errorMessage = 'Signature failed, please try again'
         }
 
         toast.error(errorMessage)
@@ -190,42 +190,42 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         setIsAdding(false)
       }
     },
-    [address, isConnected, signMessageAsync, signError, sshContract, refetchConfigs]
+    [address, isConnected, signMessageAsync, signError, sshContract, refetchConfigs],
   )
 
-  // 更新配置
+  // Update configuration
   const updateConfig = useCallback(
     async (configId: string, config: SSHConfigInput) => {
       if (!address || !isConnected) {
-        throw new Error('请先连接钱包')
+        throw new Error('Please connect your wallet first')
       }
 
       if (!signMessageAsync) {
-        throw new Error('签名功能不可用，请检查钱包连接')
+        throw new Error('Signing feature is not available, please check your wallet connection')
       }
 
       setIsUpdating(true)
 
       try {
-        // 1. 加密新的配置数据
+        // 1. Encrypt new configuration data
         const encryptedData = await WalletBasedEncryptionService.encryptSSHConfig(config, address, signMessageAsync)
 
-        // 2. 更新区块链配置
+        // 2. Update blockchain configuration
         await sshContract.updateSSHConfig(BigInt(configId), encryptedData)
 
-        toast.success('SSH 配置更新成功！')
+        toast.success('SSH config updated successfully!')
 
-        // 3. 刷新配置列表
+        // 3. Refresh configuration list
         if (sshContract.isConfirmed) {
           await refetchConfigs()
         }
       } catch (error) {
-        let errorMessage = '更新配置失败'
+        let errorMessage = 'Failed to update configuration'
 
         if (error instanceof Error) {
           errorMessage = error.message
         } else if (signError) {
-          errorMessage = '签名失败，请重试'
+          errorMessage = 'Signature failed, please try again'
         }
 
         toast.error(errorMessage)
@@ -234,41 +234,40 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         setIsUpdating(false)
       }
     },
-    [address, isConnected, signMessageAsync, signError, sshContract, refetchConfigs]
+    [address, isConnected, signMessageAsync, signError, sshContract, refetchConfigs],
   )
 
-  // 删除配置
+  // Delete configuration
   const deleteConfig = useCallback(
     async (configId: string) => {
       if (!address || !isConnected) {
-        throw new Error('请先连接钱包')
+        throw new Error('Please connect your wallet first')
       }
 
       setIsDeleting(true)
 
       try {
-        // 1. 撤销区块链配置
+        // 1. Revoke blockchain configuration
         await sshContract.revokeConfig(BigInt(configId))
 
-        toast.success('SSH 配置删除成功！')
+        toast.success('SSH config deleted successfully!')
 
-        // 2. 刷新配置列表
+        // 2. Refresh configuration list
         if (sshContract.isConfirmed) {
           await refetchConfigs()
         }
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '删除配置失败'
+        const errorMessage = error instanceof Error ? error.message : 'Failed to delete configuration'
         toast.error(errorMessage)
         throw new Error(errorMessage)
       } finally {
         setIsDeleting(false)
       }
     },
-    [address, isConnected, sshContract, refetchConfigs, refreshConfigs]
+    [address, isConnected, sshContract, refetchConfigs, refreshConfigs],
   )
 
-
-  // 统计信息
+  // Statistics
   const { totalConfigs, activeConfigs } = useMemo(() => {
     return {
       totalConfigs: configs.length,
@@ -276,41 +275,41 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
     }
   }, [configs])
 
-  // 监听 rawConfigs 变化，自动处理解密
+  // Watch for rawConfigs changes and automatically handle decryption
   useEffect(() => {
     if (rawConfigs && address && isConnected && !isContractLoading) {
       processRawConfigs(rawConfigs)
     }
   }, [rawConfigs, address, isConnected, isContractLoading, processRawConfigs])
 
-  // 监听钱包地址变化
+  // Watch for wallet address changes
   useEffect(() => {
-    // 地址变化时清空配置列表并清理缓存
+    // When address changes, clear the config list and cache
     if (!address) {
       setConfigs([])
-      // 清理所有主密钥缓存（用户断开连接）
+      // Clear all master key caches (user disconnected)
       WalletBasedEncryptionService.clearMasterKeyCache()
     }
   }, [address])
 
   return {
-    // 数据状态
-    configs: configs.filter((config) => config.isActive), // 只返回活跃配置
+    // Data state
+    configs: configs.filter((config) => config.isActive), // Only return active configurations
     isLoading: isLoading || isContractLoading,
     error,
 
-    // 统计信息
+    // Statistics
     totalConfigs,
     activeConfigs,
 
-    // 操作函数
+    // Action functions
     addConfig,
     updateConfig,
     deleteConfig,
     refreshConfigs,
     clearMasterKeyCache,
 
-    // 操作状态
+    // Action states
     isAdding,
     isUpdating,
     isDeleting,
@@ -318,7 +317,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
 }
 
 /**
- * 获取单个 SSH 配置的 Hook
+ * Hook to get a single SSH configuration
  */
 export function useSSHConfig(configId: string) {
   const { address, isConnected } = useAccount()
@@ -337,21 +336,21 @@ export function useSSHConfig(configId: string) {
     setError(null)
 
     try {
-      // 直接解密配置，不使用缓存
+      // Directly decrypt configuration, without using cache
       const decryptedConfig = await WalletBasedEncryptionService.decryptSSHConfig(
         rawConfig.encryptedData,
         address,
         configId,
         new Date(Number(rawConfig.timestamp) * 1000),
         rawConfig.isActive,
-        signMessageAsync
+        signMessageAsync,
       )
 
       setConfig(decryptedConfig)
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取配置失败'
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get configuration'
       setError(errorMessage)
-      console.error('获取单个配置失败:', error)
+      console.error('Failed to get single configuration:', error)
     } finally {
       setIsLoading(false)
     }

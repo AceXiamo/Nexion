@@ -41,6 +41,17 @@ declare global {
         reconnectSession: (sessionId: string) => Promise<SSHIPCResponse>
         testConnection: (config: any) => Promise<any>
       }
+
+      sftp: {
+        connect: (sessionId: string) => Promise<void>
+        disconnect: (sessionId: string) => void
+        listFiles: (sessionId: string, path: string) => Promise<any[]>
+        uploadFile: (sessionId: string, localPath: string, remotePath: string, onProgress?: (progress: number) => void) => Promise<void>
+        downloadFile: (sessionId: string, remotePath: string, localPath: string, onProgress?: (progress: number) => void) => Promise<void>
+        createDirectory: (sessionId: string, path: string) => Promise<void>
+        deleteFile: (sessionId: string, path: string) => Promise<void>
+        deleteDirectory: (sessionId: string, path: string) => Promise<void>
+      }
     }
     
     walletDebug: {

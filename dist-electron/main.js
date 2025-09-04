@@ -1,47 +1,45 @@
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-import { app, BrowserWindow, ipcMain } from "electron";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
-import { Client } from "ssh2";
-import { EventEmitter } from "events";
-class SSHSessionManager extends EventEmitter {
+var D = Object.defineProperty;
+var R = (r, t, e) => t in r ? D(r, t, { enumerable: !0, configurable: !0, writable: !0, value: e }) : r[t] = e;
+var v = (r, t, e) => R(r, typeof t != "symbol" ? t + "" : t, e);
+import { app as g, BrowserWindow as k, ipcMain as d } from "electron";
+import { fileURLToPath as _ } from "node:url";
+import h from "node:path";
+import p from "node:fs/promises";
+import { Client as U } from "ssh2";
+import { EventEmitter as H } from "events";
+import A from "node:fs";
+class F extends H {
   constructor() {
     super();
-    __publicField(this, "sessions", /* @__PURE__ */ new Map());
-    __publicField(this, "activeSessionId");
+    v(this, "sessions", /* @__PURE__ */ new Map());
+    v(this, "activeSessionId");
   }
   /**
-   * 生成唯一的会话ID
+   * Generate unique session ID
    */
   generateSessionId() {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substr(2, 9);
-    return `ssh_${timestamp}_${random}`;
+    const e = Date.now(), s = Math.random().toString(36).substr(2, 9);
+    return `ssh_${e}_${s}`;
   }
   /**
-   * 生成智能会话名称
-   * 同一配置的多个会话会自动编号：Config-1, Config-2, Config-3...
+   * Generate smart session name
+   * Multiple sessions from the same config will be automatically numbered: Config-1, Config-2, Config-3...
    */
-  generateSessionName(config) {
-    const existingSessions = Array.from(this.sessions.values()).filter((session) => session.configId === config.id);
-    const sessionCount = existingSessions.length + 1;
-    return `${config.name}-${sessionCount}`;
+  generateSessionName(e) {
+    const n = Array.from(this.sessions.values()).filter((i) => i.configId === e.id).length + 1;
+    return `${e.name}-${n}`;
   }
   /**
-   * 创建新的 SSH 会话
+   * Create new SSH session
    */
-  async createSession(config) {
-    const sessionId = this.generateSessionId();
-    const sessionName = this.generateSessionName(config);
-    const session = {
-      id: sessionId,
-      name: sessionName,
-      configId: config.id,
-      configName: config.name,
-      config,
-      isActive: false,
+  async createSession(e) {
+    const s = this.generateSessionId(), n = this.generateSessionName(e), i = {
+      id: s,
+      name: n,
+      configId: e.id,
+      configName: e.name,
+      config: e,
+      isActive: !1,
       status: "connecting",
       createdAt: /* @__PURE__ */ new Date(),
       lastActivity: /* @__PURE__ */ new Date(),
@@ -49,332 +47,325 @@ class SSHSessionManager extends EventEmitter {
       maxReconnectAttempts: 3,
       bytesTransferred: 0
     };
-    this.sessions.set(sessionId, session);
-    if (this.sessions.size === 1) {
-      this.setActiveSession(sessionId);
-    }
-    this.emit("session-created", this.getSessionData(session));
-    this.connectSession(sessionId).catch((error) => {
-      console.error(`Failed to connect session ${sessionId}:`, error);
-      session.status = "error";
-      session.error = error.message;
-      this.emit("session-error", sessionId, error.message);
-    });
-    return sessionId;
+    return this.sessions.set(s, i), this.sessions.size === 1 && this.setActiveSession(s), this.emit("session-created", this.getSessionData(i)), this.connectSession(s).catch((a) => {
+      console.error(`Failed to connect session ${s}:`, a), i.status = "error", i.error = a.message, this.emit("session-error", s, a.message);
+    }), s;
   }
   /**
-   * 建立 SSH 连接
+   * Establish SSH connection
    */
-  async connectSession(sessionId) {
-    const session = this.sessions.get(sessionId);
-    if (!session) {
-      throw new Error(`Session ${sessionId} not found`);
-    }
-    return new Promise((resolve, reject) => {
-      const { config } = session;
-      const conn = new Client();
-      const startTime = Date.now();
-      const timeout = setTimeout(() => {
-        conn.end();
-        session.status = "error";
-        session.error = "连接超时";
-        this.emit("session-error", sessionId, "连接超时");
-        reject(new Error("连接超时"));
+  async connectSession(e) {
+    const s = this.sessions.get(e);
+    if (!s)
+      throw new Error(`Session ${e} not found`);
+    return new Promise((n, i) => {
+      const { config: a } = s, c = new U(), f = Date.now(), l = setTimeout(() => {
+        c.end(), s.status = "error", s.error = "Connection timeout", this.emit("session-error", e, "Connection timeout"), i(new Error("Connection timeout"));
       }, 15e3);
-      conn.on("ready", () => {
-        clearTimeout(timeout);
-        session.connection = conn;
-        session.status = "connected";
-        session.lastActivity = /* @__PURE__ */ new Date();
-        session.connectionTime = Date.now() - startTime;
-        session.reconnectAttempts = 0;
-        conn.shell((err, stream) => {
-          if (err) {
-            reject(err);
+      c.on("ready", () => {
+        clearTimeout(l), s.connection = c, s.status = "connected", s.lastActivity = /* @__PURE__ */ new Date(), s.connectionTime = Date.now() - f, s.reconnectAttempts = 0, c.shell((w, y) => {
+          if (w) {
+            i(w);
             return;
           }
-          session.stream = stream;
-          stream.on("data", (data) => {
-            session.lastActivity = /* @__PURE__ */ new Date();
-            session.bytesTransferred += data.length;
-            this.emit("session-data", sessionId, data.toString());
-          });
-          stream.stderr.on("data", (data) => {
-            session.lastActivity = /* @__PURE__ */ new Date();
-            session.bytesTransferred += data.length;
-            this.emit("session-data", sessionId, data.toString());
-          });
-          stream.on("close", () => {
-            session.status = "disconnected";
-            this.emit("session-disconnected", sessionId);
-            if (session.reconnectAttempts < session.maxReconnectAttempts) {
-              this.scheduleReconnect(sessionId);
-            }
-          });
-          console.log("session-connected", sessionId);
-          this.emit("session-connected", sessionId);
-          resolve();
+          s.stream = y, y.on("data", (S) => {
+            s.lastActivity = /* @__PURE__ */ new Date(), s.bytesTransferred += S.length, this.emit("session-data", e, S.toString());
+          }), y.stderr.on("data", (S) => {
+            s.lastActivity = /* @__PURE__ */ new Date(), s.bytesTransferred += S.length, this.emit("session-data", e, S.toString());
+          }), y.on("close", () => {
+            s.status = "disconnected", this.emit("session-disconnected", e), s.reconnectAttempts < s.maxReconnectAttempts && this.scheduleReconnect(e);
+          }), console.log("session-connected", e), this.emit("session-connected", e), n();
         });
+      }), c.on("error", (w) => {
+        clearTimeout(l), s.status = "error", s.error = this.categorizeError(w), this.emit("session-error", e, s.error), this.shouldRetryConnection(w) && s.reconnectAttempts < s.maxReconnectAttempts && this.scheduleReconnect(e), i(w);
+      }), c.on("close", () => {
+        s.status !== "disconnected" && (s.status = "disconnected", this.emit("session-disconnected", e), s.reconnectAttempts < s.maxReconnectAttempts && this.scheduleReconnect(e));
       });
-      conn.on("error", (err) => {
-        clearTimeout(timeout);
-        session.status = "error";
-        session.error = this.categorizeError(err);
-        this.emit("session-error", sessionId, session.error);
-        if (this.shouldRetryConnection(err) && session.reconnectAttempts < session.maxReconnectAttempts) {
-          this.scheduleReconnect(sessionId);
-        }
-        reject(err);
-      });
-      conn.on("close", () => {
-        if (session.status !== "disconnected") {
-          session.status = "disconnected";
-          this.emit("session-disconnected", sessionId);
-          if (session.reconnectAttempts < session.maxReconnectAttempts) {
-            this.scheduleReconnect(sessionId);
-          }
-        }
-      });
-      const connectionConfig = {
-        host: config.host,
-        port: config.port,
-        username: config.username,
+      const m = {
+        host: a.host,
+        port: a.port,
+        username: a.username,
         readyTimeout: 15e3,
         keepaliveInterval: 3e4
       };
-      if (config.authType === "password") {
-        connectionConfig.password = config.password;
-      } else {
-        connectionConfig.privateKey = config.privateKey;
-        if (config.passphrase) {
-          connectionConfig.passphrase = config.passphrase;
-        }
-      }
-      conn.connect(connectionConfig);
+      a.authType === "password" ? m.password = a.password : (m.privateKey = a.privateKey, a.passphrase && (m.passphrase = a.passphrase)), c.connect(m);
     });
   }
   /**
-   * 向指定会话发送命令
+   * Send command to specified session
    */
-  sendCommand(sessionId, command) {
-    const session = this.sessions.get(sessionId);
-    if (!session || !session.stream || session.status !== "connected") {
-      return false;
-    }
-    session.stream.write(command);
-    session.lastActivity = /* @__PURE__ */ new Date();
-    session.bytesTransferred += Buffer.byteLength(command, "utf8");
-    return true;
+  sendCommand(e, s) {
+    const n = this.sessions.get(e);
+    return !n || !n.stream || n.status !== "connected" ? !1 : (n.stream.write(s), n.lastActivity = /* @__PURE__ */ new Date(), n.bytesTransferred += Buffer.byteLength(s, "utf8"), !0);
   }
   /**
-   * 调整会话终端大小
+   * Resize session terminal
    */
-  resizeSession(sessionId, cols, rows) {
-    const session = this.sessions.get(sessionId);
-    if (!session || !session.stream || session.status !== "connected") {
-      return false;
-    }
-    session.stream.setWindow(rows, cols, 0, 0);
-    return true;
+  resizeSession(e, s, n) {
+    const i = this.sessions.get(e);
+    return !i || !i.stream || i.status !== "connected" ? !1 : (i.stream.setWindow(n, s, 0, 0), !0);
   }
   /**
-   * 关闭指定会话
+   * Close specified session
    */
-  async closeSession(sessionId) {
-    const session = this.sessions.get(sessionId);
-    if (!session) {
-      return;
-    }
-    if (session.connection) {
-      session.connection.end();
-    }
-    if (this.activeSessionId === sessionId) {
-      const remainingSessions = Array.from(this.sessions.keys()).filter(
-        (id) => id !== sessionId
-      );
-      if (remainingSessions.length > 0) {
-        this.setActiveSession(remainingSessions[0]);
-      } else {
-        this.activeSessionId = void 0;
+  async closeSession(e) {
+    const s = this.sessions.get(e);
+    if (s) {
+      if (s.connection && s.connection.end(), this.activeSessionId === e) {
+        const n = Array.from(this.sessions.keys()).filter(
+          (i) => i !== e
+        );
+        n.length > 0 ? this.setActiveSession(n[0]) : this.activeSessionId = void 0;
       }
+      this.sessions.delete(e), this.emit("session-closed", e);
     }
-    this.sessions.delete(sessionId);
-    this.emit("session-closed", sessionId);
   }
   /**
-   * 设置活跃会话
+   * Set active session
    */
-  setActiveSession(sessionId) {
-    const session = this.sessions.get(sessionId);
-    if (!session) {
-      return false;
-    }
+  setActiveSession(e) {
+    const s = this.sessions.get(e);
+    if (!s)
+      return !1;
     if (this.activeSessionId) {
-      const prevActive = this.sessions.get(this.activeSessionId);
-      if (prevActive) {
-        prevActive.isActive = false;
-      }
+      const n = this.sessions.get(this.activeSessionId);
+      n && (n.isActive = !1);
     }
-    session.isActive = true;
-    this.activeSessionId = sessionId;
-    this.emit("active-session-changed", sessionId);
-    return true;
+    return s.isActive = !0, this.activeSessionId = e, this.emit("active-session-changed", e), !0;
   }
   /**
-   * 获取活跃会话ID
+   * Get active session ID
    */
   getActiveSessionId() {
     return this.activeSessionId;
   }
   /**
-   * 获取所有会话的基本信息
+   * Get basic information of all sessions
    */
   getAllSessions() {
     return Array.from(this.sessions.values()).map(
-      (session) => this.getSessionData(session)
+      (e) => this.getSessionData(e)
     );
   }
   /**
-   * 获取指定会话信息
+   * Get specified session information
    */
-  getSession(sessionId) {
-    const session = this.sessions.get(sessionId);
-    return session ? this.getSessionData(session) : void 0;
+  getSession(e) {
+    const s = this.sessions.get(e);
+    return s ? this.getSessionData(s) : void 0;
   }
   /**
-   * 提取会话的安全数据（不包含敏感信息）
+   * Extract secure session data (excluding sensitive information)
    */
-  getSessionData(session) {
+  getSessionData(e) {
     return {
-      id: session.id,
-      name: session.name,
-      configId: session.configId,
-      configName: session.configName,
-      status: session.status,
-      error: session.error,
-      isActive: session.isActive,
-      createdAt: session.createdAt,
-      lastActivity: session.lastActivity,
-      reconnectAttempts: session.reconnectAttempts,
-      connectionTime: session.connectionTime,
-      bytesTransferred: session.bytesTransferred
+      id: e.id,
+      name: e.name,
+      configId: e.configId,
+      configName: e.configName,
+      status: e.status,
+      error: e.error,
+      isActive: e.isActive,
+      createdAt: e.createdAt,
+      lastActivity: e.lastActivity,
+      reconnectAttempts: e.reconnectAttempts,
+      connectionTime: e.connectionTime,
+      bytesTransferred: e.bytesTransferred
     };
   }
   /**
-   * 计划重连
+   * Schedule reconnection
    */
-  scheduleReconnect(sessionId) {
-    const session = this.sessions.get(sessionId);
-    if (!session) return;
-    session.reconnectAttempts++;
-    session.status = "connecting";
-    const delay = Math.min(1e3 * Math.pow(2, session.reconnectAttempts - 1), 1e4);
-    this.emit("session-reconnecting", sessionId, session.reconnectAttempts, delay);
-    setTimeout(() => {
-      this.connectSession(sessionId).catch((error) => {
-        console.error(`Reconnect attempt ${session.reconnectAttempts} failed for session ${sessionId}:`, error);
-        if (session.reconnectAttempts >= session.maxReconnectAttempts) {
-          session.status = "error";
-          session.error = `重连失败 (已尝试 ${session.maxReconnectAttempts} 次)`;
-          this.emit("session-error", sessionId, session.error);
-        }
+  scheduleReconnect(e) {
+    const s = this.sessions.get(e);
+    if (!s) return;
+    s.reconnectAttempts++, s.status = "connecting";
+    const n = Math.min(1e3 * Math.pow(2, s.reconnectAttempts - 1), 1e4);
+    this.emit("session-reconnecting", e, s.reconnectAttempts, n), setTimeout(() => {
+      this.connectSession(e).catch((i) => {
+        console.error(`Reconnect attempt ${s.reconnectAttempts} failed for session ${e}:`, i), s.reconnectAttempts >= s.maxReconnectAttempts && (s.status = "error", s.error = `Reconnection failed (attempted ${s.maxReconnectAttempts} times)`, this.emit("session-error", e, s.error));
       });
-    }, delay);
+    }, n);
   }
   /**
-   * 分类错误信息
+   * Categorize error messages
    */
-  categorizeError(error) {
-    const message = error.message || error.toString();
-    if (message.includes("ENOTFOUND") || message.includes("getaddrinfo")) {
-      return "主机名解析失败，请检查网络连接和主机地址";
-    }
-    if (message.includes("ECONNREFUSED")) {
-      return "连接被拒绝，请检查端口是否正确或服务是否运行";
-    }
-    if (message.includes("ETIMEDOUT")) {
-      return "连接超时，请检查网络连接";
-    }
-    if (message.includes("Authentication")) {
-      return "认证失败，请检查用户名、密码或密钥";
-    }
-    if (message.includes("Permission denied")) {
-      return "权限被拒绝，请检查用户权限";
-    }
-    if (message.includes("Host key verification failed")) {
-      return "主机密钥验证失败，可能是安全风险";
-    }
-    return message;
+  categorizeError(e) {
+    const s = e.message || e.toString();
+    return s.includes("ENOTFOUND") || s.includes("getaddrinfo") ? "Hostname resolution failed, please check network connection and host address" : s.includes("ECONNREFUSED") ? "Connection refused, please check if port is correct or service is running" : s.includes("ETIMEDOUT") ? "Connection timeout, please check network connection" : s.includes("Authentication") ? "Authentication failed, please check username, password or key" : s.includes("Permission denied") ? "Permission denied, please check user permissions" : s.includes("Host key verification failed") ? "Host key verification failed, possible security risk" : s;
   }
   /**
-   * 判断是否应该重试连接
+   * Determine whether connection should be retried
    */
-  shouldRetryConnection(error) {
-    const message = error.message || error.toString();
-    const nonRetryableErrors = [
+  shouldRetryConnection(e) {
+    const s = e.message || e.toString();
+    return ![
       "Authentication",
       "Permission denied",
       "Host key verification failed",
       "EACCES"
-      // 权限错误
-    ];
-    return !nonRetryableErrors.some((errorType) => message.includes(errorType));
+      // Permission error
+    ].some((i) => s.includes(i));
   }
   /**
-   * 手动重连会话
+   * Manually reconnect session
    */
-  async reconnectSession(sessionId) {
-    const session = this.sessions.get(sessionId);
-    if (!session) {
-      throw new Error(`Session ${sessionId} not found`);
-    }
-    if (session.connection) {
-      session.connection.end();
-    }
-    session.reconnectAttempts = 0;
-    session.status = "connecting";
-    session.error = void 0;
-    await this.connectSession(sessionId);
+  async reconnectSession(e) {
+    const s = this.sessions.get(e);
+    if (!s)
+      throw new Error(`Session ${e} not found`);
+    s.connection && s.connection.end(), s.reconnectAttempts = 0, s.status = "connecting", s.error = void 0, await this.connectSession(e);
   }
   /**
-   * 清理所有会话
+   * Clean up all sessions
    */
   cleanup() {
-    for (const [sessionId] of this.sessions) {
-      this.closeSession(sessionId).catch(console.error);
-    }
-    this.sessions.clear();
-    this.activeSessionId = void 0;
+    for (const [e] of this.sessions)
+      this.closeSession(e).catch(console.error);
+    this.sessions.clear(), this.activeSessionId = void 0;
+  }
+  /**
+   * Get session object by ID (internal use)
+   */
+  getSessionObject(e) {
+    return this.sessions.get(e);
+  }
+  /**
+   * Get or create SFTP connection for session
+   */
+  async getSFTP(e) {
+    const s = this.getSessionObject(e);
+    if (!s || !s.connection || s.status !== "connected")
+      throw new Error("SSH session not connected");
+    return s.sftp ? s.sftp : new Promise((n, i) => {
+      s.connection.sftp((a, c) => {
+        if (a) {
+          i(a);
+          return;
+        }
+        s.sftp = c, n(c);
+      });
+    });
+  }
+  /**
+   * List files in remote directory
+   */
+  async listFiles(e, s) {
+    const n = await this.getSFTP(e);
+    return new Promise((i, a) => {
+      n.readdir(s, (c, f) => {
+        if (c) {
+          a(c);
+          return;
+        }
+        const l = f.map((m) => ({
+          name: m.filename,
+          type: m.attrs.isDirectory() ? "directory" : "file",
+          size: m.attrs.size,
+          modifiedAt: new Date(m.attrs.mtime * 1e3).toISOString(),
+          permissions: m.attrs.mode,
+          isHidden: m.filename.startsWith("."),
+          path: h.posix.join(s, m.filename)
+        }));
+        i(l);
+      });
+    });
+  }
+  /**
+   * Create remote directory
+   */
+  async createDirectory(e, s) {
+    const n = await this.getSFTP(e);
+    return new Promise((i, a) => {
+      n.mkdir(s, (c) => {
+        if (c) {
+          a(c);
+          return;
+        }
+        i();
+      });
+    });
+  }
+  /**
+   * Delete remote file
+   */
+  async deleteFile(e, s) {
+    const n = await this.getSFTP(e);
+    return new Promise((i, a) => {
+      n.unlink(s, (c) => {
+        if (c) {
+          a(c);
+          return;
+        }
+        i();
+      });
+    });
+  }
+  /**
+   * Delete remote directory
+   */
+  async deleteDirectory(e, s) {
+    const n = await this.getSFTP(e);
+    return new Promise((i, a) => {
+      n.rmdir(s, (c) => {
+        if (c) {
+          a(c);
+          return;
+        }
+        i();
+      });
+    });
+  }
+  /**
+   * Upload file to remote server
+   */
+  async uploadFile(e, s, n) {
+    const i = await this.getSFTP(e);
+    return new Promise((a, c) => {
+      const f = A.createReadStream(s), l = i.createWriteStream(n);
+      l.on("error", c), l.on("close", a), f.on("error", c), f.pipe(l);
+    });
+  }
+  /**
+   * Download file from remote server
+   */
+  async downloadFile(e, s, n) {
+    const i = await this.getSFTP(e);
+    return new Promise((a, c) => {
+      const f = i.createReadStream(s), l = A.createWriteStream(n);
+      f.on("error", c), l.on("error", c), l.on("close", a), f.pipe(l);
+    });
   }
 }
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-process.env.APP_ROOT = path.join(__dirname, "..");
-const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
-const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
-const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
-let win;
-let sshManager = null;
-function createWindow() {
-  win = new BrowserWindow({
+const T = h.dirname(_(import.meta.url));
+process.env.APP_ROOT = h.join(T, "..");
+const E = process.env.VITE_DEV_SERVER_URL, W = h.join(process.env.APP_ROOT, "dist-electron"), b = h.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = E ? h.join(process.env.APP_ROOT, "public") : b;
+let u, o = null;
+function C() {
+  u = new k({
     width: 1200,
     height: 800,
     minWidth: 800,
     minHeight: 600,
-    icon: path.join(process.env.VITE_PUBLIC, "app-icon.png"),
+    icon: h.join(process.env.VITE_PUBLIC, "app-icon.png"),
     title: "Web3 SSH Manager",
     webPreferences: {
-      preload: path.join(__dirname, "preload.cjs"),
-      nodeIntegration: false,
-      contextIsolation: true,
-      webSecurity: false,
+      preload: h.join(T, "preload.cjs"),
+      nodeIntegration: !1,
+      contextIsolation: !0,
+      webSecurity: !1,
       // Allow external wallet connections
-      allowRunningInsecureContent: true,
+      allowRunningInsecureContent: !0,
       // For Web3 wallet connections
-      sandbox: false
+      sandbox: !1,
       // Required for WalletConnect
+      experimentalFeatures: !0,
+      // Enable experimental web features
+      enableBlinkFeatures: "CSSColorSchemeUARendering"
+      // Enable modern CSS features
     },
-    // macOS 优化的标题栏样式
+    // Optimized title bar style for macOS
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
     titleBarOverlay: process.platform === "win32" ? {
       color: "#000000",
@@ -382,266 +373,394 @@ function createWindow() {
       height: 32
     } : void 0,
     backgroundColor: "#000000",
-    // 窗口背景色
+    // Window background color
     vibrancy: process.platform === "darwin" ? "under-window" : void 0,
-    // macOS 毛玻璃效果
+    // macOS glass effect
     visualEffectState: process.platform === "darwin" ? "active" : void 0,
-    show: false
+    show: !1
     // Don't show until ready
-  });
-  win.once("ready-to-show", () => {
-    win == null ? void 0 : win.show();
-  });
-  win.webContents.on("did-finish-load", () => {
-    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  });
-  if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL);
-  } else {
-    win.loadFile(path.join(RENDERER_DIST, "index.html"));
-  }
+  }), u.once("ready-to-show", () => {
+    u == null || u.show();
+  }), u.webContents.on("did-finish-load", () => {
+    u == null || u.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  }), u.webContents.openDevTools(), E ? u.loadURL(E) : u.loadFile(h.join(b, "index.html"));
 }
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-    win = null;
-  }
+g.on("window-all-closed", () => {
+  process.platform !== "darwin" && (g.quit(), u = null);
 });
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+g.on("activate", () => {
+  k.getAllWindows().length === 0 && C();
 });
-function initSSHManager() {
-  sshManager = new SSHSessionManager();
-  sshManager.on("session-created", (sessionData) => {
-    win == null ? void 0 : win.webContents.send("ssh-session-created", sessionData);
-  });
-  sshManager.on("session-connected", (sessionId) => {
-    console.log("ssh-session-connected", sessionId);
-    win == null ? void 0 : win.webContents.send("ssh-session-connected", sessionId);
-  });
-  sshManager.on("session-disconnected", (sessionId) => {
-    win == null ? void 0 : win.webContents.send("ssh-session-disconnected", sessionId);
-  });
-  sshManager.on("session-error", (sessionId, error) => {
-    win == null ? void 0 : win.webContents.send("ssh-session-error", sessionId, error);
-  });
-  sshManager.on("session-closed", (sessionId) => {
-    win == null ? void 0 : win.webContents.send("ssh-session-closed", sessionId);
-  });
-  sshManager.on("active-session-changed", (sessionId) => {
-    win == null ? void 0 : win.webContents.send("ssh-active-session-changed", sessionId);
-  });
-  sshManager.on("session-data", (sessionId, data) => {
-    win == null ? void 0 : win.webContents.send("ssh-session-data", sessionId, data);
-  });
-  sshManager.on("session-reconnecting", (sessionId, attempt, delay) => {
-    win == null ? void 0 : win.webContents.send("ssh-session-reconnecting", sessionId, attempt, delay);
+function O() {
+  o = new F(), o.on("session-created", (r) => {
+    u == null || u.webContents.send("ssh-session-created", r);
+  }), o.on("session-connected", (r) => {
+    console.log("ssh-session-connected", r), u == null || u.webContents.send("ssh-session-connected", r);
+  }), o.on("session-disconnected", (r) => {
+    u == null || u.webContents.send("ssh-session-disconnected", r);
+  }), o.on("session-error", (r, t) => {
+    u == null || u.webContents.send("ssh-session-error", r, t);
+  }), o.on("session-closed", (r) => {
+    u == null || u.webContents.send("ssh-session-closed", r);
+  }), o.on("active-session-changed", (r) => {
+    u == null || u.webContents.send("ssh-active-session-changed", r);
+  }), o.on("session-data", (r, t) => {
+    u == null || u.webContents.send("ssh-session-data", r, t);
+  }), o.on("session-reconnecting", (r, t, e) => {
+    u == null || u.webContents.send("ssh-session-reconnecting", r, t, e);
   });
 }
-ipcMain.handle("ssh-create-session", async (_event, config) => {
+d.handle("ssh-create-session", async (r, t) => {
   try {
-    if (!sshManager) {
-      throw new Error("SSH 管理器未初始化");
-    }
-    const sessionId = await sshManager.createSession(config);
-    return { success: true, sessionId };
-  } catch (error) {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    return { success: !0, sessionId: await o.createSession(t) };
+  } catch (e) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "未知错误"
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("ssh-close-session", async (_event, sessionId) => {
+d.handle("ssh-close-session", async (r, t) => {
   try {
-    if (!sshManager) {
-      throw new Error("SSH 管理器未初始化");
-    }
-    await sshManager.closeSession(sessionId);
-    return { success: true };
-  } catch (error) {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    return await o.closeSession(t), { success: !0 };
+  } catch (e) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "未知错误"
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("ssh-switch-session", async (_event, sessionId) => {
+d.handle("ssh-switch-session", async (r, t) => {
   try {
-    if (!sshManager) {
-      throw new Error("SSH 管理器未初始化");
-    }
-    const success = sshManager.setActiveSession(sessionId);
-    return { success };
-  } catch (error) {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    return { success: o.setActiveSession(t) };
+  } catch (e) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "未知错误"
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("ssh-send-command", async (_event, sessionId, command) => {
+d.handle("ssh-send-command", async (r, t, e) => {
   try {
-    if (!sshManager) {
-      throw new Error("SSH 管理器未初始化");
-    }
-    const success = sshManager.sendCommand(sessionId, command);
-    return { success };
-  } catch (error) {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    return { success: o.sendCommand(t, e) };
+  } catch (s) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "未知错误"
+      success: !1,
+      error: s instanceof Error ? s.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("ssh-resize-session", async (_event, sessionId, cols, rows) => {
+d.handle("ssh-resize-session", async (r, t, e, s) => {
   try {
-    if (!sshManager) {
-      throw new Error("SSH 管理器未初始化");
-    }
-    const success = sshManager.resizeSession(sessionId, cols, rows);
-    return { success };
-  } catch (error) {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    return { success: o.resizeSession(t, e, s) };
+  } catch (n) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "未知错误"
+      success: !1,
+      error: n instanceof Error ? n.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("ssh-get-all-sessions", async () => {
+d.handle("ssh-get-all-sessions", async () => {
   try {
-    if (!sshManager) {
-      return { success: true, sessions: [] };
-    }
-    const sessions = sshManager.getAllSessions();
-    return { success: true, sessions };
-  } catch (error) {
+    return o ? { success: !0, sessions: o.getAllSessions() } : { success: !0, sessions: [] };
+  } catch (r) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "未知错误"
+      success: !1,
+      error: r instanceof Error ? r.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("ssh-get-active-session", async () => {
+d.handle("ssh-get-active-session", async () => {
   try {
-    if (!sshManager) {
-      return { success: true, sessionId: null };
-    }
-    const sessionId = sshManager.getActiveSessionId();
-    return { success: true, sessionId };
-  } catch (error) {
+    return o ? { success: !0, sessionId: o.getActiveSessionId() } : { success: !0, sessionId: null };
+  } catch (r) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "未知错误"
+      success: !1,
+      error: r instanceof Error ? r.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("ssh-reconnect-session", async (_event, sessionId) => {
+d.handle("ssh-reconnect-session", async (r, t) => {
   try {
-    if (!sshManager) {
-      throw new Error("SSH 管理器未初始化");
-    }
-    await sshManager.reconnectSession(sessionId);
-    return { success: true };
-  } catch (error) {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    return await o.reconnectSession(t), { success: !0 };
+  } catch (e) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "未知错误"
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("ssh-test-connection", async (_event, config) => {
+d.handle("ssh-test-connection", async (r, t) => {
   try {
-    const { Client: Client2 } = await import("ssh2");
-    return new Promise((resolve) => {
-      const conn = new Client2();
-      const startTime = Date.now();
-      const timeout = setTimeout(() => {
-        conn.end();
-        resolve({
-          success: false,
-          message: "连接超时",
-          connectionTime: Date.now() - startTime
+    const { Client: e } = await import("ssh2");
+    return new Promise((s) => {
+      const n = new e(), i = Date.now(), a = setTimeout(() => {
+        n.end(), s({
+          success: !1,
+          message: "Connection timeout",
+          connectionTime: Date.now() - i
         });
       }, 1e4);
-      conn.on("ready", () => {
-        clearTimeout(timeout);
-        const connectionTime = Date.now() - startTime;
-        conn.end();
-        resolve({
-          success: true,
-          message: `连接成功！耗时 ${connectionTime}ms`,
-          connectionTime,
+      n.on("ready", () => {
+        clearTimeout(a);
+        const c = Date.now() - i;
+        n.end(), s({
+          success: !0,
+          message: `Connection successful! Time taken: ${c}ms`,
+          connectionTime: c,
           serverInfo: {
-            hostname: config.host,
-            username: config.username
+            hostname: t.host,
+            username: t.username
           }
         });
-      });
-      conn.on("error", (err) => {
-        clearTimeout(timeout);
-        const connectionTime = Date.now() - startTime;
-        let errorMessage = "连接失败";
-        if (err.message.includes("ECONNREFUSED")) {
-          errorMessage = "连接被拒绝，请检查主机地址和端口";
-        } else if (err.message.includes("ENOTFOUND")) {
-          errorMessage = "无法解析主机名，请检查网络连接";
-        } else if (err.message.includes("Authentication failed")) {
-          errorMessage = "认证失败，请检查用户名和密码/密钥";
-        } else {
-          errorMessage = `连接失败: ${err.message}`;
-        }
-        resolve({
-          success: false,
-          message: errorMessage,
-          connectionTime
+      }), n.on("error", (c) => {
+        clearTimeout(a);
+        const f = Date.now() - i;
+        let l = "Connection failed";
+        c.message.includes("ECONNREFUSED") ? l = "Connection refused, please check host address and port" : c.message.includes("ENOTFOUND") ? l = "Unable to resolve hostname, please check network connection" : c.message.includes("Authentication failed") ? l = "Authentication failed, please check username and password/key" : l = `Connection failed: ${c.message}`, s({
+          success: !1,
+          message: l,
+          connectionTime: f
         });
       });
       try {
-        const connectionConfig = {
-          host: config.host,
-          port: config.port,
-          username: config.username,
+        const c = {
+          host: t.host,
+          port: t.port,
+          username: t.username,
           readyTimeout: 1e4
         };
-        if (config.authType === "password") {
-          connectionConfig.password = config.password;
-        } else {
-          connectionConfig.privateKey = config.privateKey;
-          if (config.passphrase) {
-            connectionConfig.passphrase = config.passphrase;
-          }
-        }
-        conn.connect(connectionConfig);
-      } catch (error) {
-        clearTimeout(timeout);
-        resolve({
-          success: false,
-          message: `配置错误: ${error instanceof Error ? error.message : "未知错误"}`,
-          connectionTime: Date.now() - startTime
+        t.authType === "password" ? c.password = t.password : (c.privateKey = t.privateKey, t.passphrase && (c.passphrase = t.passphrase)), n.connect(c);
+      } catch (c) {
+        clearTimeout(a), s({
+          success: !1,
+          message: `Configuration error: ${c instanceof Error ? c.message : "Unknown error"}`,
+          connectionTime: Date.now() - i
         });
       }
     });
-  } catch (error) {
+  } catch (e) {
     return {
-      success: false,
-      message: `SSH 模块加载失败: ${error instanceof Error ? error.message : "未知错误"}`
+      success: !1,
+      message: `SSH module loading failed: ${e instanceof Error ? e.message : "Unknown error"}`
     };
   }
 });
-app.whenReady().then(() => {
-  createWindow();
-  initSSHManager();
-});
-app.on("before-quit", () => {
-  if (sshManager) {
-    sshManager.cleanup();
+d.handle("fs:readdir", async (r, t) => {
+  try {
+    const e = await p.readdir(t, { withFileTypes: !0 }), s = [];
+    for (const n of e) {
+      const i = h.join(t, n.name);
+      try {
+        const a = await p.stat(i);
+        s.push({
+          name: n.name,
+          type: n.isDirectory() ? "directory" : "file",
+          size: a.size,
+          modifiedAt: a.mtime.toISOString(),
+          permissions: a.mode,
+          isHidden: n.name.startsWith("."),
+          path: i
+        });
+      } catch (a) {
+        console.warn(`Cannot access ${i}:`, a);
+      }
+    }
+    return { success: !0, files: s };
+  } catch (e) {
+    return {
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
+    };
   }
 });
+d.handle("fs:stat", async (r, t) => {
+  try {
+    const e = await p.stat(t), s = e.isDirectory();
+    return {
+      success: !0,
+      stats: {
+        name: h.basename(t),
+        type: s ? "directory" : "file",
+        size: e.size,
+        modifiedAt: e.mtime.toISOString(),
+        permissions: e.mode,
+        isHidden: h.basename(t).startsWith("."),
+        path: t
+      }
+    };
+  } catch (e) {
+    return {
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
+    };
+  }
+});
+d.handle("fs:mkdir", async (r, t) => {
+  try {
+    return await p.mkdir(t, { recursive: !0 }), { success: !0 };
+  } catch (e) {
+    return {
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
+    };
+  }
+});
+d.handle("fs:unlink", async (r, t) => {
+  try {
+    return await p.unlink(t), { success: !0 };
+  } catch (e) {
+    return {
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
+    };
+  }
+});
+d.handle("fs:rmdir", async (r, t) => {
+  try {
+    return await p.rmdir(t, { recursive: !0 }), { success: !0 };
+  } catch (e) {
+    return {
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
+    };
+  }
+});
+d.handle("sftp:connect", async (r, t) => {
+  try {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    const e = o.getSessionObject(t);
+    if (!e)
+      throw new Error("SSH session not found");
+    return { success: e.status === "connected" };
+  } catch (e) {
+    return {
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
+    };
+  }
+});
+d.handle("sftp:disconnect", async (r, t) => {
+  try {
+    return { success: !0 };
+  } catch (e) {
+    return {
+      success: !1,
+      error: e instanceof Error ? e.message : "Unknown error"
+    };
+  }
+});
+d.handle("sftp:listFiles", async (r, t, e) => {
+  try {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    const s = o.getSessionObject(t);
+    if (!s || s.status !== "connected")
+      throw new Error("SSH session not connected");
+    return { success: !0, files: await o.listFiles(t, e) };
+  } catch (s) {
+    return {
+      success: !1,
+      error: s instanceof Error ? s.message : "Unknown error"
+    };
+  }
+});
+d.handle("sftp:mkdir", async (r, t, e) => {
+  try {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    const s = o.getSessionObject(t);
+    if (!s || s.status !== "connected")
+      throw new Error("SSH session not connected");
+    return await o.createDirectory(t, e), { success: !0 };
+  } catch (s) {
+    return {
+      success: !1,
+      error: s instanceof Error ? s.message : "Unknown error"
+    };
+  }
+});
+d.handle("sftp:unlink", async (r, t, e) => {
+  try {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    const s = o.getSessionObject(t);
+    if (!s || s.status !== "connected")
+      throw new Error("SSH session not connected");
+    return await o.deleteFile(t, e), { success: !0 };
+  } catch (s) {
+    return {
+      success: !1,
+      error: s instanceof Error ? s.message : "Unknown error"
+    };
+  }
+});
+d.handle("sftp:rmdir", async (r, t, e) => {
+  try {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    const s = o.getSessionObject(t);
+    if (!s || s.status !== "connected")
+      throw new Error("SSH session not connected");
+    return await o.deleteDirectory(t, e), { success: !0 };
+  } catch (s) {
+    return {
+      success: !1,
+      error: s instanceof Error ? s.message : "Unknown error"
+    };
+  }
+});
+d.handle("sftp:uploadFile", async (r, t, e, s) => {
+  try {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    const n = o.getSessionObject(t);
+    if (!n || n.status !== "connected")
+      throw new Error("SSH session not connected");
+    return await o.uploadFile(t, e, s), { success: !0 };
+  } catch (n) {
+    return {
+      success: !1,
+      error: n instanceof Error ? n.message : "Unknown error"
+    };
+  }
+});
+d.handle("sftp:downloadFile", async (r, t, e, s) => {
+  try {
+    if (!o)
+      throw new Error("SSH manager not initialized");
+    const n = o.getSessionObject(t);
+    if (!n || n.status !== "connected")
+      throw new Error("SSH session not connected");
+    return await o.downloadFile(t, e, s), { success: !0 };
+  } catch (n) {
+    return {
+      success: !1,
+      error: n instanceof Error ? n.message : "Unknown error"
+    };
+  }
+});
+g.whenReady().then(() => {
+  C(), O();
+});
+g.on("before-quit", () => {
+  o && o.cleanup();
+});
 export {
-  MAIN_DIST,
-  RENDERER_DIST,
-  VITE_DEV_SERVER_URL
+  W as MAIN_DIST,
+  b as RENDERER_DIST,
+  E as VITE_DEV_SERVER_URL
 };

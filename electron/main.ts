@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import fs from 'node:fs/promises'
 import { SSHSessionManager } from './ssh-session-manager'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -40,18 +41,19 @@ function createWindow() {
       contextIsolation: true,
       webSecurity: false, // Allow external wallet connections
       allowRunningInsecureContent: true, // For Web3 wallet connections
-
       sandbox: false, // Required for WalletConnect
+      experimentalFeatures: true, // Enable experimental web features
+      enableBlinkFeatures: 'CSSColorSchemeUARendering', // Enable modern CSS features
     },
-    // macOS 优化的标题栏样式
+    // Optimized title bar style for macOS
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     titleBarOverlay: process.platform === 'win32' ? {
       color: '#000000',
       symbolColor: '#BCFF2F',
       height: 32
     } : undefined,
-    backgroundColor: '#000000', // 窗口背景色
-    vibrancy: process.platform === 'darwin' ? 'under-window' : undefined, // macOS 毛玻璃效果
+    backgroundColor: '#000000', // Window background color
+    vibrancy: process.platform === 'darwin' ? 'under-window' : undefined, // macOS glass effect
     visualEffectState: process.platform === 'darwin' ? 'active' : undefined,
     show: false, // Don't show until ready
   })
@@ -66,8 +68,11 @@ function createWindow() {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
   })
 
+  win.webContents.openDevTools()
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
+    // Open developer tools in development mode
+    // win.webContents.openDevTools()
   } else {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
@@ -92,11 +97,11 @@ app.on('activate', () => {
   }
 })
 
-// 初始化 SSH 会话管理器
+// Initialize SSH session manager
 function initSSHManager() {
   sshManager = new SSHSessionManager()
   
-  // 监听会话事件并转发给渲染进程
+  // Listen to session events and forward them to the renderer process
   sshManager.on('session-created', (sessionData) => {
     win?.webContents.send('ssh-session-created', sessionData)
   })
@@ -131,11 +136,11 @@ function initSSHManager() {
   })
 }
 
-// SSH Tab 相关的 IPC 处理器
+// SSH Tab related IPC handlers
 ipcMain.handle('ssh-create-session', async (_event, config) => {
   try {
     if (!sshManager) {
-      throw new Error('SSH 管理器未初始化')
+      throw new Error('SSH manager not initialized')
     }
     
     const sessionId = await sshManager.createSession(config)
@@ -143,7 +148,7 @@ ipcMain.handle('ssh-create-session', async (_event, config) => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '未知错误'
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })
@@ -151,7 +156,7 @@ ipcMain.handle('ssh-create-session', async (_event, config) => {
 ipcMain.handle('ssh-close-session', async (_event, sessionId) => {
   try {
     if (!sshManager) {
-      throw new Error('SSH 管理器未初始化')
+      throw new Error('SSH manager not initialized')
     }
     
     await sshManager.closeSession(sessionId)
@@ -159,7 +164,7 @@ ipcMain.handle('ssh-close-session', async (_event, sessionId) => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '未知错误'
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })
@@ -167,7 +172,7 @@ ipcMain.handle('ssh-close-session', async (_event, sessionId) => {
 ipcMain.handle('ssh-switch-session', async (_event, sessionId) => {
   try {
     if (!sshManager) {
-      throw new Error('SSH 管理器未初始化')
+      throw new Error('SSH manager not initialized')
     }
     
     const success = sshManager.setActiveSession(sessionId)
@@ -175,7 +180,7 @@ ipcMain.handle('ssh-switch-session', async (_event, sessionId) => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '未知错误'
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })
@@ -183,7 +188,7 @@ ipcMain.handle('ssh-switch-session', async (_event, sessionId) => {
 ipcMain.handle('ssh-send-command', async (_event, sessionId, command) => {
   try {
     if (!sshManager) {
-      throw new Error('SSH 管理器未初始化')
+      throw new Error('SSH manager not initialized')
     }
     
     const success = sshManager.sendCommand(sessionId, command)
@@ -191,7 +196,7 @@ ipcMain.handle('ssh-send-command', async (_event, sessionId, command) => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '未知错误'
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })
@@ -199,7 +204,7 @@ ipcMain.handle('ssh-send-command', async (_event, sessionId, command) => {
 ipcMain.handle('ssh-resize-session', async (_event, sessionId, cols, rows) => {
   try {
     if (!sshManager) {
-      throw new Error('SSH 管理器未初始化')
+      throw new Error('SSH manager not initialized')
     }
     
     const success = sshManager.resizeSession(sessionId, cols, rows)
@@ -207,7 +212,7 @@ ipcMain.handle('ssh-resize-session', async (_event, sessionId, cols, rows) => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '未知错误'
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })
@@ -223,7 +228,7 @@ ipcMain.handle('ssh-get-all-sessions', async () => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '未知错误'
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })
@@ -239,16 +244,16 @@ ipcMain.handle('ssh-get-active-session', async () => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '未知错误'
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })
 
-// 手动重连会话
+// Manual session reconnection
 ipcMain.handle('ssh-reconnect-session', async (_event, sessionId) => {
   try {
     if (!sshManager) {
-      throw new Error('SSH 管理器未初始化')
+      throw new Error('SSH manager not initialized')
     }
     
     await sshManager.reconnectSession(sessionId)
@@ -256,12 +261,12 @@ ipcMain.handle('ssh-reconnect-session', async (_event, sessionId) => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '未知错误'
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })
 
-// 保留原有的测试连接功能（用于配置验证）
+// Keep the original test connection functionality (for configuration validation)
 ipcMain.handle('ssh-test-connection', async (_event, config) => {
   try {
     const { Client } = await import('ssh2')
@@ -274,7 +279,7 @@ ipcMain.handle('ssh-test-connection', async (_event, config) => {
         conn.end()
         resolve({
           success: false,
-          message: '连接超时',
+          message: 'Connection timeout',
           connectionTime: Date.now() - startTime,
         })
       }, 10000)
@@ -286,7 +291,7 @@ ipcMain.handle('ssh-test-connection', async (_event, config) => {
         
         resolve({
           success: true,
-          message: `连接成功！耗时 ${connectionTime}ms`,
+          message: `Connection successful! Time taken: ${connectionTime}ms`,
           connectionTime,
           serverInfo: {
             hostname: config.host,
@@ -299,15 +304,15 @@ ipcMain.handle('ssh-test-connection', async (_event, config) => {
         clearTimeout(timeout)
         const connectionTime = Date.now() - startTime
         
-        let errorMessage = '连接失败'
+        let errorMessage = 'Connection failed'
         if (err.message.includes('ECONNREFUSED')) {
-          errorMessage = '连接被拒绝，请检查主机地址和端口'
+          errorMessage = 'Connection refused, please check host address and port'
         } else if (err.message.includes('ENOTFOUND')) {
-          errorMessage = '无法解析主机名，请检查网络连接'
+          errorMessage = 'Unable to resolve hostname, please check network connection'
         } else if (err.message.includes('Authentication failed')) {
-          errorMessage = '认证失败，请检查用户名和密码/密钥'
+          errorMessage = 'Authentication failed, please check username and password/key'
         } else {
-          errorMessage = `连接失败: ${err.message}`
+          errorMessage = `Connection failed: ${err.message}`
         }
 
         resolve({
@@ -339,7 +344,7 @@ ipcMain.handle('ssh-test-connection', async (_event, config) => {
         clearTimeout(timeout)
         resolve({
           success: false,
-          message: `配置错误: ${error instanceof Error ? error.message : '未知错误'}`,
+          message: `Configuration error: ${error instanceof Error ? error.message : 'Unknown error'}`,
           connectionTime: Date.now() - startTime,
         })
       }
@@ -347,7 +352,264 @@ ipcMain.handle('ssh-test-connection', async (_event, config) => {
   } catch (error) {
     return {
       success: false,
-      message: `SSH 模块加载失败: ${error instanceof Error ? error.message : '未知错误'}`,
+      message: `SSH module loading failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    }
+  }
+})
+
+// File System IPC handlers
+ipcMain.handle('fs:readdir', async (_event, dirPath: string) => {
+  try {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true })
+    const files = []
+    
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name)
+      try {
+        const stats = await fs.stat(fullPath)
+        files.push({
+          name: entry.name,
+          type: entry.isDirectory() ? 'directory' : 'file',
+          size: stats.size,
+          modifiedAt: stats.mtime.toISOString(),
+          permissions: stats.mode,
+          isHidden: entry.name.startsWith('.'),
+          path: fullPath
+        })
+      } catch (error) {
+        // Skip files that can't be accessed
+        console.warn(`Cannot access ${fullPath}:`, error)
+      }
+    }
+    
+    return { success: true, files }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('fs:stat', async (_event, filePath: string) => {
+  try {
+    const stats = await fs.stat(filePath)
+    const isDirectory = stats.isDirectory()
+    
+    return {
+      success: true,
+      stats: {
+        name: path.basename(filePath),
+        type: isDirectory ? 'directory' : 'file',
+        size: stats.size,
+        modifiedAt: stats.mtime.toISOString(),
+        permissions: stats.mode,
+        isHidden: path.basename(filePath).startsWith('.'),
+        path: filePath
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('fs:mkdir', async (_event, dirPath: string) => {
+  try {
+    await fs.mkdir(dirPath, { recursive: true })
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('fs:unlink', async (_event, filePath: string) => {
+  try {
+    await fs.unlink(filePath)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('fs:rmdir', async (_event, dirPath: string) => {
+  try {
+    await fs.rmdir(dirPath, { recursive: true })
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+// SFTP IPC handlers
+ipcMain.handle('sftp:connect', async (_event, sessionId: string) => {
+  try {
+    if (!sshManager) {
+      throw new Error('SSH manager not initialized')
+    }
+    
+    const session = sshManager.getSessionObject(sessionId)
+    if (!session) {
+      throw new Error('SSH session not found')
+    }
+    
+    // SFTP connection will be handled by the SSH session manager
+    // For now, just return success if the SSH session is connected
+    return { success: session.status === 'connected' }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('sftp:disconnect', async (_event, sessionId: string) => {
+  try {
+    // SFTP disconnection is handled with SSH session disconnect
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('sftp:listFiles', async (_event, sessionId: string, remotePath: string) => {
+  try {
+    if (!sshManager) {
+      throw new Error('SSH manager not initialized')
+    }
+    
+    const session = sshManager.getSessionObject(sessionId)
+    if (!session || session.status !== 'connected') {
+      throw new Error('SSH session not connected')
+    }
+    
+    // Use the SSH manager's SFTP connection to list files
+    const files = await sshManager.listFiles(sessionId, remotePath)
+    return { success: true, files }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('sftp:mkdir', async (_event, sessionId: string, remotePath: string) => {
+  try {
+    if (!sshManager) {
+      throw new Error('SSH manager not initialized')
+    }
+    
+    const session = sshManager.getSessionObject(sessionId)
+    if (!session || session.status !== 'connected') {
+      throw new Error('SSH session not connected')
+    }
+    
+    await sshManager.createDirectory(sessionId, remotePath)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('sftp:unlink', async (_event, sessionId: string, remotePath: string) => {
+  try {
+    if (!sshManager) {
+      throw new Error('SSH manager not initialized')
+    }
+    
+    const session = sshManager.getSessionObject(sessionId)
+    if (!session || session.status !== 'connected') {
+      throw new Error('SSH session not connected')
+    }
+    
+    await sshManager.deleteFile(sessionId, remotePath)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('sftp:rmdir', async (_event, sessionId: string, remotePath: string) => {
+  try {
+    if (!sshManager) {
+      throw new Error('SSH manager not initialized')
+    }
+    
+    const session = sshManager.getSessionObject(sessionId)
+    if (!session || session.status !== 'connected') {
+      throw new Error('SSH session not connected')
+    }
+    
+    await sshManager.deleteDirectory(sessionId, remotePath)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('sftp:uploadFile', async (_event, sessionId: string, localPath: string, remotePath: string) => {
+  try {
+    if (!sshManager) {
+      throw new Error('SSH manager not initialized')
+    }
+    
+    const session = sshManager.getSessionObject(sessionId)
+    if (!session || session.status !== 'connected') {
+      throw new Error('SSH session not connected')
+    }
+    
+    await sshManager.uploadFile(sessionId, localPath, remotePath)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('sftp:downloadFile', async (_event, sessionId: string, remotePath: string, localPath: string) => {
+  try {
+    if (!sshManager) {
+      throw new Error('SSH manager not initialized')
+    }
+    
+    const session = sshManager.getSessionObject(sessionId)
+    if (!session || session.status !== 'connected') {
+      throw new Error('SSH session not connected')
+    }
+    
+    await sshManager.downloadFile(sessionId, remotePath, localPath)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 })
@@ -357,7 +619,7 @@ app.whenReady().then(() => {
   initSSHManager()
 })
 
-// 应用退出时清理
+// Cleanup when application exits
 app.on('before-quit', () => {
   if (sshManager) {
     sshManager.cleanup()

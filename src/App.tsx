@@ -1,15 +1,33 @@
+import { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { ConnectionsView } from '@/views/ConnectionsView'
 import { SettingsView } from '@/views/SettingsView'
 import { StatsView } from '@/views/StatsView'
 import { AboutView } from '@/views/AboutView'
-import { SingleTerminalView } from '@/views/SingleTerminalView'
+import { TerminalContainer } from '@/components/TerminalContainer'
+import { sshEventDispatcher } from '@/services/ssh-event-dispatcher'
+import { sessionStore } from '@/store/session-store'
+import { terminalPersistenceManager } from '@/services/terminal-persistence-manager'
 
 function AppContent() {
   const location = useLocation()
   const navigate = useNavigate()
-  
+
+  // 初始化全局SSH事件分发器和会话状态管理
+  useEffect(() => {
+    console.log('🚀 初始化应用，启动SSH事件分发器')
+    sshEventDispatcher.initialize()
+
+    // 应用退出时清理
+    return () => {
+      console.log('🧹 应用退出，清理全局状态')
+      sshEventDispatcher.cleanup()
+      sessionStore.clear()
+      terminalPersistenceManager.clear()
+    }
+  }, [])
+
   // 根据当前路径确定活跃的tab
   const getActiveTab = () => {
     const path = location.pathname
@@ -22,19 +40,23 @@ function AppContent() {
   }
 
   return (
-    <Layout activeTab={getActiveTab()} onTabChange={(tab) => {
-      // 使用React Router导航
-      if (tab !== 'terminal') {
-        navigate(`/${tab}`)
-      }
-    }}>
+    <Layout
+      activeTab={getActiveTab()}
+      onTabChange={(tab) => {
+        // 使用React Router导航
+        if (tab !== 'terminal') {
+          navigate(`/${tab}`)
+        }
+      }}
+    >
       <Routes>
         <Route path="/" element={<Navigate to="/connections" replace />} />
         <Route path="/connections" element={<ConnectionsView />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/stats" element={<StatsView />} />
         <Route path="/about" element={<AboutView />} />
-        <Route path="/terminal/:configId" element={<SingleTerminalView />} />
+        <Route path="/terminal/:sessionId" element={<TerminalContainer />} />
+        <Route path="/terminal" element={<TerminalContainer />} />
       </Routes>
     </Layout>
   )

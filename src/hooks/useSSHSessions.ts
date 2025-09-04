@@ -1,36 +1,38 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { SSHSessionData } from '@/types/electron'
 import type { DecryptedSSHConfig } from '@/types/ssh'
+import { sessionStore } from '@/store/session-store'
 import '@/types/electron'
 
 export function useSSHSessions() {
-  const [sessions, setSessions] = useState<SSHSessionData[]>([])
-  const [activeSessionId, setActiveSessionId] = useState<string | undefined>()
+  const [sessions, setSessions] = useState<SSHSessionData[]>(() => sessionStore.getAllSessions())
+  const [activeSessionId, setActiveSessionId] = useState<string | undefined>(() => sessionStore.getActiveSessionId())
   const [loading, setLoading] = useState(false)
 
-  // 获取所有会话
+  // Get all sessions
   const loadSessions = useCallback(async () => {
     if (!window.ipcRenderer?.ssh) return
 
     try {
       const result = await window.ipcRenderer.ssh.getAllSessions()
       if (result.success && result.sessions) {
-        setSessions(result.sessions)
+        // Sync with global state
+        sessionStore.updateSessions(result.sessions)
 
-        // 如果没有活跃会话但有会话存在，获取活跃会话
-        if (!activeSessionId && result.sessions.length > 0) {
+        // If there's no active session but sessions exist, get the active session
+        if (!sessionStore.getActiveSessionId() && result.sessions.length > 0) {
           const activeResult = await window.ipcRenderer.ssh.getActiveSession()
-          if (activeResult.success && activeResult.data?.sessionId) {
-            setActiveSessionId(activeResult.data.sessionId)
+          if (activeResult.success && activeResult.sessionId) {
+            sessionStore.setActiveSession(activeResult.sessionId)
           }
         }
       }
     } catch (error) {
       console.error('Failed to load SSH sessions:', error)
     }
-  }, [activeSessionId])
+  }, [])
 
-  // 创建新会话
+  // Create new session
   const createSession = useCallback(async (config: DecryptedSSHConfig): Promise<boolean> => {
     if (!window.ipcRenderer?.ssh) return false
 
@@ -38,7 +40,7 @@ export function useSSHSessions() {
     try {
       const result = await window.ipcRenderer.ssh.createSession(config)
       if (result.success && result.sessionId) {
-        // 会话创建成功，通过事件监听器更新状态
+        // Session created successfully, state will be updated by event listener
         return true
       } else {
         console.error('Failed to create SSH session:', result.error)
@@ -52,14 +54,14 @@ export function useSSHSessions() {
     }
   }, [])
 
-  // 关闭会话
+  // Close session
   const closeSession = useCallback(async (sessionId: string): Promise<boolean> => {
     if (!window.ipcRenderer?.ssh) return false
 
     try {
       const result = await window.ipcRenderer.ssh.closeSession(sessionId)
       if (result.success) {
-        // 会话关闭成功，通过事件监听器更新状态
+        // Session closed successfully, state will be updated by event listener
         return true
       } else {
         console.error('Failed to close SSH session:', result.error)
@@ -71,14 +73,14 @@ export function useSSHSessions() {
     }
   }, [])
 
-  // 切换会话
+  // Switch session
   const switchSession = useCallback(async (sessionId: string): Promise<boolean> => {
     if (!window.ipcRenderer?.ssh) return false
 
     try {
       const result = await window.ipcRenderer.ssh.switchSession(sessionId)
       if (result.success) {
-        // 切换成功，通过事件监听器更新状态
+        // Switch successful, state will be updated by event listener
         return true
       } else {
         console.error('Failed to switch SSH session:', result.error)
@@ -90,7 +92,7 @@ export function useSSHSessions() {
     }
   }, [])
 
-  // 发送命令到活跃会话
+  // Send command to active session
   const sendCommand = useCallback(
     async (command: string): Promise<boolean> => {
       if (!window.ipcRenderer?.ssh || !activeSessionId) return false
@@ -103,10 +105,10 @@ export function useSSHSessions() {
         return false
       }
     },
-    [activeSessionId]
+    [activeSessionId],
   )
 
-  // 调整终端大小
+  // Resize terminal
   const resizeTerminal = useCallback(
     async (cols: number, rows: number): Promise<boolean> => {
       if (!window.ipcRenderer?.ssh || !activeSessionId) return false
@@ -119,17 +121,17 @@ export function useSSHSessions() {
         return false
       }
     },
-    [activeSessionId]
+    [activeSessionId],
   )
 
-  // 重连会话
+  // Reconnect session
   const reconnectSession = useCallback(async (sessionId: string): Promise<boolean> => {
     if (!window.ipcRenderer?.ssh) return false
 
     try {
       const result = await window.ipcRenderer.ssh.reconnectSession(sessionId)
       if (result.success) {
-        // 重连成功，通过事件监听器更新状态
+        // Reconnect successful, state will be updated by event listener
         return true
       } else {
         console.error('Failed to reconnect SSH session:', result.error)
@@ -141,66 +143,69 @@ export function useSSHSessions() {
     }
   }, [])
 
-  // 监听主进程事件
+  // Subscribe to global session state
+  useEffect(() => {
+    const unsubscribe = sessionStore.subscribe((sessions) => {
+      setSessions(sessions)
+      setActiveSessionId(sessionStore.getActiveSessionId())
+    })
+
+    return unsubscribe
+  }, [])
+
+  // Listen to main process events and sync with global state
   useEffect(() => {
     if (!window.ipcRenderer) return
 
     const handleSessionCreated = (_event: unknown, sessionData: SSHSessionData) => {
-      setSessions((prev) => [...prev, sessionData])
-
-      // 如果是第一个会话，自动设为活跃
-      if (!activeSessionId) {
-        setActiveSessionId(sessionData.id)
+      sessionStore.updateSession(sessionData)
+      // If it's the first session, automatically set it as active
+      if (sessionStore.getSessionCount() === 1) {
+        sessionStore.setActiveSession(sessionData.id)
       }
     }
 
     const handleSessionClosed = (_event: unknown, sessionId: string) => {
-      setSessions((prev) => prev.filter((s) => s.id !== sessionId))
-
-      // 如果关闭的是活跃会话，清空活跃状态
-      if (activeSessionId === sessionId) {
-        setActiveSessionId(undefined)
-      }
+      sessionStore.removeSession(sessionId)
     }
 
     const handleActiveSessionChanged = (_event: unknown, sessionId: string) => {
-      setActiveSessionId(sessionId)
-      setSessions((prev) =>
-        prev.map((session) => ({
-          ...session,
-          isActive: session.id === sessionId,
-        }))
-      )
+      sessionStore.setActiveSession(sessionId)
     }
 
     const handleSessionConnected = (_event: unknown, sessionId: string) => {
-      console.log('handleSessionConnected', sessionId)
-      setSessions((prev) => prev.map((session) => (session.id === sessionId ? { ...session, status: 'connected' as const } : session)))
+      const session = sessionStore.getSession(sessionId)
+      if (session) {
+        sessionStore.updateSession({ ...session, status: 'connected' })
+      }
     }
 
     const handleSessionDisconnected = (_event: unknown, sessionId: string) => {
-      setSessions((prev) => prev.map((session) => (session.id === sessionId ? { ...session, status: 'disconnected' as const } : session)))
+      const session = sessionStore.getSession(sessionId)
+      if (session) {
+        sessionStore.updateSession({ ...session, status: 'disconnected' })
+      }
     }
 
     const handleSessionError = (_event: unknown, sessionId: string, error: string) => {
-      setSessions((prev) => prev.map((session) => (session.id === sessionId ? { ...session, status: 'error' as const, error } : session)))
+      const session = sessionStore.getSession(sessionId)
+      if (session) {
+        sessionStore.updateSession({ ...session, status: 'error', error })
+      }
     }
 
     const handleSessionReconnecting = (_event: unknown, sessionId: string, attempt: number, delay: number) => {
-      setSessions((prev) =>
-        prev.map((session) =>
-          session.id === sessionId
-            ? {
-                ...session,
-                status: 'connecting' as const,
-                error: `重连中 (第${attempt}次尝试，${Math.round(delay / 1000)}s后)`,
-              }
-            : session
-        )
-      )
+      const session = sessionStore.getSession(sessionId)
+      if (session) {
+        sessionStore.updateSession({
+          ...session,
+          status: 'connecting',
+          error: `Reconnecting (attempt ${attempt}, in ${Math.round(delay / 1000)}s)`,
+        })
+      }
     }
 
-    // 注册事件监听器
+    // Register event listeners
     window.ipcRenderer.on('ssh-session-created', handleSessionCreated)
     window.ipcRenderer.on('ssh-session-closed', handleSessionClosed)
     window.ipcRenderer.on('ssh-active-session-changed', handleActiveSessionChanged)
@@ -209,7 +214,7 @@ export function useSSHSessions() {
     window.ipcRenderer.on('ssh-session-error', handleSessionError)
     window.ipcRenderer.on('ssh-session-reconnecting', handleSessionReconnecting)
 
-    // 初始加载会话
+    // Initial session load
     loadSessions()
 
     return () => {
@@ -221,7 +226,7 @@ export function useSSHSessions() {
       window.ipcRenderer?.off('ssh-session-error', handleSessionError)
       window.ipcRenderer?.off('ssh-session-reconnecting', handleSessionReconnecting)
     }
-  }, [activeSessionId, loadSessions])
+  }, [loadSessions])
 
   return {
     sessions,

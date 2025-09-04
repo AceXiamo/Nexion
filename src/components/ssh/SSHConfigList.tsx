@@ -18,7 +18,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
   const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
 
-  // 过滤配置
+  // Filter configurations
   const filteredConfigs = useMemo(() => {
     return configs.filter((config) => {
       const searchLower = searchTerm.toLowerCase()
@@ -29,7 +29,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
   if (isLoading) {
     return (
       <div className="space-y-6">
-        {/* 简化工具栏骨架 */}
+        {/* Simplified toolbar skeleton */}
         <div className="flex items-center justify-between">
           <div className="w-64 h-10 bg-neutral-800 rounded-lg animate-pulse" />
           <div className="flex items-center space-x-3">
@@ -38,7 +38,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
           </div>
         </div>
 
-        {/* OKX 风格骨架布局 */}
+        {/* OKX style skeleton layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-lg p-4">
@@ -78,10 +78,10 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
 
   return (
     <div className="space-y-6">
-      {/* 简化工具栏 - 仅保留搜索和添加按钮 */}
+      {/* Simplified toolbar - only search and add button */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 flex-1">
-          {/* 搜索框 */}
+          {/* Search box */}
           <div className="relative max-w-md flex-1">
             <Icon icon="mdi:magnify" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('ssh:searchPlaceholder')} className="input !px-10" />
@@ -92,19 +92,19 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
             )}
           </div>
 
-          {/* 统计信息 */}
+          {/* Statistics information */}
           <div className="text-sm text-neutral-400">
             {t('common:total')} <span className="text-white font-medium">{filteredConfigs.length}</span> {t('ssh:configsCount')}
             {searchTerm && (
               <span className="ml-2">
-                • {t('ssh:filteredFrom')} <span className="text-white font-medium">{configs.length}</span> 个
+                • {t('ssh:filteredFrom')} <span className="text-white font-medium">{configs.length}</span>
               </span>
             )}
           </div>
         </div>
 
         <div className="flex items-center space-x-3">
-          {/* 刷新按钮 */}
+          {/* Refresh button */}
           <button
             onClick={onRefresh}
             disabled={isRefreshing || isLoading}
@@ -117,7 +117,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
             />
           </button>
 
-          {/* 添加按钮 */}
+          {/* Add button */}
           <button onClick={onAdd} className="btn-primary">
             <Icon icon="mdi:plus" className="w-4 h-4" />
             <span>{t('ssh:addConfig')}</span>
@@ -125,7 +125,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
         </div>
       </div>
 
-      {/* OKX 风格响应式网格布局 - 24px 间距 */}
+      {/* OKX style responsive grid layout - 24px spacing */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         {filteredConfigs.map((config) => (
           <SSHConfigCard 
@@ -137,7 +137,7 @@ export function SSHConfigList({ configs, isLoading = false, onAdd, onEdit, onDel
         ))}
       </div>
 
-      {/* 搜索无结果 */}
+      {/* No search results */}
       {searchTerm && filteredConfigs.length === 0 && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-neutral-800 rounded-2xl flex items-center justify-center mx-auto mb-4">

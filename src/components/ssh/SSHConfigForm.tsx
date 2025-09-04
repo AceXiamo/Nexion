@@ -6,7 +6,7 @@ import { Icon } from '@iconify/react'
 import { useTranslation } from 'react-i18next'
 import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
 
-// 表单验证 Schema 工厂函数
+// Form validation Schema factory function
 const createSSHConfigSchema = (t: any) => z
   .object({
     name: z.string().min(1, t('ssh:formErrors.nameRequired')).max(50, t('ssh:formErrors.nameMaxLength')),
@@ -14,7 +14,7 @@ const createSSHConfigSchema = (t: any) => z
       .string()
       .min(1, t('ssh:formErrors.hostRequired'))
       .refine((value) => {
-        // 验证 IP 地址或域名格式
+        // Validate IP address or domain format
         const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/
         const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/
         return ipRegex.test(value) || domainRegex.test(value)
@@ -34,7 +34,7 @@ const createSSHConfigSchema = (t: any) => z
   })
   .refine(
     (data) => {
-      // 根据认证类型验证对应字段
+      // Validate corresponding fields based on authentication type
       if (data.authType === 'password') {
         return data.password && data.password.length >= 1
       } else {
@@ -115,23 +115,23 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
 
   return (
     <div className="space-y-2">
-      {/* 表单标题 */}
+      {/* Form title */}
       <div className="text-center">
         <div className="w-12 h-12 bg-lime-400/10 rounded-xl flex items-center justify-center mx-auto mb-1">
           <Icon icon={isEditing ? 'mdi:pencil' : 'mdi:server-plus'} className="w-6 h-6 text-lime-400" />
         </div>
       </div>
 
-      {/* 表单内容 */}
+      {/* Form content */}
       <form id="ssh-config-form" onSubmit={handleSubmit(handleFormSubmit)} className="space-y-2">
-        {/* 基础信息 */}
+        {/* Basic information */}
         <div className="space-y-2">
           <h3 className="text-base font-semibold text-white flex items-center space-x-2">
             <Icon icon="mdi:information" className="w-4 h-4 text-lime-400" />
             <span>{t('ssh:basicInfo')}</span>
           </h3>
 
-          {/* 配置名称 */}
+          {/* Configuration name */}
           <div className="space-y-1">
             <label className="block text-sm font-medium text-neutral-200">
               {t('ssh:configName')} <span className="text-red-400">*</span>
@@ -145,7 +145,7 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
             )}
           </div>
 
-          {/* 主机地址和端口 */}
+          {/* Host address and port */}
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-2 space-y-1">
               <label className="block text-sm font-medium text-neutral-200">
@@ -174,7 +174,7 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
             </div>
           </div>
 
-          {/* 用户名 */}
+          {/* Username */}
           <div className="space-y-1">
             <label className="block text-sm font-medium text-neutral-200">
               {t('ssh:username')} <span className="text-red-400">*</span>
@@ -189,14 +189,14 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
           </div>
         </div>
 
-        {/* 认证配置 */}
+        {/* Authentication configuration */}
         <div className="space-y-2">
           <h3 className="text-base font-semibold text-white flex items-center space-x-2">
             <Icon icon="mdi:key" className="w-4 h-4 text-lime-400" />
             <span>{t('ssh:authConfig')}</span>
           </h3>
 
-          {/* 认证类型选择 */}
+          {/* Authentication type selection */}
           <div className="space-y-1">
             <label className="block text-sm font-medium text-neutral-200">
               {t('ssh:authMethod')} <span className="text-red-400">*</span>
@@ -234,7 +234,7 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
             )}
           </div>
 
-          {/* 密码认证字段 */}
+          {/* Password authentication fields */}
           {authType === 'password' && (
             <div className="space-y-1">
               <label className="block text-sm font-medium text-neutral-200">
@@ -255,10 +255,10 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
             </div>
           )}
 
-          {/* 密钥认证字段 */}
+          {/* Key authentication fields */}
           {authType === 'key' && (
             <div className="space-y-2">
-              {/* 私钥 */}
+              {/* Private key */}
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-neutral-200">
                   {t('ssh:privateKey')} <span className="text-red-400">*</span>
@@ -293,7 +293,7 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
                 )}
               </div>
 
-              {/* 私钥密码 (可选) */}
+              {/* Private key password (optional) */}
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-neutral-200">
                   {t('ssh:passphrase')} <span className="text-neutral-500">({t('common:optional')})</span>
@@ -309,7 +309,7 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
           )}
         </div>
 
-        {/* 安全提示 */}
+        {/* Security notice */}
         <div className="bg-lime-400/5 border border-lime-400/20 rounded-lg p-2 mb-4">
           <div className="flex items-start space-x-2">
             <Icon icon="mdi:shield-check" className="w-4 h-4 text-lime-400 mt-0.5" />
@@ -324,7 +324,7 @@ export function SSHConfigForm({ config, onSubmit, onCancel, onSubmitStart, onSub
           </div>
         </div>
 
-        {/* 表单按钮 */}
+        {/* Form buttons */}
         {showActions && (
           <div className="flex items-center justify-end space-x-2 pt-2 border-t border-neutral-800">
             <button type="button" onClick={onCancel} disabled={isSubmitting} className="btn-secondary disabled:opacity-50">

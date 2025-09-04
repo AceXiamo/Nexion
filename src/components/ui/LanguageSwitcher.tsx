@@ -10,8 +10,8 @@ interface Language {
 }
 
 const languages: Language[] = [
-  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
 ]
 
 export function LanguageSwitcher() {
@@ -41,7 +41,7 @@ export function LanguageSwitcher() {
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-neutral-800 rounded-lg shadow-xl border border-neutral-700 py-2 z-50">
+        <div className="absolute right-0 top-full mt-2 w-48 bg-neutral-800 rounded-lg shadow-xl border border-neutral-700 overflow-hidden z-50">
           {languages.map((language) => (
             <button
               key={language.code}
