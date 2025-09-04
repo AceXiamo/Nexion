@@ -38,6 +38,10 @@ interface FileTransferActions {
   deleteRemoteFile: (filePath: string) => Promise<void>
   createRemoteDirectory: (dirPath: string) => Promise<void>
 
+  // Progress handling
+  setupProgressListener: () => void
+  removeProgressListener: () => void
+
   // Error handling
   setLocalError: (error?: string) => void
   setRemoteError: (error?: string) => void
@@ -59,6 +63,13 @@ const initialState: FileTransferState = {
   errors: {},
 }
 
+// Store progress listener function reference
+let progressListener: ((event: any, data: { taskId: string; progress: number; transferred: number }) => void) | null = null
+
+// Progress throttling - store last update time for each task
+const lastProgressUpdate = new Map<string, number>()
+const PROGRESS_UPDATE_INTERVAL = 100 // Update every 100ms
+
 export const useFileTransferStore = create<FileTransferState & FileTransferActions>()(
   subscribeWithSelector((set, get) => ({
     ...initialState,
@@ -70,6 +81,9 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
         errors: {},
       })
 
+      // Setup progress listener
+      get().setupProgressListener()
+
       // Load initial file listings
       const { loadLocalFiles, loadRemoteFiles, localPath, remotePath } = get()
       loadLocalFiles(localPath)
@@ -77,6 +91,9 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
     },
 
     closeModal: () => {
+      // Remove progress listener
+      get().removeProgressListener()
+
       set({
         isOpen: false,
         currentSession: null,
@@ -196,12 +213,23 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
       set((state) => ({
         transferQueue: state.transferQueue.filter((task) => task.id !== id),
       }))
+      // Clean up throttling cache for this task
+      lastProgressUpdate.delete(id)
     },
 
     clearCompletedTasks: () => {
-      set((state) => ({
-        transferQueue: state.transferQueue.filter((task) => task.status !== 'completed' && task.status !== 'error'),
-      }))
+      set((state) => {
+        const completedTaskIds = state.transferQueue
+          .filter((task) => task.status === 'completed' || task.status === 'error')
+          .map((task) => task.id)
+        
+        // Clean up throttling cache for completed tasks
+        completedTaskIds.forEach(id => lastProgressUpdate.delete(id))
+        
+        return {
+          transferQueue: state.transferQueue.filter((task) => task.status !== 'completed' && task.status !== 'error'),
+        }
+      })
     },
 
     uploadFiles: async (files: { localPath: string; remotePath: string }[]) => {
@@ -227,17 +255,7 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
         try {
           get().updateTransferTask(taskId, { status: 'transferring' })
 
-          await sftpService.uploadFile(localPath, remotePath, (progress) => {
-            const progressValue = Number(progress) || 0
-            const fileSize = Number(stats.size) || 0
-            const transferred = Math.round((fileSize * progressValue) / 100)
-            console.log('progressValue', progressValue)
-            console.log('transferred', transferred)
-            get().updateTransferTask(taskId, {
-              transferred: isNaN(transferred) ? 0 : transferred,
-              speed: progressValue,
-            })
-          })
+          await sftpService.uploadFile(localPath, remotePath, taskId)
 
           get().updateTransferTask(taskId, {
             status: 'completed',
@@ -281,14 +299,7 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
         try {
           get().updateTransferTask(taskId, { status: 'transferring' })
 
-          await sftpService.downloadFile(remotePath, localPath, (progress) => {
-            const progressValue = Number(progress) || 0
-            const transferred = Math.round((fileSize * progressValue) / 100)
-            get().updateTransferTask(taskId, {
-              transferred: isNaN(transferred) ? 0 : transferred,
-              speed: progressValue,
-            })
-          })
+          await sftpService.downloadFile(remotePath, localPath, taskId)
 
           get().updateTransferTask(taskId, {
             status: 'completed',
@@ -358,6 +369,36 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
 
     clearErrors: () => {
       set({ errors: {} })
+    },
+
+    setupProgressListener: () => {
+      if (progressListener || !window.ipcRenderer) return
+
+      progressListener = (_event: any, data: { taskId: string; progress: number; transferred: number }) => {
+        const now = Date.now()
+        const lastUpdate = lastProgressUpdate.get(data.taskId) || 0
+        
+        // Only update if enough time has passed since last update, or if progress is 100%
+        if (now - lastUpdate >= PROGRESS_UPDATE_INTERVAL || data.progress === 100) {
+          lastProgressUpdate.set(data.taskId, now)
+          
+          get().updateTransferTask(data.taskId, {
+            progress: data.progress,
+            transferred: data.transferred,
+          })
+        }
+      }
+
+      window.ipcRenderer.on('file-transfer-progress', progressListener)
+    },
+
+    removeProgressListener: () => {
+      if (progressListener && window.ipcRenderer) {
+        window.ipcRenderer.removeListener('file-transfer-progress', progressListener)
+        progressListener = null
+        // Clear throttling cache
+        lastProgressUpdate.clear()
+      }
     },
   }))
 )

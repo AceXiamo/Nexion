@@ -22,20 +22,6 @@ const getStatusIcon = (status: TransferTask['status']) => {
   }
 }
 
-const calculateProgress = (task: TransferTask): number => {
-  // Ensure we have valid numbers
-  const fileSize = Number(task.fileSize) || 0
-  const transferred = Number(task.transferred) || 0
-
-  console.log('fileSize', fileSize)
-  console.log('transferred', transferred)
-  if (fileSize === 0) return 0
-  if (transferred >= fileSize) return 100
-
-  const progress = (transferred / fileSize) * 100
-  return isNaN(progress) ? 0 : Math.round(progress)
-}
-
 const calculateSpeed = (task: TransferTask): string => {
   if (!task.startTime || task.status !== 'transferring') return ''
 
@@ -56,12 +42,10 @@ interface TransferProgressCardProps {
 }
 
 function TransferProgressCard({ task, isExpanded }: TransferProgressCardProps) {
-  const [progress, setProgress] = useState(calculateProgress(task))
   const [speed, setSpeed] = useState(calculateSpeed(task))
 
   // update progress on task change
   useEffect(() => {
-    setProgress(calculateProgress(task))
     setSpeed(calculateSpeed(task))
   }, [task])
 
@@ -91,19 +75,26 @@ function TransferProgressCard({ task, isExpanded }: TransferProgressCardProps) {
           {/* Progress Bar */}
           <div className="mt-2">
             <div className="w-full bg-neutral-700 rounded-full h-1.5 mb-1">
-              <motion.div
+              {/* <motion.div
                 className={cn(
                   'h-1.5 rounded-full transition-all duration-300',
                   task.status === 'completed' ? 'bg-green-400' : task.status === 'error' ? 'bg-red-400' : task.status === 'paused' ? 'bg-orange-400' : 'bg-lime-400'
                 )}
                 initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
+                animate={{ width: `${task.progress}%` }}
                 transition={{ duration: 0.3 }}
+              /> */}
+              <div
+                className={cn(
+                  'h-1.5 rounded-full transition-all duration-300',
+                  task.status === 'completed' ? 'bg-green-400' : task.status === 'error' ? 'bg-red-400' : task.status === 'paused' ? 'bg-orange-400' : 'bg-lime-400'
+                )}
+                style={{ width: `${task.progress}%` }}
               />
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-400">{progress}%</span>
+              <span className="text-gray-400">{task.progress}%</span>
 
               {speed && <span className="text-gray-400">{speed}</span>}
             </div>
@@ -133,7 +124,7 @@ function AggregatedProgress({ tasks, onToggleExpand, isExpanded }: AggregatedPro
   const completedTasks = tasks.filter((task) => task.status === 'completed')
   const errorTasks = tasks.filter((task) => task.status === 'error')
 
-  const totalProgress = tasks.length > 0 ? Math.round(tasks.reduce((sum, task) => sum + calculateProgress(task), 0) / tasks.length) : 0
+  const totalProgress = tasks.length > 0 ? Math.round(tasks.reduce((sum, task) => sum + (task.progress || 0), 0) / tasks.length) : 0
 
   const getStatusColor = () => {
     if (errorTasks.length > 0) return 'bg-red-400'
@@ -172,11 +163,15 @@ function AggregatedProgress({ tasks, onToggleExpand, isExpanded }: AggregatedPro
 
           <div className="mt-2">
             <div className="w-full bg-neutral-700 rounded-full h-1.5 mb-1">
-              <motion.div
+              {/* <motion.div
                 className={cn('h-1.5 rounded-full transition-all duration-300', getStatusColor())}
                 initial={{ width: 0 }}
                 animate={{ width: `${totalProgress}%` }}
                 transition={{ duration: 0.3 }}
+              /> */}
+              <div
+                className={cn('h-1.5 rounded-full transition-all duration-300', getStatusColor())}
+                style={{ width: `${totalProgress}%` }}
               />
             </div>
 
