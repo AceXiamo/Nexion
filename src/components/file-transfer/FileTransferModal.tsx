@@ -42,14 +42,7 @@ export function FileTransferModal() {
     >
       <div className="flex flex-col h-[80vh] max-h-[800px]">
         {/* Header Controls */}
-        <div className="flex items-center justify-between mb-4 pb-4 border-b border-neutral-800">
-          <div className="flex items-center gap-3">
-            <Icon icon="mdi:folder-sync" className="w-6 h-6 text-lime-400" />
-            <span className="text-lg font-semibold text-white">
-              Session: <span className="text-lime-400">{currentSession}</span>
-            </span>
-          </div>
-          
+        <div className="flex items-center justify-end mb-4 pb-4 border-b border-neutral-800">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -67,14 +60,6 @@ export function FileTransferModal() {
         <div className="flex-1 flex gap-4 min-h-0">
           {/* Left Panel - Local Files */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex items-center gap-2 mb-3">
-              <Icon icon="mdi:laptop" className="w-5 h-5 text-blue-400" />
-              <span className="text-sm font-medium text-white">本地文件</span>
-              {isLoading.local && (
-                <Icon icon="mdi:loading" className="w-4 h-4 animate-spin text-lime-400" />
-              )}
-            </div>
-            
             <FilePanel
               type="local"
               currentPath={localPath}
@@ -90,14 +75,6 @@ export function FileTransferModal() {
 
           {/* Right Panel - Remote Files */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex items-center gap-2 mb-3">
-              <Icon icon="mdi:server" className="w-5 h-5 text-orange-400" />
-              <span className="text-sm font-medium text-white">远程文件</span>
-              {isLoading.remote && (
-                <Icon icon="mdi:loading" className="w-4 h-4 animate-spin text-lime-400" />
-              )}
-            </div>
-            
             <FilePanel
               type="remote"
               currentPath={remotePath}
