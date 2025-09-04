@@ -477,3 +477,15 @@ body {
   animation: modal-fade-out 0.2s ease-in,
              modal-zoom-out 0.2s ease-in;
 }
+
+/* 向上渐入动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

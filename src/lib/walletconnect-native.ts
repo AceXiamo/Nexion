@@ -5,6 +5,7 @@ export interface WalletInfo {
   id: string
   name: string
   homepage?: string
+  iconify_icon?: string
   image_url?: {
     sm?: string
     md?: string
@@ -44,11 +45,7 @@ export class NativeWalletConnect {
       id: 'okx',
       name: 'OKX Wallet',
       homepage: 'https://www.okx.com/web3',
-      image_url: {
-        sm: 'https://registry.walletconnect.com/api/v1/logo/sm/okx-wallet',
-        md: 'https://registry.walletconnect.com/api/v1/logo/md/okx-wallet',
-        lg: 'https://registry.walletconnect.com/api/v1/logo/lg/okx-wallet'
-      },
+      iconify_icon: 'token-branded:okx',
       mobile: {
         native: 'okx://wallet/dapp/url?dappUrl=',
         universal: 'https://www.okx.com/download'
@@ -62,11 +59,7 @@ export class NativeWalletConnect {
       id: 'metamask',
       name: 'MetaMask',
       homepage: 'https://metamask.io/',
-      image_url: {
-        sm: 'https://registry.walletconnect.com/api/v1/logo/sm/metamask',
-        md: 'https://registry.walletconnect.com/api/v1/logo/md/metamask',
-        lg: 'https://registry.walletconnect.com/api/v1/logo/lg/metamask'
-      },
+      iconify_icon: 'token-branded:metamask',
       mobile: {
         native: 'metamask://dapp/',
         universal: 'https://metamask.app.link/dapp/'
@@ -80,11 +73,7 @@ export class NativeWalletConnect {
       id: 'trust',
       name: 'Trust Wallet',
       homepage: 'https://trustwallet.com/',
-      image_url: {
-        sm: 'https://registry.walletconnect.com/api/v1/logo/sm/trust-wallet',
-        md: 'https://registry.walletconnect.com/api/v1/logo/md/trust-wallet',
-        lg: 'https://registry.walletconnect.com/api/v1/logo/lg/trust-wallet'
-      },
+      iconify_icon: 'token-branded:trust',
       mobile: {
         native: 'trust://wc?uri=',
         universal: 'https://link.trustwallet.com/wc?uri='

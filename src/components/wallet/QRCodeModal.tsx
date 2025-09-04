@@ -12,6 +12,7 @@ interface QRCodeModalProps {
 export function QRCodeModal({ isOpen, onClose, uri }: QRCodeModalProps) {
   const { t } = useTranslation()
   const [qrDataURL, setQrDataURL] = useState<string>('')
+  const [isVisible, setIsVisible] = useState(false)
   const { supportedWallets, openWallet } = useWalletStore()
 
   useEffect(() => {
@@ -19,6 +20,36 @@ export function QRCodeModal({ isOpen, onClose, uri }: QRCodeModalProps) {
       generateQRCode(uri)
     }
   }, [uri])
+
+  // 动画状态控制
+  useEffect(() => {
+    if (isOpen) {
+      // 稍微延迟显示内容，让背景先出现
+      setTimeout(() => setIsVisible(true), 10)
+    } else {
+      setIsVisible(false)
+    }
+  }, [isOpen])
+
+  // ESC键关闭功能
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        handleClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      // 防止背景滚动
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   const generateQRCode = async (uri: string) => {
     try {
@@ -40,38 +71,63 @@ export function QRCodeModal({ isOpen, onClose, uri }: QRCodeModalProps) {
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(uri)
+      // TODO: 可以添加复制成功的提示
     } catch (error) {
       console.error('Failed to copy URI:', error)
+    }
+  }
+
+  const handleClose = () => {
+    setIsVisible(false)
+    // 等待动画完成后再关闭
+    setTimeout(() => onClose(), 200)
+  }
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleClose()
     }
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-800 max-w-md w-full mx-4 overflow-hidden">
+    <div 
+      className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 transition-all duration-300 ${
+        isVisible ? 'bg-black/50 opacity-100' : 'bg-black/0 opacity-0'
+      }`}
+      onClick={handleBackdropClick}
+    >
+      <div 
+        className={`bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-800 max-w-md w-full mx-4 overflow-hidden transition-all duration-300 transform ${
+          isVisible 
+            ? 'opacity-100 scale-100 translate-y-0' 
+            : 'opacity-0 scale-95 translate-y-4'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-neutral-800">
           <h2 className="text-lg font-semibold text-white">
             {t('wallet:connectWallet')}
           </h2>
           <button
-            onClick={onClose}
-            className="p-2 hover:bg-neutral-800 rounded-lg transition-colors"
+            onClick={handleClose}
+            className="p-2 hover:bg-neutral-800 rounded-lg transition-colors group"
           >
-            <Icon icon="mdi:close" className="w-5 h-5 text-neutral-400" />
+            <Icon icon="mdi:close" className="w-5 h-5 text-neutral-400 group-hover:text-white transition-colors" />
           </button>
         </div>
 
         {/* Content */}
         <div className="p-6">
           {/* QR Code */}
-          <div className="bg-white rounded-xl p-4 mb-6 flex justify-center">
+          <div className="bg-white rounded-xl p-4 mb-6 flex justify-center transition-all duration-300">
             {qrDataURL ? (
               <img 
                 src={qrDataURL} 
                 alt="WalletConnect QR Code" 
-                className="w-64 h-64"
+                className="w-64 h-64 transition-all duration-300 hover:scale-105"
               />
             ) : (
               <div className="w-64 h-64 flex items-center justify-center">
@@ -96,23 +152,28 @@ export function QRCodeModal({ isOpen, onClose, uri }: QRCodeModalProps) {
               {t('wallet:supportedWallets')}
             </h4>
             <div className="grid grid-cols-3 gap-3">
-              {supportedWallets.map((wallet) => (
+              {supportedWallets.map((wallet, index) => (
                 <button
                   key={wallet.id}
                   onClick={() => openWallet(wallet.id)}
-                  className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-all duration-200 flex flex-col items-center space-y-2 group"
+                  className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-all duration-200 flex flex-col items-center space-y-2 group hover:scale-105 active:scale-95"
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    animation: isVisible ? 'fadeInUp 0.4s ease-out forwards' : 'none'
+                  }}
                 >
-                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-white">
-                    <img
-                      src={wallet.image_url?.md || ''}
-                      alt={wallet.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        target.style.display = 'none'
-                        target.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center text-neutral-400"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg></div>'
-                      }}
-                    />
+                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-white flex items-center justify-center">
+                    {wallet.iconify_icon ? (
+                      <Icon 
+                        icon={wallet.iconify_icon} 
+                        className="w-6 h-6" 
+                      />
+                    ) : (
+                      <Icon 
+                        icon="mdi:wallet" 
+                        className="w-5 h-5 text-neutral-400" 
+                      />
+                    )}
                   </div>
                   <span className="text-xs text-neutral-300 group-hover:text-white transition-colors">
                     {wallet.name}
@@ -125,7 +186,7 @@ export function QRCodeModal({ isOpen, onClose, uri }: QRCodeModalProps) {
           {/* Copy URI Button */}
           <button
             onClick={copyToClipboard}
-            className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+            className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 hover:scale-[1.02] active:scale-[0.98]"
           >
             <Icon icon="mdi:content-copy" className="w-4 h-4" />
             <span className="text-sm font-medium">{t('wallet:copyConnectionURI')}</span>
