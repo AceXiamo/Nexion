@@ -65,9 +65,8 @@ export class SSHSessionManager extends EventEmitter {
    * Multiple sessions from the same config will be automatically numbered: Config-1, Config-2, Config-3...
    */
   private generateSessionName(config: DecryptedSSHConfig): string {
-    const existingSessions = Array.from(this.sessions.values())
-      .filter(session => session.configId === config.id)
-    
+    const existingSessions = Array.from(this.sessions.values()).filter((session) => session.configId === config.id)
+
     const sessionCount = existingSessions.length + 1
     return `${config.name}-${sessionCount}`
   }
@@ -171,7 +170,7 @@ export class SSHSessionManager extends EventEmitter {
           stream.on('close', () => {
             session.status = 'disconnected'
             this.emit('session-disconnected', sessionId)
-            
+
             // Attempt automatic reconnection (if within reconnect limit)
             if (session.reconnectAttempts < session.maxReconnectAttempts) {
               this.scheduleReconnect(sessionId)
@@ -189,12 +188,12 @@ export class SSHSessionManager extends EventEmitter {
         session.status = 'error'
         session.error = this.categorizeError(err)
         this.emit('session-error', sessionId, session.error)
-        
+
         // Decide whether to reconnect based on error type
         if (this.shouldRetryConnection(err) && session.reconnectAttempts < session.maxReconnectAttempts) {
           this.scheduleReconnect(sessionId)
         }
-        
+
         reject(err)
       })
 
@@ -203,7 +202,7 @@ export class SSHSessionManager extends EventEmitter {
         if (session.status !== 'disconnected') {
           session.status = 'disconnected'
           this.emit('session-disconnected', sessionId)
-          
+
           if (session.reconnectAttempts < session.maxReconnectAttempts) {
             this.scheduleReconnect(sessionId)
           }
@@ -276,10 +275,8 @@ export class SSHSessionManager extends EventEmitter {
 
     // If this is the active session, switch to another session
     if (this.activeSessionId === sessionId) {
-      const remainingSessions = Array.from(this.sessions.keys()).filter(
-        (id) => id !== sessionId
-      )
-      
+      const remainingSessions = Array.from(this.sessions.keys()).filter((id) => id !== sessionId)
+
       if (remainingSessions.length > 0) {
         this.setActiveSession(remainingSessions[0])
       } else {
@@ -311,7 +308,7 @@ export class SSHSessionManager extends EventEmitter {
     // Set new active session
     session.isActive = true
     this.activeSessionId = sessionId
-    
+
     this.emit('active-session-changed', sessionId)
     return true
   }
@@ -327,9 +324,7 @@ export class SSHSessionManager extends EventEmitter {
    * Get basic information of all sessions
    */
   getAllSessions(): SSHSessionData[] {
-    return Array.from(this.sessions.values()).map(session => 
-      this.getSessionData(session)
-    )
+    return Array.from(this.sessions.values()).map((session) => this.getSessionData(session))
   }
 
   /**
@@ -369,16 +364,16 @@ export class SSHSessionManager extends EventEmitter {
 
     session.reconnectAttempts++
     session.status = 'connecting'
-    
+
     // Exponential backoff algorithm: 1s, 2s, 4s, 8s...
     const delay = Math.min(1000 * Math.pow(2, session.reconnectAttempts - 1), 10000)
-    
+
     this.emit('session-reconnecting', sessionId, session.reconnectAttempts, delay)
-    
+
     setTimeout(() => {
       this.connectSession(sessionId).catch((error) => {
         console.error(`Reconnect attempt ${session.reconnectAttempts} failed for session ${sessionId}:`, error)
-        
+
         // If maximum reconnect attempts reached, mark as error state
         if (session.reconnectAttempts >= session.maxReconnectAttempts) {
           session.status = 'error'
@@ -394,31 +389,31 @@ export class SSHSessionManager extends EventEmitter {
    */
   private categorizeError(error: Error): string {
     const message = error.message || error.toString()
-    
+
     if (message.includes('ENOTFOUND') || message.includes('getaddrinfo')) {
       return 'Hostname resolution failed, please check network connection and host address'
     }
-    
+
     if (message.includes('ECONNREFUSED')) {
       return 'Connection refused, please check if port is correct or service is running'
     }
-    
+
     if (message.includes('ETIMEDOUT')) {
       return 'Connection timeout, please check network connection'
     }
-    
+
     if (message.includes('Authentication')) {
       return 'Authentication failed, please check username, password or key'
     }
-    
+
     if (message.includes('Permission denied')) {
       return 'Permission denied, please check user permissions'
     }
-    
+
     if (message.includes('Host key verification failed')) {
       return 'Host key verification failed, possible security risk'
     }
-    
+
     // Return original error message by default
     return message
   }
@@ -428,7 +423,7 @@ export class SSHSessionManager extends EventEmitter {
    */
   private shouldRetryConnection(error: Error): boolean {
     const message = error.message || error.toString()
-    
+
     // Error types that should not be retried
     const nonRetryableErrors = [
       'Authentication',
@@ -436,8 +431,8 @@ export class SSHSessionManager extends EventEmitter {
       'Host key verification failed',
       'EACCES', // Permission error
     ]
-    
-    return !nonRetryableErrors.some(errorType => message.includes(errorType))
+
+    return !nonRetryableErrors.some((errorType) => message.includes(errorType))
   }
 
   /**
@@ -511,14 +506,14 @@ export class SSHSessionManager extends EventEmitter {
    */
   async listFiles(sessionId: string, remotePath: string): Promise<any[]> {
     const sftp = await this.getSFTP(sessionId)
-    
+
     return new Promise((resolve, reject) => {
       sftp.readdir(remotePath, (err, list) => {
         if (err) {
           reject(err)
           return
         }
-        
+
         const files = list.map((item: any) => ({
           name: item.filename,
           type: item.attrs.isDirectory() ? 'directory' : 'file',
@@ -526,9 +521,9 @@ export class SSHSessionManager extends EventEmitter {
           modifiedAt: new Date(item.attrs.mtime * 1000).toISOString(),
           permissions: item.attrs.mode,
           isHidden: item.filename.startsWith('.'),
-          path: path.posix.join(remotePath, item.filename)
+          path: path.posix.join(remotePath, item.filename),
         }))
-        
+
         resolve(files)
       })
     })
@@ -539,7 +534,7 @@ export class SSHSessionManager extends EventEmitter {
    */
   async createDirectory(sessionId: string, remotePath: string): Promise<void> {
     const sftp = await this.getSFTP(sessionId)
-    
+
     return new Promise((resolve, reject) => {
       sftp.mkdir(remotePath, (err) => {
         if (err) {
@@ -556,7 +551,7 @@ export class SSHSessionManager extends EventEmitter {
    */
   async deleteFile(sessionId: string, remotePath: string): Promise<void> {
     const sftp = await this.getSFTP(sessionId)
-    
+
     return new Promise((resolve, reject) => {
       sftp.unlink(remotePath, (err) => {
         if (err) {
@@ -573,7 +568,7 @@ export class SSHSessionManager extends EventEmitter {
    */
   async deleteDirectory(sessionId: string, remotePath: string): Promise<void> {
     const sftp = await this.getSFTP(sessionId)
-    
+
     return new Promise((resolve, reject) => {
       sftp.rmdir(remotePath, (err) => {
         if (err) {
@@ -588,17 +583,36 @@ export class SSHSessionManager extends EventEmitter {
   /**
    * Upload file to remote server
    */
-  async uploadFile(sessionId: string, localPath: string, remotePath: string): Promise<void> {
+  async uploadFile(sessionId: string, localPath: string, remotePath: string, onProgress?: (progress: number) => void): Promise<void> {
     const sftp = await this.getSFTP(sessionId)
-    
+
     return new Promise((resolve, reject) => {
+      // 获取本地文件大小
+      let totalSize: number
+      try {
+        const stats = fs.statSync(localPath)
+        totalSize = stats.size
+      } catch (error) {
+        reject(error)
+        return
+      }
+
+      let uploadedSize = 0
       const readStream = fs.createReadStream(localPath)
       const writeStream = sftp.createWriteStream(remotePath)
-      
+
       writeStream.on('error', reject)
       writeStream.on('close', resolve)
       readStream.on('error', reject)
-      
+
+      // 监听数据传输来计算进度
+      readStream.on('data', (chunk) => {
+        uploadedSize += chunk.length
+        const progress = Math.round((uploadedSize / totalSize) * 100)
+        console.log('progress', progress)
+        onProgress?.(progress)
+      })
+
       readStream.pipe(writeStream)
     })
   }
@@ -606,18 +620,36 @@ export class SSHSessionManager extends EventEmitter {
   /**
    * Download file from remote server
    */
-  async downloadFile(sessionId: string, remotePath: string, localPath: string): Promise<void> {
+  async downloadFile(sessionId: string, remotePath: string, localPath: string, onProgress?: (progress: number) => void): Promise<void> {
     const sftp = await this.getSFTP(sessionId)
-    
+
     return new Promise((resolve, reject) => {
-      const readStream = sftp.createReadStream(remotePath)
-      const writeStream = fs.createWriteStream(localPath)
-      
-      readStream.on('error', reject)
-      writeStream.on('error', reject)
-      writeStream.on('close', resolve)
-      
-      readStream.pipe(writeStream)
+      // 先获取远程文件大小
+      sftp.stat(remotePath, (err: any, stats: any) => {
+        if (err) {
+          reject(err)
+          return
+        }
+
+        const totalSize = stats.size
+        let downloadedSize = 0
+
+        const readStream = sftp.createReadStream(remotePath)
+        const writeStream = fs.createWriteStream(localPath)
+
+        readStream.on('error', reject)
+        writeStream.on('error', reject)
+        writeStream.on('close', resolve)
+
+        // 监听数据传输来计算进度
+        readStream.on('data', (chunk: any) => {
+          downloadedSize += chunk.length
+          const progress = Math.round((downloadedSize / totalSize) * 100)
+          onProgress?.(progress)
+        })
+
+        readStream.pipe(writeStream)
+      })
     })
   }
 }
