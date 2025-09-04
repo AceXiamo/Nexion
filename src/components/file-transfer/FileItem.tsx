@@ -11,6 +11,7 @@ interface FileItemProps {
   onClick: (e: React.MouseEvent) => void
   onDoubleClick: () => void
   onDragStart: (e: React.DragEvent) => void
+  onContextMenu?: (e: React.MouseEvent) => void
 }
 
 const getFileIcon = (file: FileItemType): string => {
@@ -27,7 +28,7 @@ const getFileIcon = (file: FileItemType): string => {
     txt: 'mdi:file-document',
     md: 'mdi:language-markdown',
     rtf: 'mdi:file-document',
-    
+
     // Code files
     js: 'mdi:language-javascript',
     ts: 'mdi:language-typescript',
@@ -44,7 +45,7 @@ const getFileIcon = (file: FileItemType): string => {
     rs: 'mdi:language-rust',
     swift: 'mdi:language-swift',
     kt: 'mdi:language-kotlin',
-    
+
     // Web files
     html: 'mdi:language-html5',
     htm: 'mdi:language-html5',
@@ -56,7 +57,7 @@ const getFileIcon = (file: FileItemType): string => {
     xml: 'mdi:code-tags',
     yaml: 'mdi:file-code',
     yml: 'mdi:file-code',
-    
+
     // Images
     jpg: 'mdi:file-image',
     jpeg: 'mdi:file-image',
@@ -66,14 +67,14 @@ const getFileIcon = (file: FileItemType): string => {
     svg: 'mdi:file-image',
     webp: 'mdi:file-image',
     ico: 'mdi:file-image',
-    
+
     // Audio
     mp3: 'mdi:file-music',
     wav: 'mdi:file-music',
     flac: 'mdi:file-music',
     m4a: 'mdi:file-music',
     ogg: 'mdi:file-music',
-    
+
     // Video
     mp4: 'mdi:file-video',
     avi: 'mdi:file-video',
@@ -82,7 +83,7 @@ const getFileIcon = (file: FileItemType): string => {
     wmv: 'mdi:file-video',
     flv: 'mdi:file-video',
     webm: 'mdi:file-video',
-    
+
     // Archives
     zip: 'mdi:archive',
     rar: 'mdi:archive',
@@ -91,7 +92,7 @@ const getFileIcon = (file: FileItemType): string => {
     gz: 'mdi:archive',
     bz2: 'mdi:archive',
     xz: 'mdi:archive',
-    
+
     // Documents
     pdf: 'mdi:file-pdf-box',
     doc: 'mdi:file-word',
@@ -100,19 +101,19 @@ const getFileIcon = (file: FileItemType): string => {
     xlsx: 'mdi:file-excel',
     ppt: 'mdi:file-powerpoint',
     pptx: 'mdi:file-powerpoint',
-    
+
     // Config files
     conf: 'mdi:file-cog',
     config: 'mdi:file-cog',
     ini: 'mdi:file-cog',
     cfg: 'mdi:file-cog',
     toml: 'mdi:file-cog',
-    
+
     // Database
     db: 'mdi:database',
     sql: 'mdi:database',
     sqlite: 'mdi:database',
-    
+
     // Executable
     exe: 'mdi:application',
     msi: 'mdi:application',
@@ -120,18 +121,18 @@ const getFileIcon = (file: FileItemType): string => {
     rpm: 'mdi:application',
     dmg: 'mdi:application',
     app: 'mdi:application',
-    
+
     // Fonts
     ttf: 'mdi:format-font',
     otf: 'mdi:format-font',
     woff: 'mdi:format-font',
     woff2: 'mdi:format-font',
-    
+
     // Others
     log: 'mdi:file-document-outline',
     tmp: 'mdi:file-hidden',
     bak: 'mdi:file-restore',
-    lock: 'mdi:file-lock'
+    lock: 'mdi:file-lock',
   }
 
   return iconMap[extension || ''] || 'mdi:file'
@@ -143,7 +144,7 @@ const getFileIconColor = (file: FileItemType): string => {
   }
 
   const extension = file.name.split('.').pop()?.toLowerCase()
-  
+
   const colorMap: Record<string, string> = {
     // Code files
     js: 'text-yellow-400',
@@ -160,7 +161,7 @@ const getFileIconColor = (file: FileItemType): string => {
     go: 'text-cyan-500',
     rs: 'text-orange-500',
     swift: 'text-orange-400',
-    
+
     // Web files
     html: 'text-orange-500',
     css: 'text-blue-500',
@@ -168,24 +169,24 @@ const getFileIconColor = (file: FileItemType): string => {
     sass: 'text-pink-400',
     json: 'text-yellow-500',
     xml: 'text-orange-400',
-    
+
     // Images
     jpg: 'text-green-400',
     jpeg: 'text-green-400',
     png: 'text-green-400',
     gif: 'text-green-400',
     svg: 'text-yellow-500',
-    
+
     // Audio/Video
     mp3: 'text-purple-400',
     mp4: 'text-red-400',
     avi: 'text-red-400',
-    
+
     // Archives
     zip: 'text-yellow-600',
     rar: 'text-yellow-600',
     '7z': 'text-yellow-600',
-    
+
     // Documents
     pdf: 'text-red-500',
     doc: 'text-blue-600',
@@ -193,61 +194,44 @@ const getFileIconColor = (file: FileItemType): string => {
     xls: 'text-green-600',
     xlsx: 'text-green-600',
     ppt: 'text-orange-600',
-    pptx: 'text-orange-600'
+    pptx: 'text-orange-600',
   }
 
   return colorMap[extension || ''] || 'text-gray-400'
 }
 
-
-export function FileItem({
-  file,
-  isSelected,
-  isDragged,
-  onClick,
-  onDoubleClick,
-  onDragStart
-}: FileItemProps) {
+export function FileItem({ file, isSelected, isDragged, onClick, onDoubleClick, onDragStart, onContextMenu }: FileItemProps) {
   const icon = getFileIcon(file)
   const iconColor = getFileIconColor(file)
 
   return (
     <div
+      data-file-item
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-all duration-150",
-        "hover:bg-neutral-800/50",
-        isSelected && "bg-lime-400/20 border border-lime-400/30",
-        isDragged && "opacity-50",
-        file.isHidden && "opacity-60"
+        'flex items-center gap-3 px-3 py-2 box-border border !border-transparent rounded-md cursor-pointer transition-all duration-150',
+        'hover:bg-neutral-800/50',
+        isSelected && 'bg-lime-400/5 !border-lime-400/30',
+        isDragged && 'opacity-50',
+        file.isHidden && 'opacity-60'
       )}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
+      onContextMenu={onContextMenu}
       draggable
       onDragStart={onDragStart}
       title={file.path}
     >
       {/* File Icon */}
-      <Icon 
-        icon={icon} 
-        className={cn("w-5 h-5 flex-shrink-0", iconColor)} 
-      />
+      <Icon icon={icon} className={cn('w-5 h-5 flex-shrink-0', iconColor)} />
 
       {/* File Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <span className={cn(
-            "text-sm font-medium truncate",
-            isSelected ? "text-white" : "text-gray-200",
-            file.isHidden && "italic"
-          )}>
-            {file.name}
-          </span>
-          
-          <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
-            {file.type === 'file' ? formatBytes(file.size) : ''}
-          </span>
+          <span className={cn('text-sm font-medium truncate', isSelected ? 'text-white' : 'text-gray-200', file.isHidden && 'italic')}>{file.name}</span>
+
+          <span className="text-xs text-gray-500 ml-2 flex-shrink-0">{file.type === 'file' ? formatBytes(file.size) : ''}</span>
         </div>
-        
+
         <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
           <span className="truncate">
             {file.permissions && (
@@ -257,10 +241,8 @@ export function FileItem({
               </>
             )}
           </span>
-          
-          <span className="ml-2 flex-shrink-0">
-            {format(file.modifiedAt, 'yyyy-MM-dd HH:mm')}
-          </span>
+
+          <span className="ml-2 flex-shrink-0">{format(file.modifiedAt, 'yyyy-MM-dd HH:mm')}</span>
         </div>
       </div>
     </div>

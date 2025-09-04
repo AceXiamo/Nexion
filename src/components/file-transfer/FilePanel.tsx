@@ -11,8 +11,8 @@ const path = {
   join: (...parts: string[]) => parts.join('/').replace(/\/+/g, '/'),
   basename: (filePath: string) => filePath.split('/').pop() || '',
   posix: {
-    join: (...parts: string[]) => parts.join('/').replace(/\/+/g, '/')
-  }
+    join: (...parts: string[]) => parts.join('/').replace(/\/+/g, '/'),
+  },
 }
 
 interface FilePanelProps {
@@ -24,14 +24,7 @@ interface FilePanelProps {
   onPathChange: (path: string) => void
 }
 
-export function FilePanel({ 
-  type, 
-  currentPath, 
-  files, 
-  isLoading, 
-  error, 
-  onPathChange 
-}: FilePanelProps) {
+export function FilePanel({ type, currentPath, files, isLoading, error, onPathChange }: FilePanelProps) {
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set())
   const [isEditing, setIsEditing] = useState(false)
   const [editPath, setEditPath] = useState(currentPath)
@@ -74,14 +67,14 @@ export function FilePanel({
     if (files.length === 0) return
 
     const store = useFileTransferStore.getState()
-    
-    const uploadTasks = files.map(file => ({
+
+    const uploadTasks = files.map((file) => ({
       localPath: (file as any).path || file.name, // Electron provides full path
-      remotePath: path.posix.join(currentPath, file.name)
+      remotePath: path.posix.join(currentPath, file.name),
     }))
 
     await store.uploadFiles(uploadTasks)
-    
+
     // Clear the input
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -93,7 +86,7 @@ export function FilePanel({
     if (!folderName?.trim()) return
 
     const store = useFileTransferStore.getState()
-    
+
     if (isLocal) {
       // Create local folder using Electron IPC
       try {
@@ -113,11 +106,13 @@ export function FilePanel({
 
   const handleDelete = async () => {
     if (selectedFiles.size === 0) return
-    
-    const fileNames = Array.from(selectedFiles).map(filePath => {
-      const file = files.find(f => f.path === filePath)
-      return file?.name || path.basename(filePath)
-    }).join(', ')
+
+    const fileNames = Array.from(selectedFiles)
+      .map((filePath) => {
+        const file = files.find((f) => f.path === filePath)
+        return file?.name || path.basename(filePath)
+      })
+      .join(', ')
 
     if (!confirm(`确定要删除这些文件吗？\n${fileNames}`)) return
 
@@ -127,7 +122,7 @@ export function FilePanel({
       // Delete local files using Electron IPC
       try {
         for (const filePath of selectedFiles) {
-          const file = files.find(f => f.path === filePath)
+          const file = files.find((f) => f.path === filePath)
           if (file?.type === 'directory') {
             await window.ipcRenderer?.invoke('fs:rmdir', filePath)
           } else {
@@ -155,11 +150,11 @@ export function FilePanel({
 
   const getParentPath = (path: string): string => {
     if (path === '/' || path === '') return path
-    
+
     const parts = path.split('/').filter(Boolean)
     if (parts.length === 0) return '/'
     if (parts.length === 1) return isLocal ? '/' : '/'
-    
+
     return '/' + parts.slice(0, -1).join('/')
   }
 
@@ -175,52 +170,28 @@ export function FilePanel({
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-neutral-800">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Icon icon={panelIcon} className={cn("w-4 h-4", panelColor)} />
+          <Icon icon={panelIcon} className={cn('w-4 h-4', panelColor)} />
           <span className="text-sm font-medium text-white truncate">{panelTitle}</span>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-1 ml-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleGoUp}
-            disabled={isLoading || currentPath === '/'}
-            title="返回上级"
-          >
+          <Button variant="ghost" size="sm" onClick={handleGoUp} disabled={isLoading || currentPath === '/'} title="返回上级">
             <Icon icon="mdi:arrow-up" className="w-4 h-4" />
           </Button>
 
           {isLocal && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleFileUpload}
-              disabled={isLoading}
-              title="上传文件"
-            >
+            <Button variant="ghost" size="sm" onClick={handleFileUpload} disabled={isLoading} title="上传文件">
               <Icon icon="mdi:upload" className="w-4 h-4" />
             </Button>
           )}
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCreateFolder}
-            disabled={isLoading}
-            title="新建文件夹"
-          >
+          <Button variant="ghost" size="sm" onClick={handleCreateFolder} disabled={isLoading} title="新建文件夹">
             <Icon icon="mdi:folder-plus" className="w-4 h-4" />
           </Button>
 
           {selectedFiles.size > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isLoading}
-              title="删除选中"
-            >
+            <Button variant="ghost" size="sm" onClick={handleDelete} disabled={isLoading} title="删除选中">
               <Icon icon="mdi:delete" className="w-4 h-4 text-red-400" />
             </Button>
           )}
@@ -240,11 +211,7 @@ export function FilePanel({
             autoFocus
           />
         ) : (
-          <PathBreadcrumb
-            path={currentPath}
-            onPathClick={onPathChange}
-            onEditClick={handlePathEdit}
-          />
+          <PathBreadcrumb path={currentPath} onPathClick={onPathChange} onEditClick={handlePathEdit} />
         )}
       </div>
 
@@ -279,25 +246,13 @@ export function FilePanel({
             {files.length} 项目
             {selectedFiles.size > 0 && ` (${selectedFiles.size} 已选中)`}
           </span>
-          
-          <div className="flex items-center gap-2">
-            {isLoading && (
-              <Icon icon="mdi:loading" className="w-3 h-3 animate-spin text-lime-400" />
-            )}
-          </div>
+
+          <div className="flex items-center gap-2">{isLoading && <Icon icon="mdi:loading" className="w-3 h-3 animate-spin text-lime-400" />}</div>
         </div>
       </div>
 
       {/* Hidden File Input */}
-      {isLocal && (
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={handleFileInputChange}
-        />
-      )}
+      {isLocal && <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileInputChange} />}
     </div>
   )
 }
