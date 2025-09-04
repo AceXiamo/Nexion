@@ -1,0 +1,47 @@
+{
+  "modal": {
+    "title": "File Transfer",
+    "localPanel": "Local Files",
+    "remotePanel": "Remote Files"
+  },
+  "actions": {
+    "goBack": "Go Up",
+    "upload": "Upload Files",
+    "deleteSelected": "Delete Selected",
+    "refresh": "Refresh"
+  },
+  "status": {
+    "loading": "Loading...",
+    "emptyFolder": "This folder is empty",
+    "itemsCount": "items",
+    "selectedCount": "selected"
+  },
+  "dragDrop": {
+    "dropHint": "Drop to transfer files"
+  },
+  "contextMenu": {
+    "openFolder": "Open Folder",
+    "downloadFile": "Download File",
+    "downloadFolder": "Download Folder",
+    "uploadFile": "Upload File",
+    "uploadFolder": "Upload Folder"
+  },
+  "delete": {
+    "confirmTitle": "Confirm Delete",
+    "confirmMessage": "Are you sure you want to delete the following files? This action cannot be undone.",
+    "confirmSingleMessage": "Are you sure you want to delete \"{{fileName}}\"? This action cannot be undone.",
+    "folderWarning": "Warning: This is a folder and all its contents will be permanently deleted.",
+    "confirmButton": "Confirm Delete"
+  },
+  "errors": {
+    "loadLocalFilesFailed": "Failed to load local files",
+    "loadRemoteFilesFailed": "Failed to load remote files",
+    "deleteLocalFilesFailed": "Failed to delete local files",
+    "deleteRemoteFilesFailed": "Failed to delete remote files",
+    "uploadFailed": "Upload failed",
+    "downloadFailed": "Download failed",
+    "createFolderFailed": "Failed to create folder",
+    "getWorkingDirectoryFailed": "Failed to get working directory",
+    "getHomeDirectoryFailed": "Failed to get user home directory"
+  }
+}

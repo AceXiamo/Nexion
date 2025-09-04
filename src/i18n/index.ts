@@ -9,6 +9,7 @@ import walletEn from '../locales/en/wallet.json'
 import errorsEn from '../locales/en/errors.json'
 import settingsEn from '../locales/en/settings.json'
 import viewsEn from '../locales/en/views.json'
+import fileTransferEn from '../locales/en/file-transfer.json'
 
 import commonZh from '../locales/zh/common.json'
 import navigationZh from '../locales/zh/navigation.json'
@@ -17,6 +18,7 @@ import walletZh from '../locales/zh/wallet.json'
 import errorsZh from '../locales/zh/errors.json'
 import settingsZh from '../locales/zh/settings.json'
 import viewsZh from '../locales/zh/views.json'
+import fileTransferZh from '../locales/zh/file-transfer.json'
 
 export const defaultNS = 'common'
 export const fallbackLng = 'en'
@@ -30,6 +32,7 @@ export const resources = {
     errors: errorsEn,
     settings: settingsEn,
     views: viewsEn,
+    fileTransfer: fileTransferEn,
   },
   zh: {
     common: commonZh,
@@ -39,6 +42,7 @@ export const resources = {
     errors: errorsZh,
     settings: settingsZh,
     views: viewsZh,
+    fileTransfer: fileTransferZh,
   },
 } as const
 
