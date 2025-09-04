@@ -32,5 +32,73 @@
   "darkTheme": "Dark Theme",
   "lightTheme": "Light Theme",
   "autoTheme": "Follow System",
-  "seconds": "seconds"
+  "seconds": "seconds",
+  "keyboardShortcuts": "Keyboard Shortcuts",
+  "keyboardShortcutsDesc": "Customize application keyboard shortcuts",
+  "enableShortcuts": "Enable Shortcuts",
+  "enableShortcutsDesc": "Globally enable or disable keyboard shortcut functionality",
+  "enabled": "Enabled",
+  "categorySession": "Session Management",
+  "categoryNavigation": "Navigation", 
+  "categoryGeneral": "General Functions",
+  "shortcutCustomized": "Customized",
+  "shortcutNotSet": "Not Set",
+  "shortcuts": {
+    "switchToTab1": {
+      "name": "Switch to Tab 1",
+      "description": "Switch to the 1st tab"
+    },
+    "switchToTab2": {
+      "name": "Switch to Tab 2",
+      "description": "Switch to the 2nd tab"
+    },
+    "switchToTab3": {
+      "name": "Switch to Tab 3",
+      "description": "Switch to the 3rd tab"
+    },
+    "switchToTab4": {
+      "name": "Switch to Tab 4",
+      "description": "Switch to the 4th tab"
+    },
+    "switchToTab5": {
+      "name": "Switch to Tab 5",
+      "description": "Switch to the 5th tab"
+    },
+    "switchToTab6": {
+      "name": "Switch to Tab 6",
+      "description": "Switch to the 6th tab"
+    },
+    "switchToTab7": {
+      "name": "Switch to Tab 7",
+      "description": "Switch to the 7th tab"
+    },
+    "switchToTab8": {
+      "name": "Switch to Tab 8",
+      "description": "Switch to the 8th tab"
+    },
+    "switchToTab9": {
+      "name": "Switch to Tab 9",
+      "description": "Switch to the 9th tab"
+    },
+    "nextTab": {
+      "name": "Next Tab",
+      "description": "Switch to the next tab"
+    },
+    "previousTab": {
+      "name": "Previous Tab",
+      "description": "Switch to the previous tab"
+    },
+    "newSession": {
+      "name": "New Session",
+      "description": "Create a new SSH session"
+    },
+    "closeSession": {
+      "name": "Close Session",
+      "description": "Close the current session"
+    },
+    "duplicateSession": {
+      "name": "Duplicate Session",
+      "description": "Duplicate current session configuration to create new session"
+    }
+  }
 }

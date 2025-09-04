@@ -32,5 +32,73 @@
   "darkTheme": "暗色主题",
   "lightTheme": "亮色主题",
   "autoTheme": "跟随系统",
-  "seconds": "秒"
+  "seconds": "秒",
+  "keyboardShortcuts": "键盘快捷键",
+  "keyboardShortcutsDesc": "自定义应用程序的键盘快捷键",
+  "enableShortcuts": "启用快捷键",
+  "enableShortcutsDesc": "全局开启或关闭键盘快捷键功能",
+  "enabled": "已启用",
+  "categorySession": "会话管理",
+  "categoryNavigation": "导航切换", 
+  "categoryGeneral": "通用功能",
+  "shortcutCustomized": "已自定义",
+  "shortcutNotSet": "未设置",
+  "shortcuts": {
+    "switchToTab1": {
+      "name": "切换到标签页 1",
+      "description": "切换到第1个标签页"
+    },
+    "switchToTab2": {
+      "name": "切换到标签页 2",
+      "description": "切换到第2个标签页"
+    },
+    "switchToTab3": {
+      "name": "切换到标签页 3",
+      "description": "切换到第3个标签页"
+    },
+    "switchToTab4": {
+      "name": "切换到标签页 4",
+      "description": "切换到第4个标签页"
+    },
+    "switchToTab5": {
+      "name": "切换到标签页 5",
+      "description": "切换到第5个标签页"
+    },
+    "switchToTab6": {
+      "name": "切换到标签页 6",
+      "description": "切换到第6个标签页"
+    },
+    "switchToTab7": {
+      "name": "切换到标签页 7",
+      "description": "切换到第7个标签页"
+    },
+    "switchToTab8": {
+      "name": "切换到标签页 8",
+      "description": "切换到第8个标签页"
+    },
+    "switchToTab9": {
+      "name": "切换到标签页 9",
+      "description": "切换到第9个标签页"
+    },
+    "nextTab": {
+      "name": "下一个标签页",
+      "description": "切换到下一个标签页"
+    },
+    "previousTab": {
+      "name": "上一个标签页",
+      "description": "切换到上一个标签页"
+    },
+    "newSession": {
+      "name": "新建会话",
+      "description": "创建新的SSH会话"
+    },
+    "closeSession": {
+      "name": "关闭会话",
+      "description": "关闭当前会话"
+    },
+    "duplicateSession": {
+      "name": "复制会话",
+      "description": "复制当前会话配置创建新会话"
+    }
+  }
 }
