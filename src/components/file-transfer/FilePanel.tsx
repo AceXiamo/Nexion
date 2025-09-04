@@ -81,28 +81,6 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
     }
   }
 
-  const handleCreateFolder = async () => {
-    const folderName = prompt('输入文件夹名称:')
-    if (!folderName?.trim()) return
-
-    const store = useFileTransferStore.getState()
-
-    if (isLocal) {
-      // Create local folder using Electron IPC
-      try {
-        const newFolderPath = path.join(currentPath, folderName)
-        await window.ipcRenderer?.invoke('fs:mkdir', newFolderPath)
-        store.loadLocalFiles(currentPath)
-      } catch (error) {
-        console.error('Failed to create local folder:', error)
-        store.setLocalError('创建文件夹失败')
-      }
-    } else {
-      // Create remote folder using SFTP
-      const newFolderPath = path.posix.join(currentPath, folderName)
-      await store.createRemoteDirectory(newFolderPath)
-    }
-  }
 
   const handleDelete = async () => {
     if (selectedFiles.size === 0) return
@@ -186,9 +164,6 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
             </Button>
           )}
 
-          <Button variant="ghost" size="sm" onClick={handleCreateFolder} disabled={isLoading} title="新建文件夹">
-            <Icon icon="mdi:folder-plus" className="w-4 h-4" />
-          </Button>
 
           {selectedFiles.size > 0 && (
             <Button variant="ghost" size="sm" onClick={handleDelete} disabled={isLoading} title="删除选中">
