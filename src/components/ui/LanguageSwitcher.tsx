@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 
 interface Language {
-  code: 'zh' | 'en'
+  code: 'zh' | 'en' | 'ja' | 'fr'
   name: string
   nativeName: string
   flag: string
@@ -12,6 +12,8 @@ interface Language {
 const languages: Language[] = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
   { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
 ]
 
 export function LanguageSwitcher() {
