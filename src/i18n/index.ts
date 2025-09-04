@@ -20,6 +20,24 @@ import settingsZh from '../locales/zh/settings.json'
 import viewsZh from '../locales/zh/views.json'
 import fileTransferZh from '../locales/zh/file-transfer.json'
 
+import commonJa from '../locales/ja/common.json'
+import navigationJa from '../locales/ja/navigation.json'
+import sshJa from '../locales/ja/ssh.json'
+import walletJa from '../locales/ja/wallet.json'
+import errorsJa from '../locales/ja/errors.json'
+import settingsJa from '../locales/ja/settings.json'
+import viewsJa from '../locales/ja/views.json'
+import fileTransferJa from '../locales/ja/file-transfer.json'
+
+import commonFr from '../locales/fr/common.json'
+import navigationFr from '../locales/fr/navigation.json'
+import sshFr from '../locales/fr/ssh.json'
+import walletFr from '../locales/fr/wallet.json'
+import errorsFr from '../locales/fr/errors.json'
+import settingsFr from '../locales/fr/settings.json'
+import viewsFr from '../locales/fr/views.json'
+import fileTransferFr from '../locales/fr/file-transfer.json'
+
 export const defaultNS = 'common'
 export const fallbackLng = 'en'
 
@@ -44,38 +62,56 @@ export const resources = {
     views: viewsZh,
     fileTransfer: fileTransferZh,
   },
+  ja: {
+    common: commonJa,
+    navigation: navigationJa,
+    ssh: sshJa,
+    wallet: walletJa,
+    errors: errorsJa,
+    settings: settingsJa,
+    views: viewsJa,
+    fileTransfer: fileTransferJa,
+  },
+  fr: {
+    common: commonFr,
+    navigation: navigationFr,
+    ssh: sshFr,
+    wallet: walletFr,
+    errors: errorsFr,
+    settings: settingsFr,
+    views: viewsFr,
+    fileTransfer: fileTransferFr,
+  },
 } as const
 
 // Initialize i18next
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: typeof window !== 'undefined' ? localStorage.getItem('language') || 'en' : 'en',
-    fallbackLng,
-    defaultNS,
-    
-    interpolation: {
-      escapeValue: false, // React already escapes values
-    },
-    
-    // Enable debug mode in development
-    debug: process.env.NODE_ENV === 'development',
-    
-    // Namespace separator
-    nsSeparator: ':',
-    
-    // Key separator for nested keys
-    keySeparator: '.',
-    
-    // Return objects for array translations
-    returnObjects: true,
-    
-    // Save language to localStorage when changed
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
-    },
-  })
+i18n.use(initReactI18next).init({
+  resources,
+  lng: typeof window !== 'undefined' ? localStorage.getItem('language') || 'en' : 'en',
+  fallbackLng,
+  defaultNS,
+
+  interpolation: {
+    escapeValue: false, // React already escapes values
+  },
+
+  // Enable debug mode in development
+  debug: process.env.NODE_ENV === 'development',
+
+  // Namespace separator
+  nsSeparator: ':',
+
+  // Key separator for nested keys
+  keySeparator: '.',
+
+  // Return objects for array translations
+  returnObjects: true,
+
+  // Save language to localStorage when changed
+  detection: {
+    order: ['localStorage', 'navigator'],
+    caches: ['localStorage'],
+  },
+})
 
 export default i18n
