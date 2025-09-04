@@ -15,6 +15,11 @@
   "wrongNetwork": "Wrong Network",
   "disconnectWallet": "Disconnect Wallet",
   "scanToConnect": "Scan to Connect Wallet",
+  "connectWallet": "Connect Wallet",
+  "scanQRCode": "Scan QR Code with your wallet",
+  "qrCodeInstructions": "Open your wallet app and scan this QR code to connect securely.",
+  "supportedWallets": "Supported Wallets",
+  "copyConnectionURI": "Copy Connection URI",
   "connectionGuide": "Connection Guide",
   "connectionSteps": [
     "Click 'Scan to Connect Wallet' button to open QR code",

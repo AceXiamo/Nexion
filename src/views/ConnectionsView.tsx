@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useAccount } from 'wagmi'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { RegistrationPrompt } from '@/components/wallet/RegistrationPrompt'
@@ -7,11 +6,12 @@ import { useUserRegistration } from '@/hooks/useUserRegistration'
 import { useSSHConfigs } from '@/hooks/useSSHConfigs'
 import { SSHConfigList } from '@/components/ssh/SSHConfigList'
 import { SSHConfigModal } from '@/components/ssh/SSHConfigModal'
+import { useWalletStore } from '@/stores/walletStore'
 import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
 
 export function ConnectionsView() {
   const { t } = useTranslation()
-  const { isConnected } = useAccount()
+  const { isConnected } = useWalletStore()
   const { isRegistered } = useUserRegistration()
   
   

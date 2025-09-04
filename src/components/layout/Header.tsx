@@ -1,8 +1,8 @@
-import { useChainId } from 'wagmi'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { xLayerTestnet } from '@/lib/web3-config'
 import { WalletConnectButton } from '@/components/wallet/WalletConnectButton'
+import { useWalletStore } from '@/stores/walletStore'
 
 interface HeaderProps {
   title: string
@@ -11,7 +11,7 @@ interface HeaderProps {
 
 export function Header({ title, description }: HeaderProps) {
   const { t } = useTranslation()
-  const chainId = useChainId()
+  const { chainId } = useWalletStore()
   const isCorrectNetwork = chainId === xLayerTestnet.id
 
   return (

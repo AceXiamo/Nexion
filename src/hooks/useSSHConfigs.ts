@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
-import { useAccount, useSignMessage } from 'wagmi'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSSHContract } from './useSSHContract'
 import { WalletBasedEncryptionService } from '@/services/encryption'
+import { useWalletStore } from '@/stores/walletStore'
 import type { SSHConfigInput, DecryptedSSHConfig, SSHConfig } from '@/types/ssh'
 import toast from 'react-hot-toast'
 
@@ -29,8 +29,7 @@ export interface UseSSHConfigsReturn {
 }
 
 export function useSSHConfigs(): UseSSHConfigsReturn {
-  const { address, isConnected } = useAccount()
-  const { signMessageAsync, error: signError } = useSignMessage()
+  const { account, isConnected, signMessage } = useWalletStore()
   const sshContract = useSSHContract()
 
   // Local state
@@ -40,9 +39,10 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
   const [isAdding, setIsAdding] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const lastAccountRef = useRef<string | null>(null)
 
   // Get configuration data from the blockchain
-  const { data: rawConfigs, isLoading: isContractLoading, refetch: refetchConfigs } = sshContract.useGetSSHConfigs(address)
+  const { data: rawConfigs, isLoading: isContractLoading, refetch: refetchConfigs } = sshContract.useGetSSHConfigs(account)
 
   // Clean up expired persistent cache on application startup
   useEffect(() => {
@@ -52,7 +52,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
   // Unified processing of on-chain data decryption and conversion
   const processRawConfigs = useCallback(
     async (rawConfigs: SSHConfig[]): Promise<void> => {
-      if (!address || !signMessageAsync || !rawConfigs) {
+      if (!account || !signMessage || !rawConfigs) {
         console.log('Processing skipped: missing necessary parameters')
         return
       }
@@ -74,11 +74,11 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
             // Decrypt configuration (will automatically use master key cache)
             const decryptedConfig = await WalletBasedEncryptionService.decryptSSHConfig(
               rawConfig.encryptedData,
-              address,
+              account,
               configId,
               new Date(Number(rawConfig.timestamp) * 1000),
               rawConfig.isActive,
-              signMessageAsync,
+              signMessage
             )
 
             decryptedConfigs.push(decryptedConfig)
@@ -125,7 +125,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         setIsLoading(false)
       }
     },
-    [address, signMessageAsync],
+    [account, signMessage]
   )
 
   // Manually refresh the configuration list (re-fetch on-chain data)
@@ -136,20 +136,29 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
 
   // Clear master key cache (for debugging/troubleshooting)
   const clearMasterKeyCache = useCallback(() => {
-    if (address) {
-      WalletBasedEncryptionService.clearMasterKeyCache(address)
+    if (account) {
+      WalletBasedEncryptionService.clearMasterKeyCache(account)
       console.log('Cleared master key cache for the current wallet')
     }
-  }, [address])
+  }, [account])
+
+  // Refresh configs only when account actually changes
+  useEffect(() => {
+    if (account && isConnected && lastAccountRef.current !== account) {
+      console.log('Account changed, refreshing SSH configs...', account)
+      lastAccountRef.current = account
+      refreshConfigs()
+    }
+  }, [account, isConnected]) // Depend on both to ensure proper triggering
 
   // Add new configuration
   const addConfig = useCallback(
     async (config: SSHConfigInput) => {
-      if (!address || !isConnected) {
+      if (!account || !isConnected) {
         throw new Error('Please connect your wallet first')
       }
 
-      if (!signMessageAsync) {
+      if (!signMessage) {
         throw new Error('Signing feature is not available, please check your wallet connection')
       }
 
@@ -157,7 +166,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
 
       try {
         // 1. Encrypt configuration data
-        const encryptedData = await WalletBasedEncryptionService.encryptSSHConfig(config, address, signMessageAsync)
+        const encryptedData = await WalletBasedEncryptionService.encryptSSHConfig(config, account, signMessage)
 
         // 2. Add to the blockchain
         await sshContract.addSSHConfig(encryptedData)
@@ -180,8 +189,6 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
 
         if (error instanceof Error) {
           errorMessage = error.message
-        } else if (signError) {
-          errorMessage = 'Signature failed, please try again'
         }
 
         toast.error(errorMessage)
@@ -190,17 +197,17 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         setIsAdding(false)
       }
     },
-    [address, isConnected, signMessageAsync, signError, sshContract, refetchConfigs],
+    [account, isConnected, signMessage, sshContract, refetchConfigs]
   )
 
   // Update configuration
   const updateConfig = useCallback(
     async (configId: string, config: SSHConfigInput) => {
-      if (!address || !isConnected) {
+      if (!account || !isConnected) {
         throw new Error('Please connect your wallet first')
       }
 
-      if (!signMessageAsync) {
+      if (!signMessage) {
         throw new Error('Signing feature is not available, please check your wallet connection')
       }
 
@@ -208,7 +215,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
 
       try {
         // 1. Encrypt new configuration data
-        const encryptedData = await WalletBasedEncryptionService.encryptSSHConfig(config, address, signMessageAsync)
+        const encryptedData = await WalletBasedEncryptionService.encryptSSHConfig(config, account, signMessage)
 
         // 2. Update blockchain configuration
         await sshContract.updateSSHConfig(BigInt(configId), encryptedData)
@@ -224,8 +231,6 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
 
         if (error instanceof Error) {
           errorMessage = error.message
-        } else if (signError) {
-          errorMessage = 'Signature failed, please try again'
         }
 
         toast.error(errorMessage)
@@ -234,13 +239,13 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         setIsUpdating(false)
       }
     },
-    [address, isConnected, signMessageAsync, signError, sshContract, refetchConfigs],
+    [account, isConnected, signMessage, sshContract, refetchConfigs]
   )
 
   // Delete configuration
   const deleteConfig = useCallback(
     async (configId: string) => {
-      if (!address || !isConnected) {
+      if (!account || !isConnected) {
         throw new Error('Please connect your wallet first')
       }
 
@@ -264,7 +269,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         setIsDeleting(false)
       }
     },
-    [address, isConnected, sshContract, refetchConfigs, refreshConfigs],
+    [account, isConnected, sshContract, refetchConfigs, refreshConfigs]
   )
 
   // Statistics
@@ -277,20 +282,20 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
 
   // Watch for rawConfigs changes and automatically handle decryption
   useEffect(() => {
-    if (rawConfigs && address && isConnected && !isContractLoading) {
+    if (rawConfigs && account && isConnected && !isContractLoading) {
       processRawConfigs(rawConfigs)
     }
-  }, [rawConfigs, address, isConnected, isContractLoading, processRawConfigs])
+  }, [rawConfigs, account, isConnected, isContractLoading]) // Remove processRawConfigs from dependencies
 
-  // Watch for wallet address changes
+  // Watch for wallet account changes
   useEffect(() => {
-    // When address changes, clear the config list and cache
-    if (!address) {
+    // When account changes, clear the config list and cache
+    if (!account) {
       setConfigs([])
       // Clear all master key caches (user disconnected)
       WalletBasedEncryptionService.clearMasterKeyCache()
     }
-  }, [address])
+  }, [account])
 
   return {
     // Data state
@@ -320,17 +325,17 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
  * Hook to get a single SSH configuration
  */
 export function useSSHConfig(configId: string) {
-  const { address, isConnected } = useAccount()
-  const { signMessageAsync } = useSignMessage()
+  const { account, isConnected } = useAccount()
+  const { signMessage } = useSignMessage()
   const sshContract = useSSHContract()
   const [config, setConfig] = useState<DecryptedSSHConfig | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { data: rawConfig, isLoading: isContractLoading } = sshContract.useGetSSHConfig(address, BigInt(configId))
+  const { data: rawConfig, isLoading: isContractLoading } = sshContract.useGetSSHConfig(account, BigInt(configId))
 
   const fetchConfig = useCallback(async () => {
-    if (!address || !rawConfig || !configId || !isConnected || !signMessageAsync) return
+    if (!account || !rawConfig || !configId || !isConnected || !signMessage) return
 
     setIsLoading(true)
     setError(null)
@@ -339,11 +344,11 @@ export function useSSHConfig(configId: string) {
       // Directly decrypt configuration, without using cache
       const decryptedConfig = await WalletBasedEncryptionService.decryptSSHConfig(
         rawConfig.encryptedData,
-        address,
+        account,
         configId,
         new Date(Number(rawConfig.timestamp) * 1000),
         rawConfig.isActive,
-        signMessageAsync,
+        signMessage
       )
 
       setConfig(decryptedConfig)
@@ -354,13 +359,13 @@ export function useSSHConfig(configId: string) {
     } finally {
       setIsLoading(false)
     }
-  }, [address, rawConfig, configId, isConnected, signMessageAsync])
+  }, [account, rawConfig, configId, isConnected, signMessage])
 
   useEffect(() => {
-    if (rawConfig && address && !isContractLoading) {
+    if (rawConfig && account && !isContractLoading) {
       fetchConfig()
     }
-  }, [rawConfig, address, isContractLoading, fetchConfig])
+  }, [rawConfig, account, isContractLoading, fetchConfig])
 
   return {
     config,

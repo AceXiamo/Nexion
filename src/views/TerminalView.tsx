@@ -1,12 +1,12 @@
-import { useAccount } from 'wagmi'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { SSHTabContainer } from '@/components/ssh/SSHTabContainer'
 import { useUserRegistration } from '@/hooks/useUserRegistration'
+import { useWalletStore } from '@/stores/walletStore'
 
 export function TerminalView() {
   const { t } = useTranslation()
-  const { isConnected } = useAccount()
+  const { isConnected } = useWalletStore()
   const { isRegistered } = useUserRegistration()
 
   if (!isConnected) {

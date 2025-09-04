@@ -1,28 +1,38 @@
-import { useAccount } from 'wagmi'
 import { useSSHContract } from './useSSHContract'
-import { useEffect, useState } from 'react'
+import { useWalletStore } from '@/stores/walletStore'
+import { useEffect, useState, useRef } from 'react'
 
 export function useUserRegistration() {
-  const { address, isConnected } = useAccount()
+  const { account, isConnected } = useWalletStore()
   const { useIsRegistered, registerUser, isPending, isConfirmed } = useSSHContract()
-  const { data: isRegistered, refetch } = useIsRegistered(address)
+  const { data: isRegistered, refetch } = useIsRegistered(account)
   
   const [showRegistrationPrompt, setShowRegistrationPrompt] = useState(false)
+  const lastAccountRef = useRef<string | null>(null)
+
+  // Refetch data only when account actually changes
+  useEffect(() => {
+    if (account && isConnected && lastAccountRef.current !== account) {
+      console.log('Account changed, refetching registration status...', account)
+      lastAccountRef.current = account
+      refetch()
+    }
+  }, [account, isConnected]) // Depend on both to ensure proper triggering
 
   useEffect(() => {
-    if (isConnected && address && isRegistered === false) {
+    if (isConnected && account && isRegistered === false) {
       setShowRegistrationPrompt(true)
     } else {
       setShowRegistrationPrompt(false)
     }
-  }, [isConnected, address, isRegistered])
+  }, [isConnected, account, isRegistered])
 
   useEffect(() => {
     if (isConfirmed) {
       refetch()
       setShowRegistrationPrompt(false)
     }
-  }, [isConfirmed, refetch])
+  }, [isConfirmed])
 
   const handleRegister = async () => {
     try {

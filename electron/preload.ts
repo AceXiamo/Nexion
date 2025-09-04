@@ -54,6 +54,11 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   },
 })
 
+// Expose ElectronAPI for WalletConnect
+contextBridge.exposeInMainWorld('electronAPI', {
+  openExternal: (url: string) => ipcRenderer.invoke('wallet:openExternal', url),
+})
+
 // Expose wallet detection and debugging utilities
 contextBridge.exposeInMainWorld('walletDebug', {
   checkWalletAvailability: () => {

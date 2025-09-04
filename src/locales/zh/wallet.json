@@ -15,6 +15,11 @@
   "wrongNetwork": "错误网络",
   "disconnectWallet": "断开钱包连接",
   "scanToConnect": "扫码连接钱包",
+  "connectWallet": "连接钱包",
+  "scanQRCode": "使用钱包扫描二维码",
+  "qrCodeInstructions": "打开你的钱包应用并扫描此二维码以安全连接。",
+  "supportedWallets": "支持的钱包",
+  "copyConnectionURI": "复制连接URI",
   "connectionGuide": "扫码连接说明",
   "connectionSteps": [
     "点击\"扫码连接钱包\"按钮打开二维码",

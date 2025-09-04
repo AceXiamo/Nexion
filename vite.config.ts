@@ -81,7 +81,6 @@ export default defineConfig({
       'events',
       '@walletconnect/ethereum-provider',
       '@walletconnect/universal-provider',
-      '@web3modal/wagmi',
       '@noble/ciphers/chacha',
       '@noble/ciphers/utils', 
       '@noble/hashes/sha2',

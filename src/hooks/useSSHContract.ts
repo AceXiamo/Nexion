@@ -1,157 +1,386 @@
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { SSH_MANAGER_CONTRACT, getContractAddress } from '@/lib/contracts'
-import { useChainId } from 'wagmi'
+import { useState, useCallback, useRef } from 'react'
+import { createPublicClient, http, encodeFunctionData } from 'viem'
+import { SSH_MANAGER_ABI, getContractAddress } from '@/lib/contracts'
+import { useWalletStore } from '@/stores/walletStore'
 import { SSHConfig, UserStats } from '@/types/ssh'
+import { xLayerTestnet } from '@/lib/web3-config'
 
 export function useSSHContract() {
-  const { address } = useAccount()
-  const chainId = useChainId()
-  const contractAddress = getContractAddress(chainId)
+  const { account, chainId, sendTransaction } = useWalletStore()
+  const contractAddress = getContractAddress(chainId || xLayerTestnet.id)
+  
+  const [isPending, setIsPending] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
+  const [isConfirmed, setIsConfirmed] = useState(false)
+  const [hash, setHash] = useState<string | undefined>()
 
-  const { writeContract, data: hash, isPending } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash,
+  // Create clients
+  const currentChain = chainId === xLayerTestnet.id ? xLayerTestnet : xLayerTestnet
+  
+  const publicClient = createPublicClient({
+    chain: currentChain,
+    transport: http()
   })
 
-  // Read operations
-  const useIsRegistered = (userAddress?: `0x${string}`) => {
-    return useReadContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'isRegisteredUser',
-      args: [userAddress!],
-      query: {
-        enabled: !!userAddress,
-      },
-    })
+  // Read operations with React Query-like interface
+  const useIsRegistered = (userAddress?: string) => {
+    const [data, setData] = useState<boolean | undefined>()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+    const lastAddress = useRef<string>()
+
+    const refetch = useCallback(async () => {
+      if (!userAddress || !contractAddress) {
+        setData(undefined)
+        return Promise.resolve()
+      }
+
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        const result = await publicClient.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: SSH_MANAGER_ABI,
+          functionName: 'isRegisteredUser',
+          args: [userAddress as `0x${string}`]
+        })
+        setData(result as boolean)
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to check registration')
+        setError(error)
+        console.error('Error checking user registration:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }, [userAddress, contractAddress])
+
+    // Auto-fetch when address changes
+    if (userAddress && userAddress !== lastAddress.current) {
+      lastAddress.current = userAddress
+      refetch()
+    }
+
+    return {
+      data,
+      isLoading,
+      error,
+      refetch
+    }
   }
 
-  const useGetSSHConfigs = (userAddress?: `0x${string}`) => {
-    return useReadContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'getSSHConfigs',
-      args: [userAddress!],
-      query: {
-        enabled: !!userAddress && !!contractAddress,
-        refetchInterval: 30000,
-      },
-    }) as { data: SSHConfig[] | undefined; isLoading: boolean; error: Error | null; refetch: () => void }
+  const useGetSSHConfigs = (userAddress?: string) => {
+    const [data, setData] = useState<SSHConfig[] | undefined>()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+    const lastAddress = useRef<string>()
+
+    const refetch = useCallback(async () => {
+      if (!userAddress || !contractAddress) {
+        setData(undefined)
+        return Promise.resolve()
+      }
+
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        const result = await publicClient.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: SSH_MANAGER_ABI,
+          functionName: 'getSSHConfigs',
+          args: [userAddress as `0x${string}`]
+        })
+        
+        // Transform the result to match expected SSHConfig format
+        const configs = (result as any[]).map((config: any) => ({
+          encryptedData: config.encryptedData,
+          timestamp: BigInt(config.timestamp),
+          configId: BigInt(config.configId),
+          isActive: config.isActive
+        }))
+        
+        setData(configs)
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch SSH configs')
+        setError(error)
+        console.error('Error fetching SSH configs:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }, [userAddress, contractAddress])
+
+    // Auto-fetch when address changes
+    if (userAddress && userAddress !== lastAddress.current) {
+      lastAddress.current = userAddress
+      refetch()
+    }
+
+    return {
+      data,
+      isLoading,
+      error,
+      refetch
+    }
   }
 
-  const useGetSSHConfig = (userAddress?: `0x${string}`, configId?: bigint) => {
-    return useReadContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'getSSHConfig',
-      args: [userAddress!, configId!],
-      query: {
-        enabled: !!userAddress && configId !== undefined,
-      },
-    }) as { data: SSHConfig | undefined; isLoading: boolean; error: Error | null }
+  const useGetSSHConfig = (userAddress?: string, configId?: bigint) => {
+    const [data, setData] = useState<SSHConfig | undefined>()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+    const lastParams = useRef<string>()
+
+    const refetch = useCallback(async () => {
+      if (!userAddress || !contractAddress || configId === undefined) {
+        setData(undefined)
+        return Promise.resolve()
+      }
+
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        const result = await publicClient.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: SSH_MANAGER_ABI,
+          functionName: 'getSSHConfig',
+          args: [userAddress as `0x${string}`, configId]
+        })
+        
+        const config = result as any
+        setData({
+          encryptedData: config.encryptedData,
+          timestamp: BigInt(config.timestamp),
+          configId: BigInt(config.configId),
+          isActive: config.isActive
+        })
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch SSH config')
+        setError(error)
+        console.error('Error fetching SSH config:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }, [userAddress, contractAddress, configId])
+
+    // Auto-fetch when params change
+    const currentParams = `${userAddress}-${configId}`
+    if (currentParams !== lastParams.current) {
+      lastParams.current = currentParams
+      refetch()
+    }
+
+    return {
+      data,
+      isLoading,
+      error,
+      refetch
+    }
   }
 
-  const useGetUserStats = (userAddress?: `0x${string}`) => {
-    return useReadContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'getUserStats',
-      args: [userAddress!],
-      query: {
-        enabled: !!userAddress,
-      },
-    }) as { data: UserStats | undefined; isLoading: boolean; error: Error | null }
+  const useGetUserStats = (userAddress?: string) => {
+    const [data, setData] = useState<UserStats | undefined>()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+    const lastAddress = useRef<string>()
+
+    const refetch = useCallback(async () => {
+      if (!userAddress || !contractAddress) {
+        setData(undefined)
+        return Promise.resolve()
+      }
+
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        const result = await publicClient.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: SSH_MANAGER_ABI,
+          functionName: 'getUserStats',
+          args: [userAddress as `0x${string}`]
+        })
+        
+        const stats = result as any
+        setData({
+          totalConfigs: BigInt(stats.totalConfigs),
+          activeConfigs: BigInt(stats.activeConfigs),
+          lastActivity: BigInt(stats.lastActivity)
+        })
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch user stats')
+        setError(error)
+        console.error('Error fetching user stats:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }, [userAddress, contractAddress])
+
+    // Auto-fetch when address changes
+    if (userAddress && userAddress !== lastAddress.current) {
+      lastAddress.current = userAddress
+      refetch()
+    }
+
+    return {
+      data,
+      isLoading,
+      error,
+      refetch
+    }
   }
 
   // Write operations
-  const registerUser = async () => {
-    if (!address) throw new Error('Wallet not connected')
+  const executeTransaction = useCallback(async (functionName: string, args: any[] = []) => {
+    if (!account || !contractAddress || !sendTransaction) {
+      throw new Error('Wallet not connected')
+    }
 
-    return writeContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'registerUser',
-    })
-  }
+    setIsPending(true)
+    setIsConfirming(false)
+    setIsConfirmed(false)
+    setHash(undefined)
 
-  const addSSHConfig = async (encryptedData: string) => {
-    if (!address) throw new Error('Wallet not connected')
+    try {
+      // Prepare transaction data
+      const data = encodeFunctionData({
+        abi: SSH_MANAGER_ABI,
+        functionName,
+        args
+      })
 
-    return writeContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'addSSHConfig',
-      args: [encryptedData],
-    })
-  }
+      const txHash = await sendTransaction({
+        to: contractAddress as `0x${string}`,
+        data
+      })
 
-  const updateSSHConfig = async (configId: bigint, newEncryptedData: string) => {
-    if (!address) throw new Error('Wallet not connected')
+      setHash(txHash)
+      setIsPending(false)
+      setIsConfirming(true)
 
-    return writeContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'updateSSHConfig',
-      args: [configId, newEncryptedData],
-    })
-  }
+      // Wait for confirmation
+      await publicClient.waitForTransactionReceipt({
+        hash: txHash as `0x${string}`,
+        confirmations: 1
+      })
 
-  const revokeConfig = async (configId: bigint) => {
-    if (!address) throw new Error('Wallet not connected')
+      setIsConfirming(false)
+      setIsConfirmed(true)
 
-    return writeContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'revokeConfig',
-      args: [configId],
-    })
-  }
+      return txHash
+    } catch (error) {
+      setIsPending(false)
+      setIsConfirming(false)
+      setIsConfirmed(false)
+      throw error
+    }
+  }, [account, contractAddress, sendTransaction, publicClient])
 
-  const batchUpdateConfigs = async (configIds: bigint[], newEncryptedData: string[]) => {
-    if (!address) throw new Error('Wallet not connected')
+  const registerUser = useCallback(async () => {
+    return executeTransaction('registerUser')
+  }, [executeTransaction])
+
+  const addSSHConfig = useCallback(async (encryptedData: string) => {
+    return executeTransaction('addSSHConfig', [encryptedData])
+  }, [executeTransaction])
+
+  const updateSSHConfig = useCallback(async (configId: bigint, newEncryptedData: string) => {
+    return executeTransaction('updateSSHConfig', [configId, newEncryptedData])
+  }, [executeTransaction])
+
+  const revokeConfig = useCallback(async (configId: bigint) => {
+    return executeTransaction('revokeConfig', [configId])
+  }, [executeTransaction])
+
+  const batchUpdateConfigs = useCallback(async (configIds: bigint[], newEncryptedData: string[]) => {
     if (configIds.length !== newEncryptedData.length) {
       throw new Error('Arrays length mismatch')
     }
+    return executeTransaction('batchUpdateConfigs', [configIds, newEncryptedData])
+  }, [executeTransaction])
 
-    return writeContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'batchUpdateConfigs',
-      args: [configIds, newEncryptedData],
-    })
-  }
-
-  const batchRevokeConfigs = async (configIds: bigint[]) => {
-    if (!address) throw new Error('Wallet not connected')
-
-    return writeContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'batchRevokeConfigs',
-      args: [configIds],
-    })
-  }
+  const batchRevokeConfigs = useCallback(async (configIds: bigint[]) => {
+    return executeTransaction('batchRevokeConfigs', [configIds])
+  }, [executeTransaction])
 
   const useGetTotalUsers = () => {
-    return useReadContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'getTotalUsers',
-      query: {
-        enabled: !!contractAddress,
-      },
+    const [data, setData] = useState<bigint | undefined>()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+
+    const refetch = useCallback(async () => {
+      if (!contractAddress) return Promise.resolve()
+
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        const result = await publicClient.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: SSH_MANAGER_ABI,
+          functionName: 'getTotalUsers'
+        })
+        setData(result as bigint)
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch total users')
+        setError(error)
+        console.error('Error fetching total users:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }, [contractAddress])
+
+    // Auto-fetch once
+    useState(() => {
+      refetch()
     })
+
+    return {
+      data,
+      isLoading,
+      error,
+      refetch
+    }
   }
 
   const useGetTotalConfigs = () => {
-    return useReadContract({
-      ...SSH_MANAGER_CONTRACT,
-      address: contractAddress as `0x${string}`,
-      functionName: 'getTotalConfigs',
-      query: {
-        enabled: !!contractAddress,
-      },
+    const [data, setData] = useState<bigint | undefined>()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+
+    const refetch = useCallback(async () => {
+      if (!contractAddress) return Promise.resolve()
+
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        const result = await publicClient.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: SSH_MANAGER_ABI,
+          functionName: 'getTotalConfigs'
+        })
+        setData(result as bigint)
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch total configs')
+        setError(error)
+        console.error('Error fetching total configs:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }, [contractAddress])
+
+    // Auto-fetch once
+    useState(() => {
+      refetch()
     })
+
+    return {
+      data,
+      isLoading,
+      error,
+      refetch
+    }
   }
 
   return {

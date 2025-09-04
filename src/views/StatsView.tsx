@@ -1,15 +1,15 @@
-import { useAccount } from 'wagmi'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { useSSHContract } from '@/hooks/useSSHContract'
+import { useWalletStore } from '@/stores/walletStore'
 
 export function StatsView() {
   const { t } = useTranslation()
-  const { address } = useAccount()
+  const { account } = useWalletStore()
   const { useGetUserStats } = useSSHContract()
-  const { data: userStats, isLoading } = useGetUserStats(address)
+  const { data: userStats, isLoading } = useGetUserStats(account)
 
-  if (!address) {
+  if (!account) {
     return (
       <div className="flex flex-col items-center justify-center h-64 bg-[#0f0f0f] rounded-lg border border-[#1a1a1a]">
         <Icon icon="lucide:bar-chart-3" className="w-16 h-16 text-[#888888] mb-4" />

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs/promises'
@@ -44,6 +44,7 @@ function createWindow() {
       sandbox: false, // Required for WalletConnect
       experimentalFeatures: true, // Enable experimental web features
       enableBlinkFeatures: 'CSSColorSchemeUARendering', // Enable modern CSS features
+      additionalArguments: ['--disable-web-security', '--disable-features=VizDisplayCompositor'],
     },
     // Optimized title bar style for macOS
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
@@ -68,7 +69,7 @@ function createWindow() {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
   })
 
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
     // Open developer tools in development mode
@@ -610,6 +611,19 @@ ipcMain.handle('sftp:downloadFile', async (_event, sessionId: string, remotePath
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+// WalletConnect IPC handlers
+ipcMain.handle('wallet:openExternal', async (_event, url: string) => {
+  try {
+    await shell.openExternal(url)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to open external URL'
     }
   }
 })

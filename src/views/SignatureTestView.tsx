@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useAccount, useSignMessage } from 'wagmi'
 import { Icon } from '@iconify/react'
 import { WalletBasedEncryptionService } from '@/services/encryption'
 import { DeterministicSignatureService } from '@/services/deterministic-signature'
+import { useWalletStore } from '@/stores/walletStore'
 import toast from 'react-hot-toast'
 
 interface SignatureTestResult {
@@ -16,8 +16,7 @@ interface SignatureTestResult {
 }
 
 export function SignatureTestView() {
-  const { address, isConnected } = useAccount()
-  const { signMessageAsync } = useSignMessage()
+  const { account, isConnected, signMessage } = useWalletStore()
   
   const [isTestingDeterministic, setIsTestingDeterministic] = useState(false)
   const [isTestingEncryption, setIsTestingEncryption] = useState(false)
@@ -25,7 +24,7 @@ export function SignatureTestView() {
   
   // 测试确定性签名
   const testDeterministicSignature = async () => {
-    if (!address || !signMessageAsync) {
+    if (!account || !isConnected) {
       toast.error('请先连接钱包')
       return
     }
@@ -39,8 +38,8 @@ export function SignatureTestView() {
       const testMessage = DeterministicSignatureService.getMasterKeyMessage()
       
       // 连续签名两次
-      const signature1 = await signMessageAsync({ message: testMessage })
-      const signature2 = await signMessageAsync({ message: testMessage })
+      const signature1 = await signMessage(testMessage)
+      const signature2 = await signMessage(testMessage)
       
       // 检查签名是否相同
       const isDeterministic = signature1 === signature2
@@ -92,7 +91,7 @@ export function SignatureTestView() {
   
   // 测试加密解密流程
   const testEncryptionFlow = async () => {
-    if (!address || !signMessageAsync) {
+    if (!account || !isConnected) {
       toast.error('请先连接钱包')
       return
     }
@@ -113,22 +112,22 @@ export function SignatureTestView() {
       
       // 第一次加密
       const encrypted1 = await WalletBasedEncryptionService.encryptSSHConfig(
-        testConfig, address, signMessageAsync
+        testConfig, account, signMessage
       )
       
       // 第二次加密相同数据
       const _encrypted2 = await WalletBasedEncryptionService.encryptSSHConfig(
-        testConfig, address, signMessageAsync
+        testConfig, account, signMessage
       )
       
       // 解密第一次的数据
       const decrypted1 = await WalletBasedEncryptionService.decryptSSHConfig(
-        encrypted1, address, 'test1', new Date(), true, signMessageAsync
+        encrypted1, account, 'test1', new Date(), true, signMessage
       )
       
       // 用第二次的密钥解密第一次的数据
       const decrypted2 = await WalletBasedEncryptionService.decryptSSHConfig(
-        encrypted1, address, 'test2', new Date(), true, signMessageAsync
+        encrypted1, account, 'test2', new Date(), true, signMessage
       )
       
       const isDecryptionConsistent = 
