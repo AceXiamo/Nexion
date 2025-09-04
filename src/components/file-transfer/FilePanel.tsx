@@ -2,10 +2,12 @@ import React, { useState, useRef } from 'react'
 import { Icon } from '@iconify/react'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/Modal'
+import { Dropdown, type DropdownItem } from '@/components/ui/Dropdown'
 import { FileBrowser } from './FileBrowser'
 import { PathBreadcrumb } from './PathBreadcrumb'
 import { useFileTransferStore } from '@/store/file-transfer-store'
 import type { FileItem } from '@/types/file-transfer'
+import { type SortBy, type SortOrder } from './utils/file-utils'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 // Note: Using path-browserify for browser compatibility
@@ -32,6 +34,9 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
   const [editPath, setEditPath] = useState(currentPath)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [filesToDelete, setFilesToDelete] = useState<{ files: Set<string>; fileNames: string }>({ files: new Set(), fileNames: '' })
+  const [sortBy, setSortBy] = useState<SortBy>('name')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
+  const [showHiddenFiles, setShowHiddenFiles] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { t } = useTranslation(['fileTransfer', 'common'])
 
@@ -148,6 +153,34 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
     }
   }
 
+  // Sort dropdown items
+  const sortDropdownItems: DropdownItem[] = [
+    {
+      id: 'name-asc',
+      label: t('fileTransfer:actions.sortByName') + ' (' + t('fileTransfer:actions.sortAsc') + ')',
+      icon: sortBy === 'name' && sortOrder === 'asc' ? 'mdi:check' : 'mdi:sort-alphabetical-ascending',
+      onClick: () => { setSortBy('name'); setSortOrder('asc') }
+    },
+    {
+      id: 'name-desc',
+      label: t('fileTransfer:actions.sortByName') + ' (' + t('fileTransfer:actions.sortDesc') + ')',
+      icon: sortBy === 'name' && sortOrder === 'desc' ? 'mdi:check' : 'mdi:sort-alphabetical-descending',
+      onClick: () => { setSortBy('name'); setSortOrder('desc') }
+    },
+    {
+      id: 'time-asc',
+      label: t('fileTransfer:actions.sortByTime') + ' (' + t('fileTransfer:actions.sortAsc') + ')',
+      icon: sortBy === 'modifiedAt' && sortOrder === 'asc' ? 'mdi:check' : 'mdi:sort-clock-ascending-outline',
+      onClick: () => { setSortBy('modifiedAt'); setSortOrder('asc') }
+    },
+    {
+      id: 'time-desc',
+      label: t('fileTransfer:actions.sortByTime') + ' (' + t('fileTransfer:actions.sortDesc') + ')',
+      icon: sortBy === 'modifiedAt' && sortOrder === 'desc' ? 'mdi:check' : 'mdi:sort-clock-descending-outline',
+      onClick: () => { setSortBy('modifiedAt'); setSortOrder('desc') }
+    }
+  ]
+
   return (
     <div className="flex flex-col h-full bg-neutral-900/50 rounded-lg border border-neutral-800">
       {/* Header */}
@@ -161,6 +194,39 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
         <div className="flex items-center gap-1 ml-2">
           <Button variant="ghost" size="sm" onClick={handleGoUp} disabled={isLoading || currentPath === '/'} title={t('fileTransfer:actions.goBack')}>
             <Icon icon="mdi:arrow-up" className="w-4 h-4" />
+          </Button>
+
+          {/* Sort Dropdown */}
+          <Dropdown
+            trigger={
+              <Button variant="ghost" size="sm" title={t('fileTransfer:actions.sortBy')}>
+                {/* <Icon icon={sortBy === 'name' ? 'mdi:sort-alphabetical-variant' : 'mdi:sort-clock-outline'} className="w-4 h-4" /> */}
+                {
+                  sortBy === 'name' && sortOrder === 'asc' ? 
+                  (<Icon icon="mdi:sort-alphabetical-ascending" className="w-4 h-4" />) :
+                  sortBy === 'name' && sortOrder === 'desc' ? 
+                  (<Icon icon="mdi:sort-alphabetical-descending" className="w-4 h-4" />) :
+                  sortBy === 'modifiedAt' && sortOrder === 'asc' ? 
+                  (<Icon icon="mdi:sort-clock-ascending-outline" className="w-4 h-4" />) :
+                  (<Icon icon="mdi:sort-clock-descending-outline" className="w-4 h-4" />)
+                }
+              </Button>
+            }
+            items={sortDropdownItems}
+            align="right"
+          />
+
+          {/* Toggle Hidden Files */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowHiddenFiles(!showHiddenFiles)}
+            title={showHiddenFiles ? t('fileTransfer:actions.hideHiddenFiles') : t('fileTransfer:actions.showHiddenFiles')}
+          >
+            <Icon 
+              icon={showHiddenFiles ? 'mdi:eye-off' : 'mdi:eye'} 
+              className={cn('w-4 h-4', showHiddenFiles && 'text-lime-400')} 
+            />
           </Button>
 
           {selectedFiles.size > 0 && (
@@ -208,6 +274,9 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
             }}
             type={type}
             currentPath={currentPath}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            showHiddenFiles={showHiddenFiles}
           />
         )}
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Icon } from '@iconify/react'
 import { FileItem as FileItemComponent } from './FileItem'
 import { ContextMenu, useContextMenu, type ContextMenuItem } from '@/components/ui/ContextMenu'
@@ -8,6 +8,7 @@ import { useFileTransferStore } from '@/store/file-transfer-store'
 import type { FileItem } from '@/types/file-transfer'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
+import { processFiles, type SortBy, type SortOrder } from './utils/file-utils'
 // Note: Using path-browserify for browser compatibility
 const path = {
   join: (...parts: string[]) => parts.join('/').replace(/\/+/g, '/'),
@@ -25,9 +26,12 @@ interface FileBrowserProps {
   onFileDoubleClick: (file: FileItem) => void
   type: 'local' | 'remote'
   currentPath: string
+  sortBy: SortBy
+  sortOrder: SortOrder
+  showHiddenFiles: boolean
 }
 
-export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange, onFileDoubleClick, type, currentPath }: FileBrowserProps) {
+export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange, onFileDoubleClick, type, currentPath, sortBy, sortOrder, showHiddenFiles }: FileBrowserProps) {
   const [draggedFiles, setDraggedFiles] = useState<Set<string>>(new Set())
   const [isDragOver, setIsDragOver] = useState(false)
   const [lastClickedIndex, setLastClickedIndex] = useState<number>(-1)
@@ -38,6 +42,11 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
   const { t } = useTranslation(['fileTransfer', 'common'])
 
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu()
+
+  // Process files with sorting and filtering
+  const processedFiles = useMemo(() => {
+    return processFiles(files, { sortBy, sortOrder, showHiddenFiles })
+  }, [files, sortBy, sortOrder, showHiddenFiles])
 
   const handleFileClick = (file: FileItem, index: number, event: React.MouseEvent) => {
     if (event.ctrlKey || event.metaKey) {
@@ -57,8 +66,8 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
       const newSelection = new Set<string>()
 
       for (let i = start; i <= end; i++) {
-        if (files[i]) {
-          newSelection.add(files[i].path)
+        if (processedFiles[i]) {
+          newSelection.add(processedFiles[i].path)
         }
       }
 
@@ -339,14 +348,16 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
           </div>
         )}
 
-        {files.length === 0 ? (
+        {processedFiles.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400">
             <Icon icon="mdi:folder-open" className="w-8 h-8 mb-2" />
-            <span className="text-sm">{t('fileTransfer:status.emptyFolder')}</span>
+            <span className="text-sm">
+              {files.length === 0 ? t('fileTransfer:status.emptyFolder') : 'No files match current filter'}
+            </span>
           </div>
         ) : (
           <div className="p-2 space-y-1">
-            {files.map((file, index) => (
+            {processedFiles.map((file, index) => (
               <FileItemComponent
                 key={file.path}
                 file={file}
