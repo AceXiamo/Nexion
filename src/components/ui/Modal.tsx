@@ -7,7 +7,7 @@ interface ModalProps {
   onClose: () => void
   title?: string
   children: ReactNode
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
   showCloseButton?: boolean
   closeOnOverlayClick?: boolean
   closeOnEscape?: boolean
@@ -56,6 +56,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', showClose
         return 'max-w-2xl'
       case 'xl':
         return 'max-w-4xl'
+      case '2xl':
+        return 'max-w-5xl'
       case 'full':
         return 'max-w-full mx-4'
       default:
