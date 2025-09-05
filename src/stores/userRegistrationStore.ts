@@ -41,10 +41,10 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
       const { lastCheckedAccount, isRegistered } = get()
       
       // 如果是相同账户且已有缓存结果，直接返回
-      if (lastCheckedAccount === account && isRegistered !== null) {
-        console.log('Using cached registration status for account:', account, isRegistered)
-        return
-      }
+      // if (lastCheckedAccount === account && isRegistered !== null) {
+      //   console.log('Using cached registration status for account:', account, isRegistered)
+      //   return
+      // }
       
       // 如果账户不同，重置状态
       if (lastCheckedAccount !== account) {

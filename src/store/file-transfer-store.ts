@@ -126,12 +126,21 @@ export const useFileTransferStore = create<FileTransferState & FileTransferActio
       // Remove progress listener
       get().removeProgressListener()
 
+      // First, just set isOpen to false to start the closing animation
       set({
         isOpen: false,
-        currentSession: null,
         errors: {},
         transferQueue: get().transferQueue.filter((task) => task.status === 'transferring' || task.status === 'pending'),
       })
+
+      // Delay clearing the session and content until animation completes
+      setTimeout(() => {
+        set({
+          currentSession: null,
+          localFiles: [],
+          remoteFiles: [],
+        })
+      }, 300) // Wait for modal animation to complete (250ms + buffer)
     },
 
     setLocalPath: (path: string) => {
