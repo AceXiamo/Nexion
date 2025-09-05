@@ -66,13 +66,13 @@ export function AboutView() {
                   iconColor: 'text-pink-400',
                 },
                 {
-                  icon: 'lucide:sync',
+                  icon: 'fluent:arrow-sync-circle-16-regular',
                   title: '跨设备同步',
                   description: '无论在哪台设备上，只要连接钱包就能访问你的所有SSH配置',
                   iconColor: 'text-indigo-400',
                 },
               ].map((feature, index) => (
-                <div key={index} className="group border border-[#2a2a4a]/30 rounded-lg p-3 hover:border-blue-400/40 transition-all duration-300">
+                <div key={index} className="group bg-[#1a1a2e]/40 rounded-lg px-4 py-3 hover:bg-[#1a1a2e]/60 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center space-x-4">
                     <Icon icon={feature.icon} className={`w-5 h-5 ${feature.iconColor}`} />
                     <div className="flex-1">
@@ -100,33 +100,33 @@ export function AboutView() {
               Nexion 由专业的 Web3 技术团队开发，致力于为企业和个人开发者提供 安全、高效的服务器管理解决方案。我们相信去中心化技术将重新定义 基础设施管理的未来。
             </p>
             <div className="space-y-2 mt-auto">
-              <div className="flex items-center space-x-2 p-2 rounded border border-blue-400/20">
-                <Icon icon="lucide:webhook" className="w-3 h-3 text-blue-400" />
+              <div className="flex items-center space-x-3 px-3 py-2 rounded bg-blue-900/20 hover:bg-blue-900/30 transition-colors duration-300">
+                <Icon icon="lucide:webhook" className="w-4 h-4 text-blue-400" />
                 <span className="text-xs text-blue-200/80">基于 OKX Web3 生态构建</span>
               </div>
-              <div className="flex items-center space-x-2 p-2 rounded border border-indigo-400/20">
-                <Icon icon="lucide:mail" className="w-3 h-3 text-indigo-400" />
+              <div className="flex items-center space-x-3 px-3 py-2 rounded bg-indigo-900/20 hover:bg-indigo-900/30 transition-colors duration-300">
+                <Icon icon="lucide:mail" className="w-4 h-4 text-indigo-400" />
                 <span className="text-xs text-blue-200/80">xiamo@qwq.link</span>
               </div>
             </div>
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2 p-2 rounded border border-[#2a2a4a]/30 hover:border-blue-400/30 transition-all duration-300">
-              <Icon icon="lucide:headphones" className="w-3 h-3 text-blue-400" />
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3 px-4 py-3 rounded bg-[#1a1a2e]/40 hover:bg-[#1a1a2e]/60 transition-all duration-300">
+              <Icon icon="lucide:headphones" className="w-4 h-4 text-blue-400" />
               <div>
                 <div className="text-xs font-medium text-blue-100">技术支持</div>
                 <div className="text-xs text-blue-200/60">7x24 专业技术服务</div>
               </div>
             </div>
-            <div className="flex items-center space-x-2 p-2 rounded border border-[#2a2a4a]/30 hover:border-purple-400/30 transition-all duration-300">
-              <Icon icon="lucide:building" className="w-3 h-3 text-purple-400" />
+            <div className="flex items-center space-x-3 px-4 py-3 rounded bg-[#1a1a2e]/40 hover:bg-purple-900/30 transition-all duration-300">
+              <Icon icon="lucide:building" className="w-4 h-4 text-purple-400" />
               <div>
                 <div className="text-xs font-medium text-blue-100">企业服务</div>
                 <div className="text-xs text-blue-200/60">定制化解决方案</div>
               </div>
             </div>
-            <div className="flex items-center space-x-2 p-2 rounded border border-[#2a2a4a]/30 hover:border-indigo-400/30 transition-all duration-300">
-              <Icon icon="lucide:shield" className="w-3 h-3 text-indigo-400" />
+            <div className="flex items-center space-x-3 px-4 py-3 rounded bg-[#1a1a2e]/40 hover:bg-indigo-900/30 transition-all duration-300">
+              <Icon icon="lucide:shield" className="w-4 h-4 text-indigo-400" />
               <div>
                 <div className="text-xs font-medium text-blue-100">安全报告</div>
                 <div className="text-xs text-blue-200/60">漏洞反馈与奖励</div>
@@ -146,7 +146,7 @@ export function AboutView() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <button
             onClick={() => handleExternalLink('https://example.com')}
-            className="group border border-[#2a2a4a]/30 rounded p-3 hover:border-blue-400/40 transition-all duration-300 cursor-pointer"
+            className="group bg-[#1a1a2e]/40 rounded p-3 hover:bg-blue-900/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
           >
             <div className="flex flex-col items-center space-y-2">
               <Icon icon="lucide:globe" className="w-5 h-5 text-blue-400" />
@@ -159,7 +159,7 @@ export function AboutView() {
 
           <button
             onClick={() => handleExternalLink('https://github.com/AceXiamo/nexion-contracts')}
-            className="group border border-[#2a2a4a]/30 rounded p-3 hover:border-purple-400/40 transition-all duration-300 cursor-pointer"
+            className="group bg-[#1a1a2e]/40 rounded p-3 hover:bg-purple-900/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
           >
             <div className="flex flex-col items-center space-y-2">
               <Icon icon="grommet-icons:github" className="w-5 h-5 text-purple-400" />
@@ -172,7 +172,7 @@ export function AboutView() {
 
           <button
             onClick={() => handleExternalLink('https://www.oklink.com/xlayer-test')}
-            className="group border border-[#2a2a4a]/30 rounded p-3 hover:border-indigo-400/40 transition-all duration-300 cursor-pointer"
+            className="group bg-[#1a1a2e]/40 rounded p-3 hover:bg-indigo-900/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
           >
             <div className="flex flex-col items-center space-y-2">
               <Icon icon="oui:ws-search" className="w-5 h-5 text-indigo-400" />
@@ -185,7 +185,7 @@ export function AboutView() {
 
           <button
             onClick={() => handleExternalLink('https://example.com/docs')}
-            className="group border border-[#2a2a4a]/30 rounded p-3 hover:border-cyan-400/40 transition-all duration-300 cursor-pointer"
+            className="group bg-[#1a1a2e]/40 rounded p-3 hover:bg-cyan-900/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
           >
             <div className="flex flex-col items-center space-y-2">
               <Icon icon="lucide:book-open" className="w-5 h-5 text-cyan-400" />
@@ -201,7 +201,7 @@ export function AboutView() {
       {/* 版权信息 */}
       <div className="p-4">
         <div className="flex items-center space-x-2 mb-4">
-          <Icon icon="token-branded:solana" className="w-5 h-5 text-purple-400" />
+          <Icon icon="lucide:info" className="w-5 h-5 text-purple-400" />
           <h2 className="text-base font-semibold text-blue-100">版权与许可</h2>
         </div>
 
