@@ -99,6 +99,10 @@
     "duplicateSession": {
       "name": "Duplicate Session",
       "description": "Duplicate current session configuration to create new session"
+    },
+    "openFileTransfer": {
+      "name": "Open File Transfer",
+      "description": "Open the file transfer modal for the active session"
     }
   }
 }

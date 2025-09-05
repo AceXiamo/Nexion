@@ -99,6 +99,10 @@
     "duplicateSession": {
       "name": "复制会话",
       "description": "复制当前会话配置创建新会话"
+    },
+    "openFileTransfer": {
+      "name": "打开文件传输",
+      "description": "打开当前活跃会话的文件传输弹框"
     }
   }
 }

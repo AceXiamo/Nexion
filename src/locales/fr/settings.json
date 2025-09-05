@@ -99,6 +99,10 @@
     "duplicateSession": {
       "name": "Dupliquer la session",
       "description": "Dupliquer la configuration de session actuelle pour créer une nouvelle session"
+    },
+    "openFileTransfer": {
+      "name": "Ouvrir le transfert de fichiers",
+      "description": "Ouvrir la modale de transfert de fichiers pour la session active"
     }
   }
 }

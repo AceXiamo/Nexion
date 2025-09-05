@@ -99,6 +99,10 @@
     "duplicateSession": {
       "name": "セッション複製",
       "description": "現在のセッション設定を複製して新しいセッションを作成"
+    },
+    "openFileTransfer": {
+      "name": "ファイル転送を開く",
+      "description": "アクティブなセッションのファイル転送モーダルを開く"
     }
   }
 }
