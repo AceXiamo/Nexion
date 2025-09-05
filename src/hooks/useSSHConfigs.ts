@@ -33,6 +33,8 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
   const { account, isConnected, signMessage } = useWalletStore()
   const sshContract = useSSHContract()
   const lastAccountRef = useRef<string | null>(null)
+  const lastRawConfigsLengthRef = useRef<number>(-1) // 跟踪rawConfigs长度变化
+  const isInitialFetchRef = useRef<boolean>(false) // 跟踪是否已进行初始获取
 
   // Get configuration data from the blockchain
   const { data: rawConfigs, isLoading: isContractLoading, refetch: refetchConfigs } = sshContract.useGetSSHConfigs(account!)
@@ -151,44 +153,83 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
     }
   }, [account])
 
-  // Auto fetch configs when account changes or when we have raw data
+  // 统一的配置获取逻辑 - 合并两个useEffect，避免重复调用
   useEffect(() => {
-    if (account && isConnected && lastAccountRef.current !== account) {
-      console.log('Account changed, fetching SSH configs...', account)
-      lastAccountRef.current = account
-      
-      fetchConfigs(
-        account,
-        async () => {
-          console.log('Fetching configs from contract...')
-          return rawConfigs || []
-        },
-        processRawConfigs
-      )
+    // 账户变化处理
+    if (account && isConnected) {
+      // 账户切换时
+      if (lastAccountRef.current !== account) {
+        console.log('Account changed, fetching SSH configs...', account)
+        lastAccountRef.current = account
+        lastRawConfigsLengthRef.current = -1 // 重置rawConfigs长度跟踪
+        isInitialFetchRef.current = false // 重置初始获取标志
+        
+        // 清除旧账户的配置缓存
+        clearConfigCache()
+        
+        // 如果已有rawConfigs数据，立即获取
+        if (rawConfigs !== undefined && !isContractLoading) {
+          fetchConfigs(
+            account,
+            async () => rawConfigs || [],
+            processRawConfigs
+          )
+          isInitialFetchRef.current = true
+          lastRawConfigsLengthRef.current = rawConfigs?.length || 0
+        }
+        return
+      }
+
+      // 相同账户，rawConfigs数据更新处理
+      if (
+        lastAccountRef.current === account && 
+        rawConfigs !== undefined && 
+        !isContractLoading &&
+        !isLoading
+      ) {
+        const currentLength = rawConfigs?.length || 0
+        
+        // 只有在以下情况才重新获取：
+        // 1. 还未进行过初始获取
+        // 2. rawConfigs长度发生变化（表示链上数据有更新）
+        if (
+          !isInitialFetchRef.current || 
+          lastRawConfigsLengthRef.current !== currentLength
+        ) {
+          console.log('RawConfigs updated, processing...', {
+            isInitial: !isInitialFetchRef.current,
+            lengthChanged: lastRawConfigsLengthRef.current !== currentLength,
+            oldLength: lastRawConfigsLengthRef.current,
+            newLength: currentLength
+          })
+          
+          fetchConfigs(
+            account,
+            async () => rawConfigs || [],
+            processRawConfigs
+          )
+          
+          isInitialFetchRef.current = true
+          lastRawConfigsLengthRef.current = currentLength
+        }
+      }
     } else if (!account) {
-      // Clear configs when account is disconnected
+      // 账户断开时清理
       clearConfigCache()
       lastAccountRef.current = null
+      lastRawConfigsLengthRef.current = -1
+      isInitialFetchRef.current = false
     }
-  }, [account, isConnected, fetchConfigs, processRawConfigs, clearConfigCache, rawConfigs])
-
-  // Fetch configs when raw data is available and account hasn't changed
-  useEffect(() => {
-    if (
-      account && 
-      isConnected && 
-      rawConfigs && 
-      lastAccountRef.current === account &&
-      !isLoading &&
-      !isContractLoading
-    ) {
-      fetchConfigs(
-        account,
-        async () => rawConfigs,
-        processRawConfigs
-      )
-    }
-  }, [rawConfigs, account, isConnected, isContractLoading, fetchConfigs, processRawConfigs, isLoading])
+  }, [
+    account, 
+    isConnected, 
+    rawConfigs?.length, // 只依赖长度，不依赖整个数组
+    isContractLoading, 
+    isLoading,
+    fetchConfigs, 
+    processRawConfigs, 
+    clearConfigCache
+  ])
 
   // Add new configuration
   const addConfig = useCallback(

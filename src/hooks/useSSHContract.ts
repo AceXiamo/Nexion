@@ -235,9 +235,60 @@ export function useSSHContract() {
     }
   }
 
+  // Get contract fees
+  const useGetFees = () => {
+    const [data, setData] = useState<{
+      registrationFee: bigint,
+      addConfigFee: bigint, 
+      updateConfigFee: bigint
+    } | undefined>()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+
+    const refetch = useCallback(async () => {
+      if (!contractAddress) return Promise.resolve()
+
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await publicClient.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: SSH_MANAGER_ABI,
+          functionName: 'getFees',
+        })
+        
+        const fees = result as [bigint, bigint, bigint]
+        setData({
+          registrationFee: fees[0],
+          addConfigFee: fees[1],
+          updateConfigFee: fees[2]
+        })
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch fees')
+        setError(error)
+        console.error('Error fetching fees:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }, [contractAddress])
+
+    // Auto-fetch once
+    useState(() => {
+      refetch()
+    })
+
+    return {
+      data,
+      isLoading,
+      error,
+      refetch,
+    }
+  }
+
   // Write operations
   const executeTransaction = useCallback(
-    async (functionName: string, args: any[] = []) => {
+    async (functionName: string, args: any[] = [], value?: bigint) => {
       if (!account || !contractAddress || !sendTransaction) {
         throw new Error('Wallet not connected')
       }
@@ -255,9 +306,38 @@ export function useSSHContract() {
           args,
         })
 
+        // Estimate gas for the transaction
+        let gasLimit
+        try {
+          gasLimit = await publicClient.estimateContractGas({
+            address: contractAddress as `0x${string}`,
+            abi: SSH_MANAGER_ABI,
+            functionName,
+            args,
+            account: account as `0x${string}`,
+            value,
+          })
+          // Add 20% buffer to gas estimate
+          gasLimit = (gasLimit * 120n) / 100n
+          console.log(`Gas estimated for ${functionName}:`, gasLimit.toString())
+        } catch (error) {
+          console.warn('Gas estimation failed, using default gas limit:', error)
+          // Fallback gas limits based on function
+          const gasDefaults: Record<string, bigint> = {
+            registerUser: 300000n,
+            addSSHConfig: 400000n, 
+            updateSSHConfig: 350000n,
+            revokeConfig: 250000n,
+          }
+          gasLimit = gasDefaults[functionName] || 300000n
+          console.log(`Using default gas for ${functionName}:`, gasLimit.toString())
+        }
+
         const txHash = await sendTransaction({
           to: contractAddress as `0x${string}`,
           data,
+          value: value ? `0x${value.toString(16)}` : undefined,
+          gas: `0x${gasLimit.toString(16)}`,
         })
 
         setHash(txHash)
@@ -285,21 +365,43 @@ export function useSSHContract() {
   )
 
   const registerUser = useCallback(async () => {
-    return executeTransaction('registerUser')
-  }, [executeTransaction])
+    // Get current registration fee from contract
+    const fees = await publicClient.readContract({
+      address: contractAddress as `0x${string}`,
+      abi: SSH_MANAGER_ABI,
+      functionName: 'getFees',
+    }) as [bigint, bigint, bigint]
+    console.log('fees', fees)
+    
+    return executeTransaction('registerUser', [], fees[0])
+  }, [executeTransaction, publicClient, contractAddress])
 
   const addSSHConfig = useCallback(
     async (encryptedData: string) => {
-      return executeTransaction('addSSHConfig', [encryptedData])
+      // Get current add config fee from contract
+      const fees = await publicClient.readContract({
+        address: contractAddress as `0x${string}`,
+        abi: SSH_MANAGER_ABI,
+        functionName: 'getFees',
+      }) as [bigint, bigint, bigint]
+      
+      return executeTransaction('addSSHConfig', [encryptedData], fees[1])
     },
-    [executeTransaction]
+    [executeTransaction, publicClient, contractAddress]
   )
 
   const updateSSHConfig = useCallback(
     async (configId: bigint, newEncryptedData: string) => {
-      return executeTransaction('updateSSHConfig', [configId, newEncryptedData])
+      // Get current update config fee from contract  
+      const fees = await publicClient.readContract({
+        address: contractAddress as `0x${string}`,
+        abi: SSH_MANAGER_ABI,
+        functionName: 'getFees',
+      }) as [bigint, bigint, bigint]
+      
+      return executeTransaction('updateSSHConfig', [configId, newEncryptedData], fees[2])
     },
-    [executeTransaction]
+    [executeTransaction, publicClient, contractAddress]
   )
 
   const revokeConfig = useCallback(
@@ -414,6 +516,7 @@ export function useSSHContract() {
     useGetUserStats,
     useGetTotalUsers,
     useGetTotalConfigs,
+    useGetFees,
 
     // Write functions
     registerUser,
