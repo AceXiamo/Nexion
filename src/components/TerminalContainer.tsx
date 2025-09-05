@@ -148,7 +148,7 @@ export function TerminalContainer() {
   }
 
   return (
-    <div className="h-full relative bg-black">
+    <div className="w-full h-full relative bg-black overflow-hidden">
       {/* Render all session terminals, use isVisible to control display, keeping instances persistent */}
       {sessions.map((session) => (
         <SSHTerminal

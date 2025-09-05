@@ -27,7 +27,10 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
     // If terminal is not yet mounted to DOM, mount it
     if (!terminal.element) {
       terminal.open(terminalRef.current)
-      fitAddon.fit()
+      // 延迟fit以确保DOM已完全渲染
+      setTimeout(() => {
+        fitAddon.fit()
+      }, 0)
     } else {
       // If terminal is already mounted to another DOM node, remount to current node
       if (terminal.element.parentNode !== terminalRef.current) {
@@ -36,7 +39,10 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
         } else {
           terminal.open(terminalRef.current)
         }
-        fitAddon.fit()
+        // 延迟fit以确保DOM已完全渲染
+        setTimeout(() => {
+          fitAddon.fit()
+        }, 0)
       }
     }
 
@@ -80,9 +86,15 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
 
   // Handle terminal size adjustment
   const handleResize = useCallback(() => {
-    if (sessionId && isVisible) {
-      const terminalData = terminalPersistenceManager.getOrCreateTerminal(sessionId)
-      terminalData.fitAddon.fit()
+    if (sessionId && isVisible && terminalRef.current) {
+      // 确保容器已经有实际尺寸后再进行fit操作
+      const container = terminalRef.current
+      if (container.clientWidth > 0 && container.clientHeight > 0) {
+        const terminalData = terminalPersistenceManager.getOrCreateTerminal(sessionId)
+        setTimeout(() => {
+          terminalData.fitAddon.fit()
+        }, 0)
+      }
     }
   }, [isVisible, sessionId])
 
@@ -123,7 +135,7 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
 
   return (
     <div className={`absolute inset-0 ${isVisible ? 'block' : 'hidden'}`}>
-      <div ref={terminalRef} className="w-full h-full" style={{ minHeight: '400px' }} />
+      <div ref={terminalRef} className="w-full h-full" />
     </div>
   )
 }
