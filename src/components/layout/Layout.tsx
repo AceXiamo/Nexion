@@ -56,7 +56,8 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
         
         {/* Page Content */}
         <main className="flex-1 h-0">
-          <div className="p-6 h-full overflow-auto">
+          {/* <div className={`h-full ${activeTab === 'terminal' ? '' : 'p-6 overflow-auto'}`}> */}
+          <div className={`h-full p-6 overflow-auto`}>
             {children}
           </div>
         </main>
