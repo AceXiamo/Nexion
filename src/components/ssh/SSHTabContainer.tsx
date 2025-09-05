@@ -142,6 +142,7 @@ export function SSHTabContainer() {
   useShortcutHandler('duplicateSession', handleDuplicateSessionShortcut, [activeSessionId, sessions])
   useShortcutHandler('nextTab', handleNextTabShortcut, [sessions, activeSessionId])
   useShortcutHandler('previousTab', handlePreviousTabShortcut, [sessions, activeSessionId])
+  useShortcutHandler('openFileTransfer', handleOpenFileTransfer, [activeSessionId])
 
   // Register tab switching shortcuts (Ctrl+1-9)
   useShortcutHandler('switchToTab1', () => handleSwitchToTabShortcut(0), [sessions])

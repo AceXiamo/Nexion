@@ -6,6 +6,7 @@ import { useShortcutHandler } from '@/hooks/useKeyboardShortcuts'
 import { SSHTerminal } from '@/components/ssh/SSHTerminal'
 import { Button } from '@/components/ui/button'
 import { Terminal, Plus, RefreshCw } from 'lucide-react'
+import { useFileTransferStore } from '@/store/file-transfer-store'
 
 /**
  * Unified Terminal Container
@@ -25,6 +26,7 @@ export function TerminalContainer() {
     closeCurrentSession,
     duplicateCurrentSession 
   } = useSSHSessions()
+  const { openModal } = useFileTransferStore()
   const navigate = useNavigate()
 
   // Find current session
@@ -41,12 +43,20 @@ export function TerminalContainer() {
     navigate('/connections')
   }
 
+  // Open file transfer modal
+  const handleOpenFileTransfer = () => {
+    if (sessionId) {
+      openModal(sessionId)
+    }
+  }
+
   // Register keyboard shortcuts
   useShortcutHandler('newSession', handleNewSession, [navigate])
   useShortcutHandler('closeSession', closeCurrentSession, [closeCurrentSession])
   useShortcutHandler('duplicateSession', duplicateCurrentSession, [duplicateCurrentSession])
   useShortcutHandler('nextTab', switchToNextSession, [switchToNextSession])
   useShortcutHandler('previousTab', switchToPreviousSession, [switchToPreviousSession])
+  useShortcutHandler('openFileTransfer', handleOpenFileTransfer, [sessionId])
 
   // Register tab switching shortcuts (Ctrl+1-9)
   useShortcutHandler('switchToTab1', () => switchToSessionByIndex(0), [switchToSessionByIndex])
