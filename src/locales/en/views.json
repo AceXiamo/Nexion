@@ -28,47 +28,52 @@
     "connectNow": "Connect Now"
   },
   "about": {
-    "version": "v0.1.0 - Beta",
-    "productIntro": "Product Introduction",
-    "productDesc": "Web3 SSH Manager is a blockchain-based SSH configuration management tool. It combines traditional SSH management with Web3 technology to provide a decentralized, secure, and convenient server access management solution.",
+    "version": "Next-Generation Web3 SSH Manager",
+    "productIntro": "Product Introduction", 
+    "productDesc": "Nexion is a revolutionary SSH management tool that perfectly combines traditional server management with Web3 technology. Through blockchain technology, it achieves decentralized storage of configurations, replaces traditional key management with encrypted wallets, providing enterprises and developers with more secure and convenient server access solutions.",
     "coreFeatures": "Core Features",
     "features": {
       "unifiedAuth": {
-        "title": "Unified Authentication",
-        "description": "Use Web3 wallet instead of traditional SSH key management"
+        "title": "Wallet Authentication",
+        "description": "Use Web3 wallet for secure authentication, farewell to traditional key management"
       },
       "decentralizedStorage": {
-        "title": "Decentralized Storage",
-        "description": "Configuration data encrypted and stored on blockchain"
+        "title": "Blockchain Storage",
+        "description": "Configuration data encrypted and stored on X Layer blockchain, never lost"
       },
       "secureConnection": {
-        "title": "Secure Connection",
-        "description": "End-to-end encryption protects data transmission security"
+        "title": "End-to-End Encryption",
+        "description": "Military-grade encryption algorithms protect all data transmission and storage"
       },
       "crossPlatform": {
-        "title": "Cross-Platform Support",
-        "description": "Supports Windows, macOS, Linux systems"
+        "title": "Cross-Device Sync",
+        "description": "Access all your SSH configurations on any device by simply connecting your wallet"
       }
     },
-    "techStack": "Technology Stack",
-    "frontend": "Frontend Technology",
-    "blockchain": "Blockchain",
-    "security": "Security Technology",
     "contact": "Contact Us",
-    "github": "GitHub Repository",
-    "website": "Official Website",
-    "email": "Email Contact",
-    "copyright": "Copyright Information",
-    "license": "Open Source License",
-    "changelog": "Changelog",
-    "releaseDate": "2024-08-29",
-    "contactEmail": "xiamo@qwq.link",
-    "releaseFeatures": {
-      "basicSSH": "Basic SSH configuration management",
-      "walletIntegration": "OKX wallet integration and authentication",
-      "testnetSupport": "X Layer testnet support",
-      "encryption": "End-to-end encryption protection"
-    }
+    "contactDesc": "Nexion is developed by a professional Web3 technology team, committed to providing secure and efficient server management solutions for enterprises and individual developers. We believe that decentralized technology will redefine the future of infrastructure management.",
+    "techSupport": "Technical Support",
+    "techSupportDesc": "7x24 professional technical services",
+    "enterpriseService": "Enterprise Service", 
+    "enterpriseServiceDesc": "Customized solutions",
+    "securityReport": "Security Report",
+    "securityReportDesc": "Vulnerability feedback and rewards",
+    "techStackDesc": "Built on OKX Web3 ecosystem",
+    "importantLinks": "Important Links",
+    "officialWebsite": "Official Website",
+    "websiteDesc": "Product homepage",
+    "openSource": "Open Source Contract",
+    "openSourceDesc": "Smart contract code",
+    "blockchainExplorer": "Blockchain Explorer",
+    "blockchainExplorerDesc": "X Layer network",
+    "documentation": "Documentation",
+    "documentationDesc": "Help center",
+    "copyrightAndLicense": "Copyright & License",
+    "allRightsReserved": "All rights reserved",
+    "licenseDesc": "This software is a proprietary product protected by copyright law and international treaties. The core smart contract code has been open sourced on GitHub under the Apache 2.0 license. The application itself is commercial software and may not be copied, distributed or modified without authorization.",
+    "apacheLicense": "Apache 2.0 License",
+    "web3Technology": "AceXiamo",
+    "contactEmail": "xiamo@qwq.link"
   },
   "stats": {
     "title": "Usage Statistics",

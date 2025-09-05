@@ -28,47 +28,52 @@
     "connectNow": "Se Connecter Maintenant"
   },
   "about": {
-    "version": "v0.1.0 - Bêta",
+    "version": "Gestionnaire SSH Web3 de Nouvelle Génération",
     "productIntro": "Introduction du Produit",
-    "productDesc": "Web3 SSH Manager est un outil de gestion de configuration SSH basé sur la blockchain. Il combine la gestion SSH traditionnelle avec la technologie Web3 pour fournir une solution de gestion d'accès serveur décentralisée, sécurisée et pratique.",
+    "productDesc": "Nexion est un outil de gestion SSH révolutionnaire qui combine parfaitement la gestion de serveur traditionnelle avec la technologie Web3. Grâce à la technologie blockchain, il réalise le stockage décentralisé des configurations, remplace la gestion traditionnelle des clés par des portefeuilles chiffrés, offrant aux entreprises et développeurs des solutions d'accès serveur plus sécurisées et pratiques.",
     "coreFeatures": "Fonctionnalités Principales",
     "features": {
       "unifiedAuth": {
-        "title": "Authentification Unifiée",
-        "description": "Utiliser un portefeuille Web3 au lieu de la gestion traditionnelle des clés SSH"
+        "title": "Authentification par Portefeuille",
+        "description": "Utiliser un portefeuille Web3 pour une authentification sécurisée, adieu à la gestion traditionnelle des clés"
       },
       "decentralizedStorage": {
-        "title": "Stockage Décentralisé",
-        "description": "Données de configuration chiffrées et stockées sur la blockchain"
+        "title": "Stockage Blockchain",
+        "description": "Données de configuration chiffrées et stockées sur la blockchain X Layer, jamais perdues"
       },
       "secureConnection": {
-        "title": "Connexion Sécurisée",
-        "description": "Le chiffrement de bout en bout protège la sécurité de la transmission des données"
+        "title": "Chiffrement de Bout en Bout",
+        "description": "Algorithmes de chiffrement de qualité militaire protégeant toutes les transmissions et stockages de données"
       },
       "crossPlatform": {
-        "title": "Support Multi-Plateforme",
-        "description": "Prend en charge les systèmes Windows, macOS, Linux"
+        "title": "Synchronisation Multi-Appareils",
+        "description": "Accédez à toutes vos configurations SSH sur n'importe quel appareil en connectant simplement votre portefeuille"
       }
     },
-    "techStack": "Pile Technologique",
-    "frontend": "Technologie Frontend",
-    "blockchain": "Blockchain",
-    "security": "Technologie de Sécurité",
     "contact": "Nous Contacter",
-    "github": "Dépôt GitHub",
-    "website": "Site Web Officiel",
-    "email": "Contact Email",
-    "copyright": "Informations de Copyright",
-    "license": "Licence Open Source",
-    "changelog": "Journal des Modifications",
-    "releaseDate": "2024-08-29",
-    "contactEmail": "xiamo@qwq.link",
-    "releaseFeatures": {
-      "basicSSH": "Gestion de configuration SSH de base",
-      "walletIntegration": "Intégration et authentification du portefeuille OKX",
-      "testnetSupport": "Support du testnet X Layer",
-      "encryption": "Protection par chiffrement de bout en bout"
-    }
+    "contactDesc": "Nexion est développé par une équipe professionnelle de technologie Web3, dédiée à fournir des solutions de gestion de serveur sécurisées et efficaces pour les entreprises et développeurs individuels. Nous croyons que la technologie décentralisée redéfinira l'avenir de la gestion d'infrastructure.",
+    "techSupport": "Support Technique",
+    "techSupportDesc": "Services techniques professionnels 7j/7 24h/24",
+    "enterpriseService": "Service Entreprise",
+    "enterpriseServiceDesc": "Solutions personnalisées",
+    "securityReport": "Rapport de Sécurité",
+    "securityReportDesc": "Commentaires sur les vulnérabilités et récompenses",
+    "techStackDesc": "Construit sur l'écosystème OKX Web3",
+    "importantLinks": "Liens Importants",
+    "officialWebsite": "Site Web Officiel",
+    "websiteDesc": "Page d'accueil du produit",
+    "openSource": "Contrat Open Source",
+    "openSourceDesc": "Code de contrat intelligent",
+    "blockchainExplorer": "Explorateur Blockchain",
+    "blockchainExplorerDesc": "Réseau X Layer",
+    "documentation": "Documentation",
+    "documentationDesc": "Centre d'aide",
+    "copyrightAndLicense": "Copyright et Licence",
+    "allRightsReserved": "Tous droits réservés",
+    "licenseDesc": "Ce logiciel est un produit propriétaire protégé par le droit d'auteur et les traités internationaux. Le code de contrat intelligent principal a été open-sourcé sur GitHub sous la licence Apache 2.0. Le corps de l'application est un logiciel commercial et ne peut être copié, distribué ou modifié sans autorisation.",
+    "apacheLicense": "Licence Apache 2.0",
+    "web3Technology": "Technologie Web3",
+    "contactEmail": "xiamo@qwq.link"
   },
   "stats": {
     "title": "Statistiques d'Utilisation",

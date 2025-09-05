@@ -28,47 +28,52 @@
     "connectNow": "今すぐ接続"
   },
   "about": {
-    "version": "v0.1.0 - ベータ",
+    "version": "次世代Web3 SSHマネージャー",
     "productIntro": "製品紹介",
-    "productDesc": "Web3 SSH Managerは、ブロックチェーンベースのSSH設定管理ツールです。従来のSSH管理とWeb3技術を組み合わせ、分散型で安全かつ便利なサーバーアクセス管理ソリューションを提供します。",
+    "productDesc": "Nexionは、従来のサーバー管理とWeb3技術を完璧に融合した革命的なSSH管理ツールです。ブロックチェーン技術により設定の分散型ストレージを実現し、暗号化ウォレットで従来のキー管理を置き換え、企業と開発者により安全で便利なサーバーアクセスソリューションを提供します。",
     "coreFeatures": "コア機能",
     "features": {
       "unifiedAuth": {
-        "title": "統一認証",
-        "description": "従来のSSHキー管理の代わりにWeb3ウォレットを使用"
+        "title": "ウォレット認証",
+        "description": "Web3ウォレットによる安全な認証で、従来のキー管理にさよならを"
       },
       "decentralizedStorage": {
-        "title": "分散ストレージ",
-        "description": "設定データを暗号化してブロックチェーンに保存"
+        "title": "ブロックチェーンストレージ",
+        "description": "設定データをX Layerブロックチェーンに暗号化保存、永続保存"
       },
       "secureConnection": {
-        "title": "セキュア接続",
-        "description": "エンドツーエンド暗号化でデータ伝送のセキュリティを保護"
+        "title": "エンドツーエンド暗号化",
+        "description": "軍事グレードの暗号化アルゴリズムですべてのデータ伝送と保存を保護"
       },
       "crossPlatform": {
-        "title": "クロスプラットフォーム対応",
-        "description": "Windows、macOS、Linuxシステムをサポート"
+        "title": "クロスデバイス同期",
+        "description": "どのデバイスでも、ウォレットを接続するだけですべてのSSH設定にアクセス可能"
       }
     },
-    "techStack": "技術スタック",
-    "frontend": "フロントエンド技術",
-    "blockchain": "ブロックチェーン",
-    "security": "セキュリティ技術",
     "contact": "お問い合わせ",
-    "github": "GitHubリポジトリ",
-    "website": "公式ウェブサイト",
-    "email": "メールでお問い合わせ",
-    "copyright": "著作権情報",
-    "license": "オープンソースライセンス",
-    "changelog": "変更履歴",
-    "releaseDate": "2024-08-29",
-    "contactEmail": "xiamo@qwq.link",
-    "releaseFeatures": {
-      "basicSSH": "基本SSH設定管理",
-      "walletIntegration": "OKXウォレット統合と認証",
-      "testnetSupport": "X Layerテストネットサポート",
-      "encryption": "エンドツーエンド暗号化保護"
-    }
+    "contactDesc": "Nexionは、プロフェッショナルなWeb3技術チームによって開発され、企業と個人開発者に安全で効率的なサーバー管理ソリューションを提供することに専念しています。分散型技術がインフラ管理の未来を再定義すると信じています。",
+    "techSupport": "技術サポート",
+    "techSupportDesc": "7x24プロフェッショナル技術サービス",
+    "enterpriseService": "エンタープライズサービス",
+    "enterpriseServiceDesc": "カスタマイズソリューション",
+    "securityReport": "セキュリティレポート",
+    "securityReportDesc": "脆弱性のフィードバックと報奨",
+    "techStackDesc": "OKX Web3エコシステム上に構築",
+    "importantLinks": "重要なリンク",
+    "officialWebsite": "公式ウェブサイト",
+    "websiteDesc": "製品ホームページ",
+    "openSource": "オープンソースコントラクト",
+    "openSourceDesc": "スマートコントラクトコード",
+    "blockchainExplorer": "ブロックチェーンエクスプローラー",
+    "blockchainExplorerDesc": "X Layerネットワーク",
+    "documentation": "使用説明書",
+    "documentationDesc": "ヘルプセンター",
+    "copyrightAndLicense": "著作権とライセンス",
+    "allRightsReserved": "すべての権利を保有",
+    "licenseDesc": "このソフトウェアは、著作権法と国際条約によって保護された専有製品です。コアスマートコントラクトコードはGitHubでApache 2.0ライセンスの下でオープンソース化されています。アプリケーション本体は商用ソフトウェアであり、許可なく複製、配布、または変更することはできません。",
+    "apacheLicense": "Apache 2.0 License",
+    "web3Technology": "AceXiamo",
+    "contactEmail": "xiamo@qwq.link"
   },
   "stats": {
     "title": "使用統計",

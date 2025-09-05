@@ -28,47 +28,52 @@
     "connectNow": "立即连接"
   },
   "about": {
-    "version": "v0.1.0 - 测试版",
+    "version": "下一代 Web3 SSH 管理器",
     "productIntro": "产品介绍",
-    "productDesc": "Web3 SSH Manager 是一个基于区块链技术的 SSH 配置管理工具。它将传统的 SSH 管理与 Web3 技术相结合，提供去中心化、安全、便捷的服务器访问管理解决方案。",
+    "productDesc": "Nexion 是一款革命性的 SSH 管理工具，将传统服务器管理与 Web3 技术完美融合。通过区块链技术实现配置的去中心化存储，用加密钱包替代传统密钥管理，为企业和开发者提供更安全、便捷的服务器访问解决方案。",
     "coreFeatures": "核心特性",
     "features": {
       "unifiedAuth": {
-        "title": "统一身份认证",
-        "description": "使用 Web3 钱包替代传统 SSH 密钥管理"
+        "title": "钱包身份认证",
+        "description": "使用 Web3 钱包进行安全身份验证，告别传统密钥管理"
       },
       "decentralizedStorage": {
-        "title": "去中心化存储",
-        "description": "配置数据加密存储在区块链上"
+        "title": "区块链存储",
+        "description": "配置数据加密存储在 X Layer 区块链，永不丢失"
       },
       "secureConnection": {
-        "title": "安全连接",
-        "description": "端到端加密保护数据传输安全"
+        "title": "端到端加密",
+        "description": "军用级加密算法保护所有数据传输和存储"
       },
       "crossPlatform": {
-        "title": "跨平台支持",
-        "description": "支持 Windows、macOS、Linux 系统"
+        "title": "跨设备同步",
+        "description": "无论在哪台设备上，只要连接钱包就能访问你的所有SSH配置"
       }
     },
-    "techStack": "技术栈",
-    "frontend": "前端技术",
-    "blockchain": "区块链",
-    "security": "安全技术",
     "contact": "联系我们",
-    "github": "GitHub 仓库",
-    "website": "官方网站",
-    "email": "邮箱联系",
-    "copyright": "版权信息",
-    "license": "开源协议",
-    "changelog": "更新日志",
-    "releaseDate": "2024-08-29",
-    "contactEmail": "xiamo@qwq.link",
-    "releaseFeatures": {
-      "basicSSH": "基础 SSH 配置管理功能",
-      "walletIntegration": "OKX 钱包集成与身份验证",
-      "testnetSupport": "X Layer 测试网支持",
-      "encryption": "端到端加密保护"
-    }
+    "contactDesc": "Nexion 由专业的 Web3 技术团队开发，致力于为企业和个人开发者提供安全、高效的服务器管理解决方案。我们相信去中心化技术将重新定义基础设施管理的未来。",
+    "techSupport": "技术支持",
+    "techSupportDesc": "7x24 专业技术服务",
+    "enterpriseService": "企业服务",
+    "enterpriseServiceDesc": "定制化解决方案",
+    "securityReport": "安全报告",
+    "securityReportDesc": "漏洞反馈与奖励",
+    "techStackDesc": "基于 OKX Web3 生态构建",
+    "importantLinks": "重要链接",
+    "officialWebsite": "官方网站",
+    "websiteDesc": "产品主页",
+    "openSource": "开源合约",
+    "openSourceDesc": "智能合约代码",
+    "blockchainExplorer": "区块链浏览器",
+    "blockchainExplorerDesc": "X Layer 网络",
+    "documentation": "使用文档",
+    "documentationDesc": "帮助中心",
+    "copyrightAndLicense": "版权与许可",
+    "allRightsReserved": "保留所有权利",
+    "licenseDesc": "本软件为专有产品，受版权法和国际条约保护。核心智能合约代码已在 GitHub 开源，采用 Apache 2.0 许可证。应用程序本体为商业软件，未经授权不得复制、分发或修改。",
+    "apacheLicense": "Apache 2.0 License",
+    "web3Technology": "AceXiamo",
+    "contactEmail": "xiamo@qwq.link"
   },
   "stats": {
     "title": "使用统计",
