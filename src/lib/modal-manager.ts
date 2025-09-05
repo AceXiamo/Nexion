@@ -28,7 +28,7 @@ class ModalManager {
     
     // 如果这是第一个弹框，开始监听ESC键
     if (this.modalStack.length === 1) {
-      document.addEventListener('keydown', this.handleKeyDown)
+      document.addEventListener('keydown', this.handleKeyDown, { capture: true })
     }
   }
 
@@ -44,7 +44,7 @@ class ModalManager {
     
     // 如果没有弹框了，停止监听ESC键
     if (this.modalStack.length === 0) {
-      document.removeEventListener('keydown', this.handleKeyDown)
+      document.removeEventListener('keydown', this.handleKeyDown, { capture: true } as any)
     }
   }
 
@@ -79,6 +79,13 @@ class ModalManager {
    */
   isTopModal(modalId: string): boolean {
     return this.modalStack.length > 0 && this.modalStack[this.modalStack.length - 1] === modalId
+  }
+
+  /**
+   * 检查是否有模态框打开
+   */
+  hasModalsOpen(): boolean {
+    return this.modalStack.length > 0
   }
 }
 

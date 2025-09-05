@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState, useId } from 'react'
+import { ReactNode, useEffect, useState, useId, useRef } from 'react'
 import { Icon } from '@iconify/react'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
 import { modalManager } from '@/lib/modal-manager'
@@ -31,6 +31,7 @@ export function Modal({
   const modalId = useId()
   const [isClosing, setIsClosing] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
+  const modalContentRef = useRef<HTMLDivElement>(null)
 
   // Handle modal registration and ESC key
   useEffect(() => {
@@ -79,6 +80,30 @@ export function Modal({
 
     return () => {
       document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
+  // Focus management
+  useEffect(() => {
+    if (isOpen && modalContentRef.current) {
+      // Wait for animation to complete before focusing
+      const timer = setTimeout(() => {
+        if (modalContentRef.current) {
+          // First try to find focusable elements like input, button, etc.
+          const focusableElement = modalContentRef.current.querySelector(
+            'input, button, select, textarea, [tabindex]:not([tabindex="-1"])'
+          ) as HTMLElement
+          
+          if (focusableElement) {
+            focusableElement.focus()
+          } else {
+            // If no focusable element found, focus the modal container itself
+            modalContentRef.current.focus()
+          }
+        }
+      }, 300) // Wait for animation to complete
+      
+      return () => clearTimeout(timer)
     }
   }, [isOpen])
 
@@ -190,6 +215,7 @@ export function Modal({
           {/* Modal container */}
           <div className="flex min-h-screen items-center justify-center p-4">
             <motion.div
+              ref={modalContentRef}
               key="modal-content"
               className={`
                 relative w-full ${getSizeClass()} 
@@ -200,6 +226,7 @@ export function Modal({
               initial="hidden"
               animate={isOpen && !isClosing ? "visible" : "exit"}
               exit="exit"
+              tabIndex={-1}
             >
               {/* Modal header */}
               {(title || showCloseButton) && (
