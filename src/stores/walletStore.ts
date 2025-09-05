@@ -64,6 +64,11 @@ export const useWalletStore = create<WalletState>()(
         const result = await walletConnect.connect()
         
         if (result) {
+          // 连接成功后清理注册缓存，确保重新查询注册状态
+          console.log('🧹 钱包连接成功，清理 userRegistrationStore 缓存')
+          const { useUserRegistrationStore } = await import('./userRegistrationStore')
+          useUserRegistrationStore.getState().clearRegistrationCache()
+          
           set({
             isConnected: true,
             isConnecting: false,

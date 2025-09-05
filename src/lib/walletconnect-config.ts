@@ -9,7 +9,7 @@ export const WALLETCONNECT_PROJECT_ID = '3805e25bdd69f068b33004da1054407d'
 export const projectMetadata = {
   name: 'Nexion',
   description: 'A blockchain-based SSH configuration management tool',
-  url: 'https://nexion.local',
+  url: 'file://',
   icons: ['https://avatars.githubusercontent.com/u/37784886']
 }
 

@@ -19,7 +19,7 @@ export function AboutView() {
       <div className="p-4">
         <div className="flex items-center space-x-4 mb-6">
           <div className="w-12 h-12 rounded-lg border border-blue-400/30 flex items-center justify-center overflow-hidden">
-            <img src="/app-icon.png" alt="Nexion Logo" className="w-full h-full object-contain" />
+            <img src="https://nexion.acexiamo.com/logo.png" alt="Nexion Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent">Nexion</h1>

@@ -10,6 +10,7 @@ import { sshEventDispatcher } from '@/services/ssh-event-dispatcher'
 import { sessionStore } from '@/store/session-store'
 import { terminalPersistenceManager } from '@/services/terminal-persistence-manager'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { useUserRegistrationStore } from '@/stores/userRegistrationStore'
 
 function AppContent() {
   const location = useLocation()
@@ -21,6 +22,11 @@ function AppContent() {
   // 初始化全局SSH事件分发器和会话状态管理
   useEffect(() => {
     console.log('🚀 初始化应用，启动SSH事件分发器')
+    
+    // 应用启动时清理所有store状态，防止缓存污染
+    console.log('🧹 应用启动时清理 userRegistrationStore 缓存')
+    useUserRegistrationStore.getState().clearRegistrationCache()
+    
     sshEventDispatcher.initialize()
 
     // 应用退出时清理
