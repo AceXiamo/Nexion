@@ -1,5 +1,6 @@
 import { ShortcutKeyEvent, ShortcutAction, KeyboardShortcut, getPlatform } from '../types/keyboard-shortcuts';
 import { settingsStore } from '../store/settings-store';
+import { modalManager } from '../lib/modal-manager';
 
 export type ShortcutHandler = (action: ShortcutAction, event: KeyboardEvent) => void;
 
@@ -44,6 +45,11 @@ export class KeyboardShortcutManager {
     const settings = settingsStore.getKeyboardShortcuts();
     
     if (!settings.enabled) {
+      return;
+    }
+
+    // Don't handle shortcuts if there are modals open (let modal-manager handle ESC)
+    if (modalManager.hasModalsOpen()) {
       return;
     }
 

@@ -36,7 +36,8 @@ export type ShortcutAction =
   | 'previousTab'
   | 'newSession'
   | 'closeSession'
-  | 'duplicateSession';
+  | 'duplicateSession'
+  | 'openFileTransfer';
 
 export const DEFAULT_SHORTCUTS: Record<ShortcutAction, KeyboardShortcut> = {
   switchToTab1: {
@@ -120,24 +121,24 @@ export const DEFAULT_SHORTCUTS: Record<ShortcutAction, KeyboardShortcut> = {
     category: 'navigation',
     action: 'switchToTab9'
   },
-  nextTab: {
-    id: 'nextTab',
-    name: '下一个标签页',
-    description: '切换到下一个标签页',
-    defaultKey: 'Ctrl+Tab',
-    currentKey: 'Ctrl+Tab',
-    category: 'navigation',
-    action: 'nextTab'
-  },
-  previousTab: {
-    id: 'previousTab',
-    name: '上一个标签页',
-    description: '切换到上一个标签页',
-    defaultKey: 'Ctrl+Shift+Tab',
-    currentKey: 'Ctrl+Shift+Tab',
-    category: 'navigation',
-    action: 'previousTab'
-  },
+  // nextTab: {
+  //   id: 'nextTab',
+  //   name: '下一个标签页',
+  //   description: '切换到下一个标签页',
+  //   defaultKey: 'Ctrl+Tab',
+  //   currentKey: 'Ctrl+Tab',
+  //   category: 'navigation',
+  //   action: 'nextTab'
+  // },
+  // previousTab: {
+  //   id: 'previousTab',
+  //   name: '上一个标签页',
+  //   description: '切换到上一个标签页',
+  //   defaultKey: 'Ctrl+Shift+Tab',
+  //   currentKey: 'Ctrl+Shift+Tab',
+  //   category: 'navigation',
+  //   action: 'previousTab'
+  // },
   newSession: {
     id: 'newSession',
     name: '新建会话',
@@ -156,14 +157,23 @@ export const DEFAULT_SHORTCUTS: Record<ShortcutAction, KeyboardShortcut> = {
     category: 'session',
     action: 'closeSession'
   },
-  duplicateSession: {
-    id: 'duplicateSession',
-    name: '复制会话',
-    description: '复制当前会话配置创建新会话',
-    defaultKey: 'Ctrl+Shift+T',
-    currentKey: 'Ctrl+Shift+T',
+  // duplicateSession: {
+  //   id: 'duplicateSession',
+  //   name: '复制会话',
+  //   description: '复制当前会话配置创建新会话',
+  //   defaultKey: 'Ctrl+Shift+T',
+  //   currentKey: 'Ctrl+Shift+T',
+  //   category: 'session',
+  //   action: 'duplicateSession'
+  // },
+  openFileTransfer: {
+    id: 'openFileTransfer',
+    name: 'Open File Transfer',
+    description: 'Open the file transfer modal for the active session',
+    defaultKey: 'Ctrl+E',
+    currentKey: 'Ctrl+E',
     category: 'session',
-    action: 'duplicateSession'
+    action: 'openFileTransfer'
   }
 };
 
