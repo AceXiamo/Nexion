@@ -6,11 +6,6 @@
   },
   {
     "inputs": [],
-    "name": "ArrayLengthMismatch",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "ConfigNotActive",
     "type": "error"
   },
@@ -36,7 +31,7 @@
   },
   {
     "inputs": [],
-    "name": "InvalidBatchSize",
+    "name": "InsufficientFee",
     "type": "error"
   },
   {
@@ -87,29 +82,9 @@
     "type": "error"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint64[]",
-        "name": "configIds",
-        "type": "uint64[]"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchConfigsUpdated",
-    "type": "event"
+    "inputs": [],
+    "name": "WithdrawalFailed",
+    "type": "error"
   },
   {
     "anonymous": false,
@@ -264,6 +239,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "addConfigFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "string",
@@ -279,44 +267,49 @@
         "type": "uint64"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "developer",
+    "outputs": [
       {
-        "internalType": "uint64[]",
-        "name": "configIds",
-        "type": "uint64[]"
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
-    "name": "batchRevokeConfigs",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint64[]",
-        "name": "configIds",
-        "type": "uint64[]"
-      },
-      {
-        "internalType": "string[]",
-        "name": "newEncryptedData",
-        "type": "string[]"
-      }
-    ],
-    "name": "batchUpdateConfigs",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "getActiveConfigs",
     "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getFees",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "",
@@ -416,6 +409,19 @@
   {
     "inputs": [],
     "name": "getTotalConfigs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTotalFeesCollected",
     "outputs": [
       {
         "internalType": "uint256",
@@ -531,7 +537,7 @@
     "inputs": [],
     "name": "registerUser",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -548,6 +554,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "registrationFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -576,6 +595,19 @@
   {
     "inputs": [],
     "name": "totalConfigs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalFeesCollected",
     "outputs": [
       {
         "internalType": "uint256",
@@ -620,6 +652,42 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "updateConfigFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newRegistrationFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newAddConfigFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newUpdateConfigFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateFees",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint64",
@@ -633,6 +701,13 @@
       }
     ],
     "name": "updateSSHConfig",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawFees",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

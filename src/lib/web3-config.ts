@@ -102,7 +102,7 @@ export const wagmiConfig = createConfig({
 // Smart Contract Addresses
 export const CONTRACT_ADDRESSES = {
   SSH_MANAGER: {
-    [xLayerTestnet.id]: '0x371f6716CD26Bf8e27Dd5322c2B4341Aaf1CedfA',
+    [xLayerTestnet.id]: '0x9871a29FDEC2121b32Cb311C800D0a99949A1A85',
     [xLayerMainnet.id]: '', // Mainnet address to be deployed
   },
 } as const
