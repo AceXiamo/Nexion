@@ -31,7 +31,7 @@
   "walletList": "OKX Wallet、MetaMask、Trust Wallet、TokenPocket",
   "registration": {
     "title": "Nexionへようこそ",
-    "description": "SSH設定管理サービスをご利用いただくには、まずウォレットアドレスを登録してください。登録は完全に無料で、最小限のネットワーク手数料（約0.0006 OKB）のみが必要です。",
+    "description": "SSH設定管理サービスをご利用いただくには、まずウォレットアドレスを登録してください。",
     "walletRequired": "ウォレット接続が必要です",
     "registerButton": "今すぐウォレットを登録",
     "registering": "登録中..."

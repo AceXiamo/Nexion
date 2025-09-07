@@ -31,7 +31,7 @@
   "walletList": "OKX Wallet, MetaMask, Trust Wallet, TokenPocket",
   "registration": {
     "title": "Welcome to Nexion",
-    "description": "Please register your wallet address first to start using the SSH configuration management service. The registration process is completely free, only requiring minimal network fees (about 0.0006 OKB).",
+    "description": "Please register your wallet address first to start using the SSH configuration management service.",
     "walletRequired": "Wallet connection required",
     "registerButton": "Register Wallet Now",
     "registering": "Registering..."

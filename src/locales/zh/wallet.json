@@ -31,7 +31,7 @@
   "walletList": "OKX Wallet、MetaMask、Trust Wallet、TokenPocket",
   "registration": {
     "title": "欢迎使用 Web3 SSH Manager",
-    "description": "请先注册你的钱包地址以开始使用 SSH 配置管理服务。注册过程完全免费，仅需支付极少的网络手续费（约 0.0006 OKB）。",
+    "description": "请先注册你的钱包地址以开始使用 SSH 配置管理服务。",
     "walletRequired": "需要连接钱包",
     "registerButton": "立即注册钱包",
     "registering": "正在注册..."

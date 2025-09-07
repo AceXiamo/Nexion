@@ -31,7 +31,7 @@
   "walletList": "OKX Wallet, MetaMask, Trust Wallet, TokenPocket",
   "registration": {
     "title": "Bienvenue sur Nexion",
-    "description": "Veuillez d'abord enregistrer votre adresse de portefeuille pour commencer à utiliser le service de gestion de configuration SSH. Le processus d'inscription est entièrement gratuit, ne nécessitant que des frais de réseau minimaux (environ 0,0006 OKB).",
+    "description": "Veuillez d'abord enregistrer votre adresse de portefeuille pour commencer à utiliser le service de gestion de configuration SSH.",
     "walletRequired": "Connexion du portefeuille requise",
     "registerButton": "Enregistrer le portefeuille maintenant",
     "registering": "Inscription en cours..."
