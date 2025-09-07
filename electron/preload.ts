@@ -62,11 +62,21 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   system: {
     getUserHomeDirectory: () => ipcRenderer.invoke('system:getUserHomeDirectory'),
   },
+
+  // 数据存储相关方法
+  store: {
+    get: (key: string) => ipcRenderer.invoke('store:get', key),
+    set: (key: string, value: any) => ipcRenderer.invoke('store:set', key, value),
+    delete: (key: string) => ipcRenderer.invoke('store:delete', key),
+    clear: () => ipcRenderer.invoke('store:clear'),
+    has: (key: string) => ipcRenderer.invoke('store:has', key),
+  },
 })
 
 // Expose ElectronAPI for WalletConnect
 contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url: string) => ipcRenderer.invoke('wallet:openExternal', url),
+  closeWindow: () => ipcRenderer.invoke('window:close'),
 })
 
 // Expose wallet detection and debugging utilities

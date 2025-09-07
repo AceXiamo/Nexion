@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import os from 'node:os'
+import Store from 'electron-store'
 import { SSHSessionManager } from './ssh-session-manager'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -27,6 +28,11 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 
 let win: BrowserWindow | null
 let sshManager: SSHSessionManager | null = null
+
+// 初始化数据存储
+const store = new Store({
+  name: 'web3-ssh-manager-data'
+})
 
 function createWindow() {
   win = new BrowserWindow({
@@ -70,7 +76,7 @@ function createWindow() {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
   })
 
-  // win.webContents.openDevTools()
+  win.webContents.openDevTools()
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
     // Open developer tools in development mode
@@ -655,6 +661,82 @@ ipcMain.handle('wallet:openExternal', async (_event, url: string) => {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to open external URL'
+    }
+  }
+})
+
+// Window management IPC handlers
+ipcMain.handle('window:close', async (_event) => {
+  try {
+    if (win) {
+      win.close()
+    }
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to close window'
+    }
+  }
+})
+
+// 数据存储 IPC handlers
+ipcMain.handle('store:get', async (_event, key: string) => {
+  try {
+    const data = store.get(key)
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get data from store'
+    }
+  }
+})
+
+ipcMain.handle('store:set', async (_event, key: string, value: any) => {
+  try {
+    store.set(key, value)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to set data in store'
+    }
+  }
+})
+
+ipcMain.handle('store:delete', async (_event, key: string) => {
+  try {
+    store.delete(key)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete data from store'
+    }
+  }
+})
+
+ipcMain.handle('store:clear', async (_event) => {
+  try {
+    store.clear()
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to clear store'
+    }
+  }
+})
+
+ipcMain.handle('store:has', async (_event, key: string) => {
+  try {
+    const has = store.has(key)
+    return { success: true, has }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to check key existence'
     }
   }
 })
