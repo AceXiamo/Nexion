@@ -72,6 +72,7 @@ export default defineConfig({
   define: {
     global: 'globalThis',
     'process.env': {},
+    __BUILD_NETWORK__: JSON.stringify(process.env.BUILD_NETWORK || 'testnet'),
   },
   optimizeDeps: {
     include: [

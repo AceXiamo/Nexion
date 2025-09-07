@@ -1,11 +1,15 @@
 {
-  "name": "web3-ssh-manager",
+  "name": "nexion",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:testnet": "BUILD_NETWORK=testnet vite",
+    "dev:mainnet": "BUILD_NETWORK=mainnet vite",
     "build": "vite build && electron-builder",
+    "build:testnet": "BUILD_NETWORK=testnet vite build && electron-builder",
+    "build:mainnet": "BUILD_NETWORK=mainnet vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
