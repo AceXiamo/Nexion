@@ -98,7 +98,6 @@ export class NativeWalletConnect {
         showQrModal: false,
         rpcMap: {
           [chains[0].id]: chains[0].rpcUrls.default.http[0],
-          [chains[1].id]: chains[1].rpcUrls.default.http[0],
         }
       })
 
@@ -323,21 +322,6 @@ export class NativeWalletConnect {
     }
   }
 
-  async switchChain(chainId: number): Promise<void> {
-    if (!this.provider || !this.connectionState.isConnected) {
-      throw new Error('Wallet not connected')
-    }
-
-    try {
-      await this.provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${chainId.toString(16)}` }],
-      })
-    } catch (error) {
-      console.error('Error switching chain:', error)
-      throw error
-    }
-  }
 
   async signMessage(message: string): Promise<string> {
     if (!this.provider || !this.connectionState.account) {

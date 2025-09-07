@@ -1,5 +1,5 @@
 import { createConfig, http } from 'wagmi'
-import { xLayerTestnet, xLayerMainnet } from './web3-config'
+import { CURRENT_CHAIN } from './web3-config'
 import { walletConnect } from 'wagmi/connectors'
 
 // WalletConnect Project ID
@@ -10,11 +10,11 @@ export const projectMetadata = {
   name: 'Nexion',
   description: 'A blockchain-based SSH configuration management tool',
   url: 'file://',
-  icons: ['https://avatars.githubusercontent.com/u/37784886']
+  icons: ['https://nexion.acexiamo.com/logo.png']
 }
 
-// Supported chains
-export const chains = [xLayerTestnet, xLayerMainnet] as const
+// Single chain based on build configuration
+export const chains = [CURRENT_CHAIN] as const
 
 // Environment detection
 export const isElectron = typeof window !== 'undefined' && window.process?.type === 'renderer'
@@ -31,7 +31,6 @@ export const walletConnectConfig = createConfig({
     }),
   ],
   transports: {
-    [xLayerTestnet.id]: http(),
-    [xLayerMainnet.id]: http(),
+    [CURRENT_CHAIN.id]: http(),
   },
 })

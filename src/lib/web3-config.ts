@@ -2,6 +2,10 @@ import { defineChain } from 'viem'
 import { createConfig, http } from 'wagmi'
 import { injected } from 'wagmi/connectors'
 
+// Build-time network selection (must be defined first)
+const BUILD_NETWORK = __BUILD_NETWORK__ || 'testnet'
+console.log('BUILD_NETWORK', BUILD_NETWORK)
+
 // X Layer Testnet Configuration
 export const xLayerTestnet = defineChain({
   id: 1952,
@@ -47,9 +51,27 @@ export const xLayerMainnet = defineChain({
   },
 })
 
-// Wagmi Configuration
+// Determine current network based on build configuration (must be after chain definitions)
+export const CURRENT_CHAIN = BUILD_NETWORK === 'mainnet' ? xLayerMainnet : xLayerTestnet
+export const CURRENT_CHAIN_ID = CURRENT_CHAIN.id
+
+// Smart Contract Addresses
+export const CONTRACT_ADDRESSES = {
+  SSH_MANAGER: {
+    [xLayerTestnet.id]: '0x9871a29FDEC2121b32Cb311C800D0a99949A1A85',
+    [xLayerMainnet.id]: '0xFf9EAe146001597a8Dd8424DE7D3Ef0bE9B1762a',
+  },
+} as const
+
+// Current contract address based on build network
+export const CURRENT_CONTRACT_ADDRESS = CONTRACT_ADDRESSES.SSH_MANAGER[CURRENT_CHAIN_ID]
+
+// Legacy export for backward compatibility
+export const DEFAULT_CHAIN = CURRENT_CHAIN
+
+// Wagmi Configuration - Single Network
 export const wagmiConfig = createConfig({
-  chains: [xLayerTestnet, xLayerMainnet],
+  chains: [CURRENT_CHAIN],
   connectors: [
     injected({
       target() {
@@ -57,7 +79,9 @@ export const wagmiConfig = createConfig({
         console.log('Checking wallet availability:', {
           okxwallet: typeof window.okxwallet,
           ethereum: typeof window.ethereum,
-          isElectron: typeof window !== 'undefined' && window.process?.type === 'renderer'
+          isElectron: typeof window !== 'undefined' && window.process?.type === 'renderer',
+          buildNetwork: BUILD_NETWORK,
+          currentChain: CURRENT_CHAIN.name
         })
         
         // Try OKX wallet first
@@ -94,21 +118,9 @@ export const wagmiConfig = createConfig({
     }),
   ],
   transports: {
-    [xLayerTestnet.id]: http(),
-    [xLayerMainnet.id]: http(),
+    [CURRENT_CHAIN.id]: http(),
   },
 })
-
-// Smart Contract Addresses
-export const CONTRACT_ADDRESSES = {
-  SSH_MANAGER: {
-    [xLayerTestnet.id]: '0x9871a29FDEC2121b32Cb311C800D0a99949A1A85',
-    [xLayerMainnet.id]: '', // Mainnet address to be deployed
-  },
-} as const
-
-// Default Network
-export const DEFAULT_CHAIN = xLayerTestnet
 
 // Type Definitions
 declare global {
@@ -120,4 +132,5 @@ declare global {
       logWalletProviders: () => void
     }
   }
+  const __BUILD_NETWORK__: string
 }
