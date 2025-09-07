@@ -3,7 +3,7 @@ import { createPublicClient, http, encodeFunctionData } from 'viem'
 import { SSH_MANAGER_ABI, getContractAddress } from '@/lib/contracts'
 import { useWalletStore } from '@/stores/walletStore'
 import { SSHConfig, UserStats } from '@/types/ssh'
-import { xLayerTestnet } from '@/lib/web3-config'
+import { xLayerTestnet, xLayerMainnet } from '@/lib/web3-config'
 
 export function useSSHContract() {
   const { account, chainId, sendTransaction } = useWalletStore()
@@ -14,8 +14,8 @@ export function useSSHContract() {
   const [isConfirmed, setIsConfirmed] = useState(false)
   const [hash, setHash] = useState<string | undefined>()
 
-  // Create clients
-  const currentChain = chainId === xLayerTestnet.id ? xLayerTestnet : xLayerTestnet
+  // Create clients - 修复：根据chainId使用正确的链配置
+  const currentChain = chainId === xLayerMainnet.id ? xLayerMainnet : xLayerTestnet
 
   const publicClient = createPublicClient({
     chain: currentChain,

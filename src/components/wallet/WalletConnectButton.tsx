@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { useWalletStore, useWalletSelectors } from '@/stores/walletStore'
 import { QRCodeModal } from './QRCodeModal'
-import { xLayerTestnet } from '@/lib/web3-config'
 
 export function WalletConnectButton() {
   const { t } = useTranslation()
@@ -15,7 +14,6 @@ export function WalletConnectButton() {
     error,
     connect,
     disconnect,
-    switchChain,
     setShowQrCode,
     showQrCode,
     clearError,
@@ -23,11 +21,9 @@ export function WalletConnectButton() {
   } = useWalletStore()
   
   const {
-    isWrongNetwork,
     shortAddress,
     canConnect,
-    canDisconnect,
-    needsNetworkSwitch
+    canDisconnect
   } = useWalletSelectors()
   
   const [showDropdown, setShowDropdown] = useState(false)
@@ -52,13 +48,6 @@ export function WalletConnectButton() {
     }
   }
 
-  const handleSwitchNetwork = async () => {
-    try {
-      await switchChain(xLayerTestnet.id)
-    } catch (error) {
-      console.error('Network switch failed:', error)
-    }
-  }
 
   const handleCloseQrModal = () => {
     if (isConnecting) {
@@ -75,17 +64,6 @@ export function WalletConnectButton() {
       <>
         <div className="relative">
           <div className="flex items-center space-x-4">
-            {/* Network Switch Button */}
-            {needsNetworkSwitch && (
-              <button
-                onClick={handleSwitchNetwork}
-                className="bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-500/20 transition-all duration-200 flex items-center space-x-2"
-              >
-                <Icon icon="mdi:alert-circle" className="w-4 h-4" />
-                <span>{t('wallet:switchNetwork')}</span>
-              </button>
-            )}
-
             {/* Wallet Info */}
             <button
               onClick={() => setShowDropdown(!showDropdown)}
@@ -97,7 +75,7 @@ export function WalletConnectButton() {
               <div className="text-left">
                 <div className="font-medium text-white text-sm tracking-wide">{shortAddress}</div>
                 <div className="text-xs text-neutral-400">
-                  {needsNetworkSwitch ? t('wallet:networkError') : 'WalletConnect'}
+                  WalletConnect
                 </div>
               </div>
               <Icon 
@@ -124,12 +102,6 @@ export function WalletConnectButton() {
                   <div className="flex justify-between">
                     <span className="text-xs text-neutral-400">{t('wallet:walletAddress')}</span>
                     <span className="text-xs text-white font-mono">{shortAddress}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs text-neutral-400">{t('wallet:networkStatus')}</span>
-                    <span className={`text-xs font-medium ${needsNetworkSwitch ? 'text-red-400' : 'text-lime-400'}`}>
-                      {needsNetworkSwitch ? t('wallet:wrongNetwork') : 'X Layer Testnet'}
-                    </span>
                   </div>
                 </div>
               </div>
