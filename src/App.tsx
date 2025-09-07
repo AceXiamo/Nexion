@@ -9,8 +9,8 @@ import { TerminalContainer } from '@/components/TerminalContainer'
 import { sshEventDispatcher } from '@/services/ssh-event-dispatcher'
 import { sessionStore } from '@/store/session-store'
 import { terminalPersistenceManager } from '@/services/terminal-persistence-manager'
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
-import { useUserRegistrationStore } from '@/stores/userRegistrationStore'
+import { useKeyboardShortcuts, useShortcutHandler } from '@/hooks/useKeyboardShortcuts'
+import { useSSHSessions } from '@/hooks/useSSHSessions'
 
 function AppContent() {
   const location = useLocation()
@@ -27,13 +27,31 @@ function AppContent() {
   // 初始化键盘快捷键管理器
   useKeyboardShortcuts()
 
+  // 获取SSH会话信息用于全局快捷键处理
+  const { activeSessionId, closeSession } = useSSHSessions()
+
+  // 全局 closeSession 快捷键处理
+  const handleGlobalCloseShortcut = () => {
+    if (activeSessionId) {
+      // 有活跃会话时关闭当前会话
+      closeSession(activeSessionId)
+    } else {
+      // 没有活跃会话时关闭窗口
+      if (window.electronAPI && typeof window.electronAPI === 'object' && 'closeWindow' in window.electronAPI) {
+        ;(window.electronAPI as any).closeWindow()
+      } else {
+        // 如果没有closeWindow API，尝试其他方式
+        window.close()
+      }
+    }
+  }
+
+  // 注册全局快捷键
+  useShortcutHandler('closeSession', handleGlobalCloseShortcut, [activeSessionId, closeSession])
+
   // 初始化全局SSH事件分发器和会话状态管理
   useEffect(() => {
     console.log('🚀 初始化应用，启动SSH事件分发器')
-
-    // 应用启动时清理所有store状态，防止缓存污染
-    console.log('🧹 应用启动时清理 userRegistrationStore 缓存')
-    useUserRegistrationStore.getState().clearRegistrationCache()
 
     sshEventDispatcher.initialize()
 

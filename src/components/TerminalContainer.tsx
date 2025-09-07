@@ -50,9 +50,8 @@ export function TerminalContainer() {
     }
   }
 
-  // Register keyboard shortcuts
+  // Register keyboard shortcuts (closeSession 已移到全局处理)
   useShortcutHandler('newSession', handleNewSession, [navigate])
-  useShortcutHandler('closeSession', closeCurrentSession, [closeCurrentSession])
   useShortcutHandler('duplicateSession', duplicateCurrentSession, [duplicateCurrentSession])
   useShortcutHandler('nextTab', switchToNextSession, [switchToNextSession])
   useShortcutHandler('previousTab', switchToPreviousSession, [switchToPreviousSession])

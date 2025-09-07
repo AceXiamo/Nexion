@@ -99,11 +99,6 @@ export function SSHTabContainer() {
     handleCreateSession()
   }
 
-  const handleCloseSessionShortcut = () => {
-    if (activeSessionId) {
-      closeSession(activeSessionId)
-    }
-  }
 
   const handleDuplicateSessionShortcut = async () => {
     if (activeSessionId) {
@@ -136,9 +131,8 @@ export function SSHTabContainer() {
     switchSession(sessions[prevIndex].id)
   }
 
-  // Register keyboard shortcuts
+  // Register keyboard shortcuts (closeSession 已移到全局处理)
   useShortcutHandler('newSession', handleNewSessionShortcut, [])
-  useShortcutHandler('closeSession', handleCloseSessionShortcut, [activeSessionId])
   useShortcutHandler('duplicateSession', handleDuplicateSessionShortcut, [activeSessionId, sessions])
   useShortcutHandler('nextTab', handleNextTabShortcut, [sessions, activeSessionId])
   useShortcutHandler('previousTab', handlePreviousTabShortcut, [sessions, activeSessionId])
