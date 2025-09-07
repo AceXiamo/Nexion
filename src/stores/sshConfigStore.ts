@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import { electronPersist } from './electronPersist'
 import type { SSHConfigInput, DecryptedSSHConfig, SSHConfig } from '@/types/ssh'
 
 export interface SSHConfigState {
@@ -34,13 +35,14 @@ export interface SSHConfigState {
     updateFn: (configId: string, config: SSHConfigInput) => Promise<void>
   ) => Promise<void>
   deleteConfig: (configId: string, deleteFn: (configId: string) => Promise<void>) => Promise<void>
-  clearConfigCache: (account?: string) => void
+  clearConfigCache: (account?: string) => Promise<void>
   setConfigs: (configs: DecryptedSSHConfig[]) => void
   clearError: () => void
 }
 
 export const useSSHConfigStore = create<SSHConfigState>()(
-  subscribeWithSelector((set, get) => ({
+  electronPersist(
+    subscribeWithSelector((set, get) => ({
     // 初始状态
     configs: [],
     isLoading: false,
@@ -230,7 +232,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
     },
     
     // 清空配置缓存
-    clearConfigCache: (account?: string) => {
+    clearConfigCache: async (account?: string) => {
       if (account) {
         const { lastFetchedAccount } = get()
         if (lastFetchedAccount === account) {
@@ -254,6 +256,15 @@ export const useSSHConfigStore = create<SSHConfigState>()(
         })
         console.log('Cleared all SSH config cache')
       }
+      
+      // 清除持久化存储
+      try {
+        if (window.ipcRenderer?.store) {
+          await window.ipcRenderer.store.delete('ssh-config-store')
+        }
+      } catch (error) {
+        console.error('Failed to clear SSH config cache from electron-store:', error)
+      }
     },
     
     // 直接设置配置数据
@@ -272,12 +283,23 @@ export const useSSHConfigStore = create<SSHConfigState>()(
     clearError: () => {
       set({ error: null })
     }
-  }))
-)
+  })),
+  {
+    name: 'ssh-config-store',
+    partialize: (state) => ({
+      configs: state.configs,
+      lastFetchedAccount: state.lastFetchedAccount,
+      lastFetchTime: state.lastFetchTime,
+      totalConfigs: state.totalConfigs,
+      activeConfigs: state.activeConfigs,
+    }),
+  }
+))
 
 // 计算选择器
 export const useSSHConfigSelectors = () => {
   const state = useSSHConfigStore()
+  console.log('state', state)
   
   return {
     // 是否有缓存数据

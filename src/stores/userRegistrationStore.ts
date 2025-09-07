@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import { electronPersist } from './electronPersist'
 
 export interface UserRegistrationState {
   // 状态
@@ -16,7 +17,7 @@ export interface UserRegistrationState {
   // 动作
   checkRegistrationStatus: (account: string, checkFn: (account: string) => Promise<boolean>) => Promise<void>
   setRegistrationStatus: (status: boolean) => void
-  clearRegistrationCache: () => void
+  clearRegistrationCache: () => Promise<void>
   setShowRegistrationPrompt: (show: boolean) => void
   handleRegister: (registerFn: () => Promise<void>) => Promise<void>
   setRegistrationConfirmed: (confirmed: boolean) => void
@@ -24,7 +25,8 @@ export interface UserRegistrationState {
 }
 
 export const useUserRegistrationStore = create<UserRegistrationState>()(
-  subscribeWithSelector((set, get) => ({
+  electronPersist(
+    subscribeWithSelector((set, get) => ({
     // 初始状态
     isRegistered: null,
     isLoading: false,
@@ -92,13 +94,22 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
     },
     
     // 清空注册缓存
-    clearRegistrationCache: () => {
+    clearRegistrationCache: async () => {
       set({
         isRegistered: null,
         lastCheckedAccount: null,
         showRegistrationPrompt: false,
         error: null
       })
+      
+      // 清除持久化存储
+      try {
+        if (window.ipcRenderer?.store) {
+          await window.ipcRenderer.store.delete('user-registration-store')
+        }
+      } catch (error) {
+        console.error('Failed to clear registration cache from electron-store:', error)
+      }
     },
     
     // 设置注册提示显示状态
@@ -144,8 +155,15 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
     clearError: () => {
       set({ error: null })
     }
-  }))
-)
+  })),
+  {
+    name: 'user-registration-store',
+    partialize: (state) => ({
+      isRegistered: state.isRegistered,
+      lastCheckedAccount: state.lastCheckedAccount,
+    }),
+  }
+))
 
 // 计算选择器
 export const useUserRegistrationSelectors = () => {
