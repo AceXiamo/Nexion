@@ -15,18 +15,26 @@ import { useUserRegistrationStore } from '@/stores/userRegistrationStore'
 function AppContent() {
   const location = useLocation()
   const navigate = useNavigate()
-  
+
+  // 处理根路径重定向
+  useEffect(() => {
+    if (location.pathname === '/') {
+      console.log('Redirecting from / to /connections')
+      navigate('/connections', { replace: true })
+    }
+  }, [location.pathname, navigate])
+
   // 初始化键盘快捷键管理器
   useKeyboardShortcuts()
 
   // 初始化全局SSH事件分发器和会话状态管理
   useEffect(() => {
     console.log('🚀 初始化应用，启动SSH事件分发器')
-    
+
     // 应用启动时清理所有store状态，防止缓存污染
     console.log('🧹 应用启动时清理 userRegistrationStore 缓存')
     useUserRegistrationStore.getState().clearRegistrationCache()
-    
+
     sshEventDispatcher.initialize()
 
     // 应用退出时清理
@@ -60,13 +68,15 @@ function AppContent() {
       }}
     >
       <Routes>
-        <Route path="/" element={<Navigate to="/connections" replace />} />
+        {/* 移除根路径的 Navigate，直接处理 /connections */}
         <Route path="/connections" element={<ConnectionsView />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/stats" element={<StatsView />} />
         <Route path="/about" element={<AboutView />} />
         <Route path="/terminal/:sessionId" element={<TerminalContainer />} />
         <Route path="/terminal" element={<TerminalContainer />} />
+        {/* 添加一个通配符路由作为后备 */}
+        <Route path="*" element={<Navigate to="/connections" replace />} />
       </Routes>
     </Layout>
   )
