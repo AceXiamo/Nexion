@@ -51,7 +51,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
+        cache: 'yarn' # 使用 yarn 缓存
     
     # Windows specific setup
     - name: Setup Python (Windows)
@@ -80,20 +80,19 @@ jobs:
         sudo apt-get install -y build-essential python3-dev
     
     - name: Install dependencies
-      run: npm ci
+      run: yarn install --frozen-lockfile
       env:
         # 原生模块编译配置
         npm_config_msvs_version: 2022
-        npm_config_node_gyp: npm
         PYTHON: python3
     
     - name: Run lint
-      run: npm run lint
+      run: yarn lint
       continue-on-error: true
     
     # 构建主网版本
     - name: Build Mainnet Application
-      run: npm run build:mainnet
+      run: yarn build:mainnet
       env:
         BUILD_NETWORK: mainnet
         # macOS 代码签名
