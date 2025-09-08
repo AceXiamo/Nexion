@@ -212,8 +212,6 @@ jobs:
           
           This is a cross-platform mainnet build of Nexion.
           
-          **Source:** Built from [AceXiamo/Nexion@${{ github.sha }}](https://github.com/AceXiamo/Nexion/commit/${{ github.sha }})
-          
           **Downloads:**
           
           ### Windows
@@ -233,5 +231,3 @@ jobs:
           **Source Commit:** ${{ github.sha }}
       env:
         GITHUB_TOKEN: ${{ secrets.NEXION_RELEASE_TOKEN }}
-
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
