@@ -200,34 +200,72 @@ jobs:
         find ./release-files/ -type f
     
     - name: Create Release in Organization Repo
-      uses: softprops/action-gh-release@v1
+      uses: actions/github-script@v7
       with:
-        repository: NexionDev/app
-        files: ./release-files/*
-        draft: false
-        prerelease: false
-        name: Nexion v${{ github.ref_name }} (Mainnet)
-        body: |
-          🚀 **Nexion Mainnet Release v${{ github.ref_name }}**
+        github-token: ${{ secrets.NEXION_RELEASE_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // 创建 Release
+          const tagName = context.ref.replace('refs/tags/', '');
+          console.log(`Creating release for tag: ${tagName}`);
+          
+          const release = await github.rest.repos.createRelease({
+            owner: 'NexionDev',
+            repo: 'app',
+            tag_name: tagName,
+            name: `Nexion v${tagName} (Mainnet)`,
+            body: `🚀 **Nexion Mainnet Release v${tagName}**
           
           This is a cross-platform mainnet build of Nexion.
-          
+
           **Downloads:**
           
           ### Windows
-          - 📦 `.exe` - Windows installer (NSIS)  
-          - 📦 `.msi` - Windows MSI package
+          - 📦 \`.exe\` - Windows installer (NSIS)  
+          - 📦 \`.msi\` - Windows MSI package
           
           ### macOS  
-          - 🍎 `.dmg` - macOS disk image
+          - 🍎 \`.dmg\` - macOS disk image
           
           ### Linux
-          - 🐧 `.AppImage` - Portable Linux application
-          - 🐧 `.deb` - Debian/Ubuntu package
-          - 🐧 `.rpm` - RedHat/Fedora package
+          - 🐧 \`.AppImage\` - Portable Linux application
+          - 🐧 \`.deb\` - Debian/Ubuntu package
+          - 🐧 \`.rpm\` - RedHat/Fedora package
           
           **Network:** Mainnet
           **Build Date:** ${{ github.event.head_commit.timestamp }}
-          **Source Commit:** ${{ github.sha }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.NEXION_RELEASE_TOKEN }}
+          **Source Commit:** ${{ github.sha }}`,
+            draft: false,
+            prerelease: false
+          });
+          
+          console.log(`Release created: ${release.data.html_url}`);
+          
+          // 上传文件
+          const releaseDir = './release-files';
+          const files = fs.readdirSync(releaseDir);
+          
+          for (const fileName of files) {
+            const filePath = path.join(releaseDir, fileName);
+            const stats = fs.statSync(filePath);
+            
+            if (stats.isFile()) {
+              console.log(`Uploading ${fileName}...`);
+              
+              const fileData = fs.readFileSync(filePath);
+              
+              await github.rest.repos.uploadReleaseAsset({
+                owner: 'NexionDev',
+                repo: 'app',
+                release_id: release.data.id,
+                name: fileName,
+                data: fileData
+              });
+              
+              console.log(`✅ Uploaded ${fileName}`);
+            }
+          }
+          
+          console.log('🎉 All files uploaded successfully!');
