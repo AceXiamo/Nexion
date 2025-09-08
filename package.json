@@ -7,11 +7,11 @@
   "author": "AceXiamo <xiamo@qwq.link>",
   "scripts": {
     "dev": "vite",
-    "dev:testnet": "BUILD_NETWORK=testnet vite",
-    "dev:mainnet": "BUILD_NETWORK=mainnet vite",
+    "dev:testnet": "cross-env BUILD_NETWORK=testnet vite",
+    "dev:mainnet": "cross-env BUILD_NETWORK=mainnet vite",
     "build": "vite build && electron-builder",
-    "build:testnet": "BUILD_NETWORK=testnet vite build && electron-builder",
-    "build:mainnet": "BUILD_NETWORK=mainnet vite build && electron-builder",
+    "build:testnet": "cross-env BUILD_NETWORK=testnet vite build && electron-builder",
+    "build:mainnet": "cross-env BUILD_NETWORK=mainnet vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -31,6 +31,7 @@
     "@xterm/xterm": "^5.5.0",
     "buffer": "^6.0.3",
     "clsx": "^2.1.1",
+    "cross-env": "^10.0.0",
     "date-fns": "^4.1.0",
     "electron-store": "^10.1.0",
     "fflate": "^0.8.2",
