@@ -95,6 +95,15 @@
       "node_modules/**/*",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "assets/",
+        "to": "assets/",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "win": {
       "target": [
         {
@@ -110,26 +119,79 @@
           ]
         }
       ],
-      "icon": "assets/icon.ico",
+      "icon": "public/app-icon.png",
       "publisherName": "Nexion",
       "requestedExecutionLevel": "asInvoker"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "public/app-icon.png",
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": true,
+      "entitlements": "assets/entitlements.mac.plist",
+      "entitlementsInherit": "assets/entitlements.mac.plist"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "rpm",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/app-icon.png",
+      "category": "Utility",
+      "synopsis": "Nexion Application",
+      "desktop": {
+        "Name": "Nexion",
+        "Comment": "Nexion Desktop Application",
+        "Categories": "Utility;"
+      }
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Nexion",
-      "displayLanguageSelector": false
+      "shortcutName": "Nexion"
     },
-    "extraResources": [
-      {
-        "from": "assets/",
-        "to": "assets/",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ]
+    "dmg": {
+      "title": "Nexion ${version}",
+      "icon": "public/app-icon.png",
+      "background": "assets/dmg-background.png",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
   }
 }
