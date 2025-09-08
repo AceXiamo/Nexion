@@ -76,7 +76,7 @@ function createWindow() {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
   })
 
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
     // Open developer tools in development mode
@@ -84,6 +84,11 @@ function createWindow() {
   } else {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
+  }
+
+  // If sshManager already exists, update its webContents reference
+  if (sshManager) {
+    sshManager.updateWebContents(win?.webContents)
   }
 }
 

@@ -61,6 +61,13 @@ export class SSHSessionManager extends EventEmitter {
   }
 
   /**
+   * Update webContents reference when window is recreated
+   */
+  public updateWebContents(webContents: WebContents | undefined): void {
+    this.webContents = webContents
+  }
+
+  /**
    * Generate unique session ID
    */
   private generateSessionId(): string {
@@ -492,7 +499,7 @@ export class SSHSessionManager extends EventEmitter {
    * Send throttled progress update to renderer process
    */
   private sendProgressUpdate(taskId: string, progress: number, transferred: number): void {
-    if (!this.webContents) return
+    if (!this.webContents || this.webContents.isDestroyed()) return
 
     const now = Date.now()
     const lastUpdate = this.lastProgressUpdate.get(taskId) || 0
