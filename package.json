@@ -3,6 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "description": "Next-Gen Web3 SSH Manager",
+  "author": "AceXiamo <xiamo@qwq.link>",
   "scripts": {
     "dev": "vite",
     "dev:testnet": "BUILD_NETWORK=testnet vite",
@@ -86,7 +88,7 @@
     "appId": "com.nexion.app",
     "productName": "Nexion",
     "directories": {
-      "buildResources": "assets",
+      "buildResources": "public",
       "output": "dist"
     },
     "files": [
@@ -94,15 +96,6 @@
       "dist-electron/**/*",
       "node_modules/**/*",
       "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "assets/",
-        "to": "assets/",
-        "filter": [
-          "**/*"
-        ]
-      }
     ],
     "win": {
       "target": [
@@ -136,8 +129,8 @@
       "icon": "public/app-icon.png",
       "category": "public.app-category.utilities",
       "hardenedRuntime": true,
-      "entitlements": "assets/entitlements.mac.plist",
-      "entitlementsInherit": "assets/entitlements.mac.plist"
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "linux": {
       "target": [
@@ -179,7 +172,6 @@
     "dmg": {
       "title": "Nexion ${version}",
       "icon": "public/app-icon.png",
-      "background": "assets/dmg-background.png",
       "contents": [
         {
           "x": 130,
