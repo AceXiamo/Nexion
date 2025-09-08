@@ -90,9 +90,7 @@ jobs:
           build-essential \
           python3-dev \
           libnss3 \
-          libgconf-2-4 \
           libxss1 \
-          libasound2 \
           libxtst6 \
           libatspi2.0-0 \
           libdrm2 \
