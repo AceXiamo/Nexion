@@ -199,9 +199,10 @@ jobs:
         ls -la ./release-files/
         find ./release-files/ -type f
     
-    - name: Create Release
+    - name: Create Release in Organization Repo
       uses: softprops/action-gh-release@v1
       with:
+        repository: NexionDev/app
         files: ./release-files/*
         draft: false
         prerelease: false
@@ -210,6 +211,8 @@ jobs:
           🚀 **Nexion Mainnet Release v${{ github.ref_name }}**
           
           This is a cross-platform mainnet build of Nexion.
+          
+          **Source:** Built from [AceXiamo/Nexion@${{ github.sha }}](https://github.com/AceXiamo/Nexion/commit/${{ github.sha }})
           
           **Downloads:**
           
@@ -227,5 +230,8 @@ jobs:
           
           **Network:** Mainnet
           **Build Date:** ${{ github.event.head_commit.timestamp }}
+          **Source Commit:** ${{ github.sha }}
       env:
+        GITHUB_TOKEN: ${{ secrets.NEXION_RELEASE_TOKEN }}
+
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
