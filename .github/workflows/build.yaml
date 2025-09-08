@@ -143,7 +143,7 @@ jobs:
     
     # 构建主网版本
     - name: Build Mainnet Application
-      run: yarn build:mainnet
+      run: yarn build:mainnet --publish=never
       env:
         BUILD_NETWORK: mainnet
         # 禁用 CSC_IDENTITY_AUTO_DISCOVERY 避免签名失败
