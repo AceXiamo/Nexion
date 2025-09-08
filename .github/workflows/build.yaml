@@ -53,7 +53,7 @@ jobs:
         node-version: '22.11.0'
         cache: 'yarn'
     
-    # Windows specific setup
+    # Windows specific setup - 修正版本
     - name: Setup Python (Windows)
       if: matrix.platform == 'windows'
       uses: actions/setup-python@v4
@@ -62,14 +62,25 @@ jobs:
     
     - name: Setup MSBuild (Windows)
       if: matrix.platform == 'windows'
-      uses: microsoft/setup-msbuild@v1
+      uses: microsoft/setup-msbuild@v2  # ✅ 更新到 v2
     
     - name: Setup Windows Build Environment
       if: matrix.platform == 'windows'
       run: |
-        npm install -g windows-build-tools
+        # ❌ 移除已弃用的 windows-build-tools
+        # npm install -g windows-build-tools
+        
+        # ✅ 使用现代化的构建工具配置
         npm config set msvs_version 2022
-        npm config set python python
+        npm config set python python3
+        
+        # 验证构建环境
+        echo "Node.js version:"
+        node --version
+        echo "Python version:"
+        python --version
+        echo "MSBuild configuration:"
+        npm config get msvs_version
       shell: cmd
       continue-on-error: true
     
@@ -114,6 +125,17 @@ jobs:
       env:
         npm_config_msvs_version: 2022
         PYTHON: python3
+    
+    # ✅ 添加 Windows 原生模块重建步骤
+    - name: Rebuild native modules (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        # 尝试重建 node-pty 等原生模块
+        npx node-gyp --version
+        yarn add --dev @electron/rebuild
+        npx electron-rebuild
+      shell: cmd
+      continue-on-error: true
     
     - name: Run lint
       run: yarn lint
