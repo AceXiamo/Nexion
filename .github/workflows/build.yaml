@@ -64,6 +64,15 @@ jobs:
       if: matrix.platform == 'windows'
       uses: microsoft/setup-msbuild@v1
     
+    - name: Setup Windows Build Environment
+      if: matrix.platform == 'windows'
+      run: |
+        npm install -g windows-build-tools
+        npm config set msvs_version 2022
+        npm config set python python
+      shell: cmd
+      continue-on-error: true
+    
     # macOS specific setup
     - name: Setup Python (macOS)
       if: matrix.platform == 'macos'
