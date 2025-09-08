@@ -216,7 +216,7 @@ jobs:
             owner: 'NexionDev',
             repo: 'app',
             tag_name: tagName,
-            name: `Nexion v${tagName} (Mainnet)`,
+            name: `Nexion ${tagName} (Mainnet)`,
             body: `🚀 **Nexion Mainnet Release v${tagName}**
           
           This is a cross-platform mainnet build of Nexion.
