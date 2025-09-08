@@ -97,6 +97,8 @@ export default defineConfig({
     ],
   },
   build: {
+    minify: 'terser',  // ✅ 代码压缩
+    sourcemap: false,  // ✅ 不生成 source maps
     commonjsOptions: {
       transformMixedEsModules: true,
     },

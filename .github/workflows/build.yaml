@@ -148,6 +148,7 @@ jobs:
         BUILD_NETWORK: mainnet
         # 禁用 CSC_IDENTITY_AUTO_DISCOVERY 避免签名失败
         CSC_IDENTITY_AUTO_DISCOVERY: false
+        NODE_ENV: production
         # CSC_LINK: ${{ secrets.CSC_LINK }}
         # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
         # WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}

@@ -95,9 +95,15 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*",
+      "!dist/**/*.map",
       "node_modules/**/*",
+      "!node_modules/**/test/**",  
+      "!node_modules/**/*.md",     
+      "!node_modules/**/*.d.ts",   
       "package.json"
     ],
+    "asarUnpack": [],
+    "extraFiles": [],
     "win": {
       "target": [
         {
@@ -122,7 +128,6 @@
         {
           "target": "dmg",
           "arch": [
-            "x64",
             "arm64"
           ]
         }
