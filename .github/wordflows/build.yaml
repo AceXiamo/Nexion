@@ -1,0 +1,191 @@
+name: Build Cross-Platform (Mainnet)
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            platform: windows
+            artifact_name: nexion-windows-mainnet
+            build_files: |
+              dist/*.exe
+              dist/*.msi
+              dist/*.appx
+              dist/win-unpacked/
+          - os: macos-latest
+            platform: macos  
+            artifact_name: nexion-macos-mainnet
+            build_files: |
+              dist/*.dmg
+              dist/*.zip
+              dist/mac/
+          - os: ubuntu-latest
+            platform: linux
+            artifact_name: nexion-linux-mainnet
+            build_files: |
+              dist/*.AppImage
+              dist/*.deb
+              dist/*.rpm
+              dist/*.tar.gz
+              dist/linux-unpacked/
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    # Windows specific setup
+    - name: Setup Python (Windows)
+      if: matrix.platform == 'windows'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    - name: Setup MSBuild (Windows)
+      if: matrix.platform == 'windows'
+      uses: microsoft/setup-msbuild@v1
+    
+    # macOS specific setup
+    - name: Setup Python (macOS)
+      if: matrix.platform == 'macos'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    # Linux specific setup  
+    - name: Install Linux dependencies
+      if: matrix.platform == 'linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2-dev libxcomposite1-dev libxdamage1-dev libxrandr2-dev libgbm1-dev libxss1-dev libasound2-dev
+        sudo apt-get install -y build-essential python3-dev
+    
+    - name: Install dependencies
+      run: npm ci
+      env:
+        # 原生模块编译配置
+        npm_config_msvs_version: 2022
+        npm_config_node_gyp: npm
+        PYTHON: python3
+    
+    - name: Run lint
+      run: npm run lint
+      continue-on-error: true
+    
+    # 构建主网版本
+    - name: Build Mainnet Application
+      run: npm run build:mainnet
+      env:
+        BUILD_NETWORK: mainnet
+        # macOS 代码签名
+        CSC_LINK: ${{ secrets.CSC_LINK }}
+        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        # Windows 代码签名
+        WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+        WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        # GitHub token
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: List build output
+      run: |
+        ls -la dist/ || dir dist
+        find dist/ -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" || echo "No main installers found"
+      shell: bash
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}-${{ github.sha }}
+        path: ${{ matrix.build_files }}
+        retention-days: 30
+    
+    # 如果是 tag 推送，收集所有平台的产物用于发布
+    - name: Upload release assets
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-${{ matrix.platform }}-${{ github.sha }}
+        path: |
+          dist/*.exe
+          dist/*.msi  
+          dist/*.dmg
+          dist/*.AppImage
+          dist/*.deb
+          dist/*.rpm
+        retention-days: 5
+
+  # 创建 GitHub Release (只有当推送 tag 时)
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download all release artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: release-*-${{ github.sha }}
+        merge-multiple: true
+        path: ./release-files
+    
+    - name: List release files
+      run: |
+        ls -la ./release-files/
+        find ./release-files/ -type f
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./release-files/*
+        draft: false
+        prerelease: false
+        name: Nexion v${{ github.ref_name }} (Mainnet)
+        body: |
+          🚀 **Nexion Mainnet Release v${{ github.ref_name }}**
+          
+          This is a cross-platform mainnet build of Nexion.
+          
+          **Downloads:**
+          
+          ### Windows
+          - 📦 `.exe` - Windows installer (NSIS)  
+          - 📦 `.msi` - Windows MSI package
+          
+          ### macOS  
+          - 🍎 `.dmg` - macOS disk image
+          
+          ### Linux
+          - 🐧 `.AppImage` - Portable Linux application
+          - 🐧 `.deb` - Debian/Ubuntu package
+          - 🐧 `.rpm` - RedHat/Fedora package
+          
+          **Network:** Mainnet
+          **Build Date:** ${{ github.event.head_commit.timestamp }}
+          
+          ---
+          
+          **Installation Instructions:**
+          - **Windows**: Download and run the `.exe` installer
+          - **macOS**: Download the `.dmg` file and drag Nexion to Applications
+          - **Linux**: Download the `.AppImage` and make it executable, or install the `.deb`/`.rpm` package
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
