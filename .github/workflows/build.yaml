@@ -6,7 +6,7 @@ on:
     tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch: # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -51,7 +51,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'yarn' # 使用 yarn 缓存
+        cache: 'yarn'
     
     # Windows specific setup
     - name: Setup Python (Windows)
@@ -71,18 +71,40 @@ jobs:
       with:
         python-version: '3.x'
     
-    # Linux specific setup  
+    # Linux specific setup - 修正的依赖包名
     - name: Install Linux dependencies
       if: matrix.platform == 'linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2-dev libxcomposite1-dev libxdamage1-dev libxrandr2-dev libgbm1-dev libxss1-dev libasound2-dev
-        sudo apt-get install -y build-essential python3-dev
+        sudo apt-get install -y \
+          libnss3-dev \
+          libatk-bridge2.0-dev \
+          libdrm-dev \
+          libxcomposite-dev \
+          libxdamage-dev \
+          libxrandr-dev \
+          libgbm-dev \
+          libxss-dev \
+          libasound2-dev \
+          libgtk-3-dev \
+          build-essential \
+          python3-dev \
+          libnss3 \
+          libgconf-2-4 \
+          libxss1 \
+          libasound2 \
+          libxtst6 \
+          libatspi2.0-0 \
+          libdrm2 \
+          libxcomposite1 \
+          libxdamage1 \
+          libxrandr2 \
+          libgbm1 \
+          libxkbcommon-x11-0
     
     - name: Install dependencies
       run: yarn install --frozen-lockfile
       env:
-        # 原生模块编译配置
         npm_config_msvs_version: 2022
         PYTHON: python3
     
@@ -95,13 +117,10 @@ jobs:
       run: yarn build:mainnet
       env:
         BUILD_NETWORK: mainnet
-        # macOS 代码签名
         CSC_LINK: ${{ secrets.CSC_LINK }}
         CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-        # Windows 代码签名
         WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
         WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-        # GitHub token
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     - name: List build output
@@ -117,7 +136,6 @@ jobs:
         path: ${{ matrix.build_files }}
         retention-days: 30
     
-    # 如果是 tag 推送，收集所有平台的产物用于发布
     - name: Upload release assets
       if: startsWith(github.ref, 'refs/tags/v')
       uses: actions/upload-artifact@v4
@@ -132,7 +150,6 @@ jobs:
           dist/*.rpm
         retention-days: 5
 
-  # 创建 GitHub Release (只有当推送 tag 时)
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
@@ -179,12 +196,5 @@ jobs:
           
           **Network:** Mainnet
           **Build Date:** ${{ github.event.head_commit.timestamp }}
-          
-          ---
-          
-          **Installation Instructions:**
-          - **Windows**: Download and run the `.exe` installer
-          - **macOS**: Download the `.dmg` file and drag Nexion to Applications
-          - **Linux**: Download the `.AppImage` and make it executable, or install the `.deb`/`.rpm` package
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
