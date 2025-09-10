@@ -27,7 +27,7 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
     // If terminal is not yet mounted to DOM, mount it
     if (!terminal.element) {
       terminal.open(terminalRef.current)
-      // 延迟fit以确保DOM已完全渲染
+      // Delay fit to ensure the DOM has fully rendered
       setTimeout(() => {
         fitAddon.fit()
       }, 0)
@@ -39,7 +39,7 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
         } else {
           terminal.open(terminalRef.current)
         }
-        // 延迟fit以确保DOM已完全渲染
+        // Delay fit to ensure the DOM has fully rendered
         setTimeout(() => {
           fitAddon.fit()
         }, 0)
@@ -87,7 +87,7 @@ export function SSHTerminal({ sessionId, isVisible, onResize }: SSHTerminalProps
   // Handle terminal size adjustment
   const handleResize = useCallback(() => {
     if (sessionId && isVisible && terminalRef.current) {
-      // 确保容器已经有实际尺寸后再进行fit操作
+      // Ensure the container has actual dimensions before fitting
       const container = terminalRef.current
       if (container.clientWidth > 0 && container.clientHeight > 0) {
         const terminalData = terminalPersistenceManager.getOrCreateTerminal(sessionId)

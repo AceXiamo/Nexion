@@ -33,8 +33,8 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
   const { account, isConnected, signMessage } = useWalletStore()
   const sshContract = useSSHContract()
   const lastAccountRef = useRef<string | null>(null)
-  const lastRawConfigsLengthRef = useRef<number>(-1) // 跟踪rawConfigs长度变化
-  const isInitialFetchRef = useRef<boolean>(false) // 跟踪是否已进行初始获取
+  const lastRawConfigsLengthRef = useRef<number>(-1) // Reset rawConfigs length tracking
+  const isInitialFetchRef = useRef<boolean>(false) // Reset the initial fetch flag
 
   // Get configuration data from the blockchain
   const { data: rawConfigs, isLoading: isContractLoading, refetch: refetchConfigs } = sshContract.useGetSSHConfigs(account!)
@@ -97,7 +97,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
           // Check if the user cancelled the signature
           if (error instanceof Error && error.message.includes('User rejected the request')) {
             console.log('User cancelled signature, stopping processing')
-            throw new Error('用户取消了签名操作')
+            throw new Error('User cancelled the signature operation')
           }
 
           // Add error placeholder
@@ -153,21 +153,21 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
     }
   }, [account])
 
-  // 统一的配置获取逻辑 - 合并两个useEffect，避免重复调用
+  // Unified configuration retrieval logic - combine two useEffects to avoid duplicate calls
   useEffect(() => {
-    // 账户变化处理
+    // Handle account changes
     if (account && isConnected) {
-      // 账户切换时
+      // When switching accounts
       if (lastAccountRef.current !== account) {
         console.log('Account changed, fetching SSH configs...', account)
         lastAccountRef.current = account
-        lastRawConfigsLengthRef.current = -1 // 重置rawConfigs长度跟踪
-        isInitialFetchRef.current = false // 重置初始获取标志
+        lastRawConfigsLengthRef.current = -1 // Reset rawConfigs length tracking
+        isInitialFetchRef.current = false // Reset the initial fetch flag
         
-        // 清除旧账户的配置缓存
+        // Clear configuration cache for the old account
         clearConfigCache()
         
-        // 如果已有rawConfigs数据，立即获取
+        // If rawConfigs data is already available, fetch immediately
         if (rawConfigs !== undefined && !isContractLoading) {
           fetchConfigs(
             account,
@@ -180,7 +180,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         return
       }
 
-      // 相同账户，rawConfigs数据更新处理
+      // Handle updates to the same account, rawConfigs data updates
       if (
         lastAccountRef.current === account && 
         rawConfigs !== undefined && 
@@ -189,9 +189,9 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
       ) {
         const currentLength = rawConfigs?.length || 0
         
-        // 只有在以下情况才重新获取：
-        // 1. 还未进行过初始获取
-        // 2. rawConfigs长度发生变化（表示链上数据有更新）
+        // Only refresh if:
+        // 1. No initial fetch has been performed
+        // 2. rawConfigs length has changed (indicating updates on the blockchain)
         if (
           !isInitialFetchRef.current || 
           lastRawConfigsLengthRef.current !== currentLength
@@ -214,7 +214,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
         }
       }
     } else if (!account) {
-      // 账户断开时清理
+      // Clean up when the account is disconnected
       clearConfigCache()
       lastAccountRef.current = null
       lastRawConfigsLengthRef.current = -1
@@ -223,7 +223,7 @@ export function useSSHConfigs(): UseSSHConfigsReturn {
   }, [
     account, 
     isConnected, 
-    rawConfigs?.length, // 只依赖长度，不依赖整个数组
+    rawConfigs?.length, // Only depend on length, not the entire array
     isContractLoading, 
     isLoading,
     fetchConfigs, 

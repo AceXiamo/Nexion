@@ -3,9 +3,9 @@ import '@/types/electron'
 import { terminalHistoryManager } from '@/services/terminal-history-manager'
 
 /**
- * 全局SSH事件分发器
- * 单例模式管理所有SSH事件监听，避免重复注册
- * 基于sessionId精确分发数据到对应终端实例
+ * Global SSH event dispatcher
+ * Singleton pattern manages all SSH event listening, avoiding duplicate registration
+ * Precisely dispatches data to corresponding terminal instances based on sessionId
  */
 export class SSHEventDispatcher {
   private static instance: SSHEventDispatcher
@@ -22,14 +22,14 @@ export class SSHEventDispatcher {
   }
 
   /**
-   * 初始化全局事件监听器 - 整个应用只调用一次
+   * Initialize global event listeners - called only once for the entire application
    */
   initialize(): void {
     if (this.isInitialized || !window.ipcRenderer) return
     
-    console.log('🚀 初始化SSH事件分发器')
+    console.log('🚀 Initializing SSH event dispatcher')
 
-    // 注册全局事件监听器
+    // Register global event listeners
     window.ipcRenderer.on('ssh-session-data', this.handleSessionData.bind(this))
     window.ipcRenderer.on('ssh-session-connected', this.handleSessionConnected.bind(this))
     window.ipcRenderer.on('ssh-session-disconnected', this.handleSessionDisconnected.bind(this))
@@ -40,125 +40,125 @@ export class SSHEventDispatcher {
   }
 
   /**
-   * 注册终端实例到分发器
+   * Register terminal instance to dispatcher
    */
   registerTerminal(sessionId: string, terminal: Terminal): void {
     if (this.terminals.has(sessionId)) {
-      console.log(`📱 终端实例已存在，更新注册: ${sessionId}`)
-      // 如果已存在，更新为新的终端实例（处理组件重新挂载情况）
+      console.log(`📱 Terminal instance already exists, updating registration: ${sessionId}`)
+      // If already exists, update to new terminal instance (handle component remount)
       this.terminals.set(sessionId, terminal)
       return
     }
-    console.log(`📱 注册终端实例: ${sessionId}`)
+    console.log(`📱 Registering terminal instance: ${sessionId}`)
     this.terminals.set(sessionId, terminal)
   }
 
   /**
-   * 从分发器注销终端实例
+   * Unregister terminal instance from dispatcher
    */
   unregisterTerminal(sessionId: string): void {
-    console.log(`📱 注销终端实例: ${sessionId}`)
+    console.log(`📱 Unregistering terminal instance: ${sessionId}`)
     this.terminals.delete(sessionId)
   }
 
   /**
-   * 获取已注册的终端数量
+   * Get the number of registered terminals
    */
   getTerminalCount(): number {
     return this.terminals.size
   }
 
   /**
-   * 获取所有已注册的会话ID
+   * Get all registered session IDs
    */
   getRegisteredSessionIds(): string[] {
     return Array.from(this.terminals.keys())
   }
 
   /**
-   * 检查指定会话是否有注册的终端
+   * Check if the specified session has a registered terminal
    */
   hasTerminal(sessionId: string): boolean {
     return this.terminals.has(sessionId)
   }
 
   /**
-   * 处理会话数据 - 精确分发到对应终端
+   * Handle session data - precisely dispatch to corresponding terminal
    */
   private handleSessionData = (_event: unknown, sessionId: string, data: string): void => {
     const terminal = this.terminals.get(sessionId)
     if (terminal) {
-      console.log(`📊 分发数据到终端 ${sessionId}:`, data.length, 'bytes')
+      console.log(`📊 Dispatching data to terminal ${sessionId}:`, data.length, 'bytes')
       terminal.write(data)
     } else {
-      console.warn(`⚠️ 会话 ${sessionId} 没有注册的终端实例`)
+      console.warn(`⚠️ Session ${sessionId} has no registered terminal instance`)
     }
   }
 
   /**
-   * 处理会话连接成功事件
+   * Handle session connection success event
    */
   private handleSessionConnected = (_event: unknown, sessionId: string): void => {
     const terminal = this.terminals.get(sessionId)
     if (terminal) {
-      console.log(`✅ 会话 ${sessionId} 连接成功`)
-      terminal.write('\r\n\x1b[1;32m✓ SSH 连接已建立\x1b[0m\r\n')
+      console.log(`✅ Session ${sessionId} connected successfully`)
+      terminal.write('\r\n\x1b[1;32m✓ SSH connection established\x1b[0m\r\n')
     }
   }
 
   /**
-   * 处理会话断开连接事件
+   * Handle session disconnection event
    */
   private handleSessionDisconnected = (_event: unknown, sessionId: string): void => {
     const terminal = this.terminals.get(sessionId)
     if (terminal) {
-      console.log(`❌ 会话 ${sessionId} 连接断开`)
-      terminal.write('\r\n\x1b[1;31m✗ SSH 连接已断开\x1b[0m\r\n')
+      console.log(`❌ Session ${sessionId} disconnected`)
+      terminal.write('\r\n\x1b[1;31m✗ SSH connection disconnected\x1b[0m\r\n')
     }
   }
 
   /**
-   * 处理会话错误事件
+   * Handle session error event
    */
   private handleSessionError = (_event: unknown, sessionId: string, error: string): void => {
     const terminal = this.terminals.get(sessionId)
     if (terminal) {
-      console.log(`🚨 会话 ${sessionId} 发生错误:`, error)
-      terminal.write(`\r\n\x1b[1;31m✗ 连接错误: ${error}\x1b[0m\r\n`)
+      console.log(`🚨 Session ${sessionId} error occurred:`, error)
+      terminal.write(`\r\n\x1b[1;31m✗ Connection error: ${error}\x1b[0m\r\n`)
     }
   }
 
   /**
-   * 处理会话重连事件
+   * Handle session reconnection event
    */
   private handleSessionReconnecting = (_event: unknown, sessionId: string, attempt: number, delay: number): void => {
     const terminal = this.terminals.get(sessionId)
     if (terminal) {
-      console.log(`🔄 会话 ${sessionId} 重连中: 第${attempt}次尝试`)
-      terminal.write(`\r\n\x1b[1;33m🔄 重连中 (第${attempt}次尝试，${Math.round(delay / 1000)}秒后)\x1b[0m\r\n`)
+      console.log(`🔄 Session ${sessionId} reconnecting: attempt ${attempt}`)
+      terminal.write(`\r\n\x1b[1;33m🔄 Reconnecting (attempt ${attempt}, ${Math.round(delay / 1000)}s delay)\x1b[0m\r\n`)
     }
   }
 
   /**
-   * 清理分发器 - 应用退出时调用
+   * Clean up dispatcher - called when application exits
    */
   cleanup(): void {
     if (!this.isInitialized || !window.ipcRenderer) return
 
-    console.log('🧹 清理SSH事件分发器')
+    console.log('🧹 Cleaning up SSH event dispatcher')
 
-    // 移除所有事件监听器
+    // Remove all event listeners
     window.ipcRenderer.off('ssh-session-data', this.handleSessionData)
     window.ipcRenderer.off('ssh-session-connected', this.handleSessionConnected)
     window.ipcRenderer.off('ssh-session-disconnected', this.handleSessionDisconnected)
     window.ipcRenderer.off('ssh-session-error', this.handleSessionError)
     window.ipcRenderer.off('ssh-session-reconnecting', this.handleSessionReconnecting)
 
-    // 清空终端注册表
+    // Clear terminal registry
     this.terminals.clear()
     this.isInitialized = false
   }
 }
 
-// 导出单例实例
+// Export singleton instance
 export const sshEventDispatcher = SSHEventDispatcher.getInstance()

@@ -21,17 +21,17 @@ export function QRCodeModal({ isOpen, onClose, uri }: QRCodeModalProps) {
     }
   }, [uri])
 
-  // 动画状态控制
+  // Animation state control
   useEffect(() => {
     if (isOpen) {
-      // 稍微延迟显示内容，让背景先出现
+      // Slightly delay the display of content to let the background appear first
       setTimeout(() => setIsVisible(true), 10)
     } else {
       setIsVisible(false)
     }
   }, [isOpen])
 
-  // ESC键关闭功能
+  // ESC key to close functionality
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
@@ -41,7 +41,7 @@ export function QRCodeModal({ isOpen, onClose, uri }: QRCodeModalProps) {
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape)
-      // 防止背景滚动
+      // Prevent background scrolling
       document.body.style.overflow = 'hidden'
     }
 
@@ -71,7 +71,7 @@ export function QRCodeModal({ isOpen, onClose, uri }: QRCodeModalProps) {
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(uri)
-      // TODO: 可以添加复制成功的提示
+      // TODO: Add a success notification for copy
     } catch (error) {
       console.error('Failed to copy URI:', error)
     }
@@ -79,7 +79,7 @@ export function QRCodeModal({ isOpen, onClose, uri }: QRCodeModalProps) {
 
   const handleClose = () => {
     setIsVisible(false)
-    // 等待动画完成后再关闭
+    // Wait for the animation to complete before closing
     setTimeout(() => onClose(), 200)
   }
 

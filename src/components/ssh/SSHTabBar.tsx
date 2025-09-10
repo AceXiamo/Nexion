@@ -82,11 +82,7 @@ export function SSHTabBar({ sessions, activeSessionId, onCreateSession, onSwitch
               title={`${session.name} - ${session.status}`}
             >
               {/* Tab number indicator */}
-              {tabNumber <= 9 && (
-                <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center text-[10px] text-neutral-400 font-mono">
-                  {tabNumber}
-                </div>
-              )}
+              {tabNumber <= 9 && <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center text-[10px] text-neutral-400 font-mono">{tabNumber}</div>}
 
               {/* Status icon */}
               <div className="flex-shrink-0">{getStatusIcon(session.status)}</div>

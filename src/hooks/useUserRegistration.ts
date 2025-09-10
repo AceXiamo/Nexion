@@ -11,10 +11,10 @@ export function useUserRegistration() {
   const { isRegistered, showRegistrationPrompt, isRegistering, registrationConfirmed, error, checkRegistrationStatus, handleRegister, setRegistrationConfirmed, clearRegistrationCache } =
     useUserRegistrationStore()
 
-  // 使用ref来跟踪是否已经处理过注册确认
+  // Use ref to track if registration confirmation has been handled
   const hasHandledConfirmation = useRef(false)
 
-  // 稳定化的检查函数
+  // Stabilized check function
   const stableCheckRegistration = useCallback(async (accountToCheck: string) => {
     console.log('Fetching registration status from contract for:', accountToCheck)
     const result = await refetch()
@@ -22,39 +22,39 @@ export function useUserRegistration() {
     return result || false
   }, [refetch])
 
-  // 检查注册状态，当账户连接时
+  // Check registration status when account is connected
   useEffect(() => {
     if (account && isConnected) {
       checkRegistrationStatus(account, stableCheckRegistration)
     } else if (!account || !isConnected) {
-      // 钱包断开时清空缓存
+      // Clear cache when wallet is disconnected
       clearRegistrationCache()
       hasHandledConfirmation.current = false
     }
   }, [account, isConnected, stableCheckRegistration, checkRegistrationStatus, clearRegistrationCache])
 
-  // 处理注册确认状态变化 - 只处理一次
+  // Handle registration confirmation state changes - only handle once
   useEffect(() => {
     if (isConfirmed && !registrationConfirmed && !hasHandledConfirmation.current) {
       hasHandledConfirmation.current = true
       setRegistrationConfirmed(isConfirmed)
       
       if (account) {
-        // 延迟重新检查状态，给区块链时间更新
+        // Delay re-checking status to give blockchain time to update
         setTimeout(() => {
           checkRegistrationStatus(account, stableCheckRegistration)
-        }, 2000) // 增加延迟到2秒
+        }, 2000) // Increase delay to 2 seconds
       }
     }
     
-    // 重置标志当isConfirmed变为false时（新的交易开始）
+    // Reset flag when isConfirmed becomes false (new transaction starts)
     if (!isConfirmed && hasHandledConfirmation.current) {
       hasHandledConfirmation.current = false
     }
   }, [isConfirmed, registrationConfirmed, account, stableCheckRegistration, checkRegistrationStatus, setRegistrationConfirmed])
 
   const handleRegisterWrapper = async () => {
-    hasHandledConfirmation.current = false // 重置标志
+    hasHandledConfirmation.current = false // Reset flag
     await handleRegister(async () => {
       await registerUser()
     })

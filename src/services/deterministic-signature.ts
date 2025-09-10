@@ -1,18 +1,18 @@
 import { sha256 } from '@noble/hashes/sha2'
 
 /**
- * 基于 EIP-191 的确定性签名服务
+ * Deterministic signature service based on EIP-191
  *
- * 核心原理：
- * - 使用固定消息进行签名，确保每次签名结果一致
- * - 基于 EIP-191 personal_sign 标准
- * - 相同私钥 + 相同消息 = 确定性签名结果
- * - 从确定性签名派生稳定的加密密钥
+ * Core principles:
+ * - Uses fixed messages for signing to ensure consistent signature results
+ * - Based on the EIP-191 personal_sign standard
+ * - Same private key + same message = deterministic signature result
+ * - Derives stable encryption keys from deterministic signatures
  */
 export class DeterministicSignatureService {
   /**
-   * 固定的主密钥派生消息
-   * 使用 EIP-191 格式，确保跨钱包兼容性
+   * Fixed master key derivation message
+   * Uses EIP-191 format to ensure cross-wallet compatibility
    */
   private static readonly MASTER_KEY_MESSAGE = [
     'SSH Manager Master Key',
@@ -25,63 +25,63 @@ export class DeterministicSignatureService {
   ].join('\n')
 
   /**
-   * 通过确定性签名派生主加密密钥
+   * Derive master encryption key through deterministic signature
    *
-   * @param walletAddress - 钱包地址
-   * @param signMessageAsync - Wagmi 签名函数
-   * @returns 32字节的加密密钥
+   * @param walletAddress - Wallet address
+   * @param signMessageAsync - Wagmi signing function
+   * @returns 32-byte encryption key
    */
   static async deriveMasterKey(walletAddress: string, signMessageAsync: (params: { message: string }) => Promise<string>): Promise<Uint8Array> {
     try {
-      // 使用固定消息进行签名
-      // EIP-191 personal_sign 应该对相同消息产生确定性结果
+      // Sign with fixed message
+      // EIP-191 personal_sign should produce deterministic results for the same message
       const signature = await signMessageAsync({
         message: this.MASTER_KEY_MESSAGE,
       })
 
-      // 从签名派生32字节主密钥
+      // Derive 32-byte master key from signature
       const masterKey = sha256(new TextEncoder().encode(signature))
 
-      console.log(`已为钱包 ${walletAddress} 生成确定性主密钥`)
+      console.log(`Generated deterministic master key for wallet ${walletAddress}`)
 
       return masterKey
     } catch (error) {
-      console.error('派生主密钥失败:', error)
+      console.error('Failed to derive master key:', error)
 
-      // 提供具体的错误信息
+      // Provide specific error messages
       if (error instanceof Error) {
         if (error.message.includes('User rejected') || error.message.includes('用户拒绝') || error.message.includes('User denied')) {
-          throw new Error('用户取消了签名操作，无法生成主密钥')
+          throw new Error('User cancelled the signing operation, unable to generate master key')
         }
         if (error.message.includes('Connector not found') || error.message.includes('No connector')) {
-          throw new Error('钱包连接已断开，请重新连接钱包')
+          throw new Error('Wallet connection lost, please reconnect your wallet')
         }
         throw error
       }
 
-      throw new Error('生成主密钥时发生未知错误')
+      throw new Error('Unknown error occurred while generating master key')
     }
   }
 
   /**
-   * 测试钱包的确定性签名支持
+   * Test wallet's deterministic signature support
    *
-   * @param signMessageAsync - Wagmi 签名函数
-   * @returns 是否支持确定性签名
+   * @param signMessageAsync - Wagmi signing function
+   * @returns Whether deterministic signatures are supported
    */
   static async testDeterministicSignature(signMessageAsync: (params: { message: string }) => Promise<string>): Promise<boolean> {
     try {
       const testMessage = 'SSH_Manager_Deterministic_Test'
 
-      console.log('开始测试确定性签名...')
+      console.log('Starting deterministic signature test...')
 
-      // 连续签名两次相同消息
+      // Sign the same message twice consecutively
       const signature1 = await signMessageAsync({ message: testMessage })
       const signature2 = await signMessageAsync({ message: testMessage })
 
       const isDeterministic = signature1 === signature2
 
-      console.log('确定性签名测试结果:', {
+      console.log('Deterministic signature test results:', {
         signature1: signature1.substring(0, 10) + '...',
         signature2: signature2.substring(0, 10) + '...',
         isDeterministic,
@@ -89,32 +89,32 @@ export class DeterministicSignatureService {
 
       return isDeterministic
     } catch (error) {
-      console.error('测试确定性签名失败:', error)
+      console.error('Failed to test deterministic signature:', error)
       return false
     }
   }
 
   /**
-   * 获取主密钥派生消息（用于调试）
+   * Get master key derivation message (for debugging)
    */
   static getMasterKeyMessage(): string {
     return this.MASTER_KEY_MESSAGE
   }
 
   /**
-   * 生成配置特定的加密密钥（基于主密钥）
+   * Generate configuration-specific encryption key (based on master key)
    *
-   * @param masterKey - 主密钥
-   * @param configId - 配置ID（可选，用于配置级别的密钥隔离）
-   * @returns 配置特定的加密密钥
+   * @param masterKey - Master key
+   * @param configId - Configuration ID (optional, for configuration-level key isolation)
+   * @returns Configuration-specific encryption key
    */
   static deriveConfigKey(masterKey: Uint8Array, configId?: string): Uint8Array {
     if (!configId) {
-      // 如果没有配置ID，直接使用主密钥
+      // If no configuration ID, use master key directly
       return masterKey
     }
 
-    // 使用主密钥 + 配置ID 派生配置特定密钥
+    // Use master key + configuration ID to derive configuration-specific key
     const combined = new Uint8Array(masterKey.length + configId.length)
     combined.set(masterKey)
     combined.set(new TextEncoder().encode(configId), masterKey.length)

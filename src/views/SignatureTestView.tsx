@@ -22,29 +22,29 @@ export function SignatureTestView() {
   const [isTestingEncryption, setIsTestingEncryption] = useState(false)
   const [testResults, setTestResults] = useState<SignatureTestResult[]>([])
   
-  // 测试确定性签名
+  // Test deterministic signature
   const testDeterministicSignature = async () => {
     if (!account || !isConnected) {
-      toast.error('请先连接钱包')
+      toast.error('Please connect wallet first')
       return
     }
 
     setIsTestingDeterministic(true)
     
     try {
-      console.log('开始测试确定性签名...')
+      console.log('Starting deterministic signature test...')
       
-      // 获取固定消息
+      // Get fixed message
       const testMessage = DeterministicSignatureService.getMasterKeyMessage()
       
-      // 连续签名两次
+      // Sign twice consecutively
       const signature1 = await signMessage(testMessage)
       const signature2 = await signMessage(testMessage)
       
-      // 检查签名是否相同
+      // Check if signatures are the same
       const isDeterministic = signature1 === signature2
       
-      // 从签名派生主密钥
+      // Derive master key from signature
       const masterKey1 = Array.from(
         await DeterministicSignatureService.deriveMasterKey(address, 
           () => Promise.resolve(signature1)
@@ -72,37 +72,37 @@ export function SignatureTestView() {
       setTestResults(prev => [result, ...prev])
       
       if (isDeterministic && isKeyConsistent) {
-        toast.success('✅ 钱包支持确定性签名！')
+        toast.success('✅ Wallet supports deterministic signatures!')
       } else if (isKeyConsistent) {
-        toast.success('✅ 密钥一致！（虽然签名不同，但密钥相同）')
+        toast.success('✅ Keys are consistent! (Although signatures differ, keys are the same)')
       } else {
-        toast.error('❌ 钱包不支持确定性签名，密钥不一致')
+        toast.error('❌ Wallet does not support deterministic signatures, keys are inconsistent')
       }
       
-      console.log('测试结果:', result)
+      console.log('Test result:', result)
       
     } catch (error) {
-      console.error('测试失败:', error)
-      toast.error('测试失败: ' + (error instanceof Error ? error.message : '未知错误'))
+      console.error('Test failed:', error)
+      toast.error('Test failed: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setIsTestingDeterministic(false)
     }
   }
   
-  // 测试加密解密流程
+  // Test encryption and decryption flow
   const testEncryptionFlow = async () => {
     if (!account || !isConnected) {
-      toast.error('请先连接钱包')
+      toast.error('Please connect wallet first')
       return
     }
 
     setIsTestingEncryption(true)
     
     try {
-      console.log('开始测试加密解密流程...')
+      console.log('Starting encryption and decryption flow test...')
       
       const testConfig = {
-        name: '测试配置',
+        name: 'Test Configuration',
         host: '127.0.0.1',
         port: 22,
         username: 'test',
@@ -110,22 +110,22 @@ export function SignatureTestView() {
         password: 'test123',
       }
       
-      // 第一次加密
+      // First encryption
       const encrypted1 = await WalletBasedEncryptionService.encryptSSHConfig(
         testConfig, account, signMessage
       )
       
-      // 第二次加密相同数据
+      // Second encryption of the same data
       const _encrypted2 = await WalletBasedEncryptionService.encryptSSHConfig(
         testConfig, account, signMessage
       )
       
-      // 解密第一次的数据
+      // Decrypt the first data
       const decrypted1 = await WalletBasedEncryptionService.decryptSSHConfig(
         encrypted1, account, 'test1', new Date(), true, signMessage
       )
       
-      // 用第二次的密钥解密第一次的数据
+      // Use the second key to decrypt the first data
       const decrypted2 = await WalletBasedEncryptionService.decryptSSHConfig(
         encrypted1, account, 'test2', new Date(), true, signMessage
       )
@@ -137,26 +137,26 @@ export function SignatureTestView() {
         decrypted2.password === testConfig.password
       
       if (isDecryptionConsistent) {
-        toast.success('✅ 加密解密流程正常！数据一致性验证通过')
+        toast.success('✅ Encryption and decryption flow is normal! Data consistency verification passed')
       } else {
-        toast.error('❌ 加密解密存在问题！')
+        toast.error('❌ Encryption and decryption has issues!')
       }
       
-      console.log('解密结果1:', decrypted1)
-      console.log('解密结果2:', decrypted2)
+      console.log('Decryption result 1:', decrypted1)
+      console.log('Decryption result 2:', decrypted2)
       
     } catch (error) {
-      console.error('加密测试失败:', error)
-      toast.error('加密测试失败: ' + (error instanceof Error ? error.message : '未知错误'))
+      console.error('Encryption test failed:', error)
+      toast.error('Encryption test failed: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setIsTestingEncryption(false)
     }
   }
   
-  // 清除测试结果
+  // Clear test results
   const clearResults = () => {
     setTestResults([])
-    toast.success('测试结果已清除')
+    toast.success('Test results cleared')
   }
 
   if (!isConnected) {
@@ -164,8 +164,8 @@ export function SignatureTestView() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <Icon icon="mdi:wallet" className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">需要连接钱包</h2>
-          <p className="text-neutral-400">请先连接钱包以测试确定性签名</p>
+          <h2 className="text-xl font-semibold mb-2">Wallet Connection Required</h2>
+          <p className="text-neutral-400">Please connect your wallet first to test deterministic signatures</p>
         </div>
       </div>
     )
@@ -175,26 +175,26 @@ export function SignatureTestView() {
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">确定性签名测试</h1>
+          <h1 className="text-3xl font-bold mb-4">Deterministic Signature Test</h1>
           <p className="text-neutral-400">
-            测试当前钱包是否支持 EIP-191 确定性签名，验证加密解密的稳定性
+            Test whether the current wallet supports EIP-191 deterministic signatures and verify the stability of encryption and decryption
           </p>
           <div className="mt-4 p-4 bg-neutral-900 rounded-lg">
             <p className="text-sm">
-              <span className="font-medium">当前钱包:</span> {address}
+              <span className="font-medium">Current Wallet:</span> {address}
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* 确定性签名测试 */}
+          {/* Deterministic signature test */}
           <div className="bg-neutral-900 rounded-xl p-6">
             <div className="flex items-center mb-4">
               <Icon icon="mdi:key-variant" className="w-6 h-6 text-blue-400 mr-3" />
-              <h2 className="text-xl font-semibold">确定性签名测试</h2>
+              <h2 className="text-xl font-semibold">Deterministic Signature Test</h2>
             </div>
             <p className="text-neutral-400 text-sm mb-6">
-              测试钱包对相同消息是否产生一致的签名和主密钥
+              Test whether the wallet produces consistent signatures and master keys for the same message
             </p>
             <button
               onClick={testDeterministicSignature}
@@ -204,25 +204,25 @@ export function SignatureTestView() {
               {isTestingDeterministic ? (
                 <>
                   <Icon icon="mdi:loading" className="w-4 h-4 mr-2 animate-spin" />
-                  测试中...
+                  Testing...
                 </>
               ) : (
                 <>
                   <Icon icon="mdi:play" className="w-4 h-4 mr-2" />
-                  开始测试
+                  Start Test
                 </>
               )}
             </button>
           </div>
 
-          {/* 加密流程测试 */}
+          {/* Encryption flow test */}
           <div className="bg-neutral-900 rounded-xl p-6">
             <div className="flex items-center mb-4">
               <Icon icon="mdi:shield-key" className="w-6 h-6 text-green-400 mr-3" />
-              <h2 className="text-xl font-semibold">加密流程测试</h2>
+              <h2 className="text-xl font-semibold">Encryption Flow Test</h2>
             </div>
             <p className="text-neutral-400 text-sm mb-6">
-              测试完整的加密解密流程，验证数据一致性
+              Test the complete encryption and decryption flow, verify data consistency
             </p>
             <button
               onClick={testEncryptionFlow}
@@ -232,23 +232,23 @@ export function SignatureTestView() {
               {isTestingEncryption ? (
                 <>
                   <Icon icon="mdi:loading" className="w-4 h-4 mr-2 animate-spin" />
-                  测试中...
+                  Testing...
                 </>
               ) : (
                 <>
                   <Icon icon="mdi:play" className="w-4 h-4 mr-2" />
-                  开始测试
+                  Start Test
                 </>
               )}
             </button>
           </div>
         </div>
 
-        {/* 测试结果 */}
+        {/* Test results */}
         {testResults.length > 0 && (
           <div className="bg-neutral-900 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">测试结果</h2>
+              <h2 className="text-xl font-semibold">Test Results</h2>
               <button
                 onClick={clearResults}
                 className="text-neutral-400 hover:text-white transition-colors"
@@ -273,33 +273,33 @@ export function SignatureTestView() {
                           ? 'bg-blue-900 text-blue-200' 
                           : 'bg-yellow-900 text-yellow-200'
                       }`}>
-                        {result.isDeterministic ? '签名一致' : '签名不同'}
+                        {result.isDeterministic ? 'Signatures Match' : 'Signatures Differ'}
                       </span>
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         result.isKeyConsistent 
                           ? 'bg-green-900 text-green-200' 
                           : 'bg-red-900 text-red-200'
                       }`}>
-                        {result.isKeyConsistent ? '密钥一致' : '密钥不同'}
+                        {result.isKeyConsistent ? 'Keys Match' : 'Keys Differ'}
                       </span>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
-                      <p className="text-neutral-400 mb-1">签名1:</p>
+                      <p className="text-neutral-400 mb-1">Signature 1:</p>
                       <p className="font-mono">{result.signature1}</p>
                     </div>
                     <div>
-                      <p className="text-neutral-400 mb-1">签名2:</p>
+                      <p className="text-neutral-400 mb-1">Signature 2:</p>
                       <p className="font-mono">{result.signature2}</p>
                     </div>
                     <div>
-                      <p className="text-neutral-400 mb-1">密钥1:</p>
+                      <p className="text-neutral-400 mb-1">Key 1:</p>
                       <p className="font-mono">{result.masterKey1}</p>
                     </div>
                     <div>
-                      <p className="text-neutral-400 mb-1">密钥2:</p>
+                      <p className="text-neutral-400 mb-1">Key 2:</p>
                       <p className="font-mono">{result.masterKey2}</p>
                     </div>
                   </div>

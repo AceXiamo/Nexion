@@ -1,6 +1,6 @@
 /**
- * Electron 持久化中间件
- * 使用 electron-store 通过 IPC 进行数据持久化
+ * Electron persistence middleware
+ * Uses electron-store for data persistence through IPC
  */
 import type { StateCreator, StoreMutatorIdentifier } from 'zustand'
 
@@ -38,7 +38,7 @@ const electronPersistImpl: ElectronPersist = (f, options) => (set, get, store) =
   let hasHydrated = false
   const storageKey = options.name
 
-  // 初始化时从 electron-store 加载数据
+  // Load data from electron-store during initialization
   const hydrate = async () => {
     try {
       if (!window.ipcRenderer?.store) {
@@ -51,7 +51,7 @@ const electronPersistImpl: ElectronPersist = (f, options) => (set, get, store) =
         const persistedState = result.data
         console.log(`ElectronPersist: Loaded state for ${storageKey}:`, persistedState)
         
-        // 合并持久化状态到当前状态
+        // Merge persisted state into current state
         set((state) => ({
           ...state,
           ...persistedState,
@@ -64,7 +64,7 @@ const electronPersistImpl: ElectronPersist = (f, options) => (set, get, store) =
     }
   }
 
-  // 保存状态到 electron-store
+  // Save state to electron-store
   const persist = async (state: T) => {
     try {
       if (!window.ipcRenderer?.store || !hasHydrated) {
@@ -82,22 +82,22 @@ const electronPersistImpl: ElectronPersist = (f, options) => (set, get, store) =
     }
   }
 
-  // 创建包装后的 set 函数
+  // Create wrapped set function
   const wrappedSet: typeof set = (partial, replace) => {
     set(partial, replace)
     const newState = get()
     persist(newState)
   }
 
-  // 初始化
+  // Initialize
   const stateCreator = f(wrappedSet, get, store)
   
-  // 异步加载持久化数据
+  // Asynchronously load persisted data
   hydrate()
 
   return {
     ...stateCreator,
-    // 添加清除持久化数据的方法
+    // Add method to clear persistent data
     clearPersistentStorage: async () => {
       try {
         if (window.ipcRenderer?.store) {

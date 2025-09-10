@@ -4,7 +4,7 @@ import { electronPersist } from './electronPersist'
 import type { SSHConfigInput, DecryptedSSHConfig, SSHConfig } from '@/types/ssh'
 
 export interface SSHConfigState {
-  // 数据状态
+  // Data state
   configs: DecryptedSSHConfig[]
   isLoading: boolean
   isDecrypting: boolean
@@ -12,16 +12,16 @@ export interface SSHConfigState {
   lastFetchTime: number | null
   error: string | null
   
-  // 统计信息
+  // Statistics
   totalConfigs: number
   activeConfigs: number
   
-  // 操作状态
+  // Operation state
   isAdding: boolean
   isUpdating: boolean
   isDeleting: boolean
   
-  // 动作
+  // Actions
   fetchConfigs: (
     account: string,
     fetchFn: (account: string) => Promise<SSHConfig[]>,
@@ -43,7 +43,7 @@ export interface SSHConfigState {
 export const useSSHConfigStore = create<SSHConfigState>()(
   electronPersist(
     subscribeWithSelector((set, get) => ({
-    // 初始状态
+    // Initial state
     configs: [],
     isLoading: false,
     isDecrypting: false,
@@ -51,16 +51,16 @@ export const useSSHConfigStore = create<SSHConfigState>()(
     lastFetchTime: null,
     error: null,
     
-    // 统计信息
+    // Statistics
     totalConfigs: 0,
     activeConfigs: 0,
     
-    // 操作状态
+    // Operation state
     isAdding: false,
     isUpdating: false,
     isDeleting: false,
     
-    // 获取配置（带缓存）
+    // Get configurations (with cache)
     fetchConfigs: async (
       account: string,
       fetchFn: (account: string) => Promise<SSHConfig[]>,
@@ -69,19 +69,19 @@ export const useSSHConfigStore = create<SSHConfigState>()(
     ) => {
       const { lastFetchedAccount, configs, lastFetchTime } = get()
       
-      // 如果是相同账户且有缓存数据且不强制刷新，直接返回
+      // If same account with cached data and not forced refresh, return directly
       if (
         !force &&
         lastFetchedAccount === account &&
         configs.length > 0 &&
         lastFetchTime &&
-        Date.now() - lastFetchTime < 5 * 60 * 1000 // 5分钟缓存
+        Date.now() - lastFetchTime < 5 * 60 * 1000 // 5 minute cache
       ) {
         console.log('Using cached SSH configs for account:', account, configs.length)
         return
       }
       
-      // 如果账户不同，清空现有数据
+      // If different account, clear existing data
       if (lastFetchedAccount !== account) {
         set({
           configs: [],
@@ -98,7 +98,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
       try {
         console.log('Fetching SSH configs from blockchain for account:', account)
         
-        // 1. 从链上获取加密数据
+        // 1. Get encrypted data from blockchain
         const rawConfigs = await fetchFn(account)
         console.log(`Fetched ${rawConfigs.length} raw configs from blockchain`)
         
@@ -115,11 +115,11 @@ export const useSSHConfigStore = create<SSHConfigState>()(
         
         set({ isDecrypting: true })
         
-        // 2. 解密配置数据
+        // 2. Decrypt configuration data
         const decryptedConfigs = await decryptFn(rawConfigs)
         console.log(`Successfully decrypted ${decryptedConfigs.length} configs`)
         
-        // 3. 过滤活跃配置
+        // 3. Filter active configurations
         const activeConfigs = decryptedConfigs.filter(config => config.isActive)
         
         set({
@@ -139,7 +139,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
         })
         
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '获取配置失败'
+        const errorMessage = error instanceof Error ? error.message : 'Failed to get configuration'
         set({
           isLoading: false,
           isDecrypting: false,
@@ -147,7 +147,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
         })
         console.error('Failed to fetch SSH configs:', error)
         
-        // 如果是用户取消签名，不抛出错误，保持静默
+        // If user cancelled signature, don't throw error, remain silent
         if (errorMessage.includes('用户取消') || errorMessage.includes('User rejected')) {
           return
         }
@@ -156,16 +156,16 @@ export const useSSHConfigStore = create<SSHConfigState>()(
       }
     },
     
-    // 添加配置
+    // Add configuration
     addConfig: async (config: SSHConfigInput, addFn: (config: SSHConfigInput) => Promise<void>) => {
       set({ isAdding: true, error: null })
       
       try {
         await addFn(config)
-        // 添加成功后不立即更新本地状态，等待后续的refetch
+        // Don't immediately update local state after successful addition, wait for subsequent refetch
         console.log('SSH config added successfully')
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '添加配置失败'
+        const errorMessage = error instanceof Error ? error.message : 'Failed to add configuration'
         set({
           error: errorMessage,
           isAdding: false
@@ -177,7 +177,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
       }
     },
     
-    // 更新配置
+    // Update configuration
     updateConfig: async (
       configId: string,
       config: SSHConfigInput,
@@ -189,7 +189,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
         await updateFn(configId, config)
         console.log('SSH config updated successfully')
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '更新配置失败'
+        const errorMessage = error instanceof Error ? error.message : 'Failed to update configuration'
         set({
           error: errorMessage,
           isUpdating: false
@@ -201,14 +201,14 @@ export const useSSHConfigStore = create<SSHConfigState>()(
       }
     },
     
-    // 删除配置
+    // Delete configuration
     deleteConfig: async (configId: string, deleteFn: (configId: string) => Promise<void>) => {
       set({ isDeleting: true, error: null })
       
       try {
         await deleteFn(configId)
         
-        // 从本地状态中移除配置
+        // Remove configuration from local state
         const { configs } = get()
         const updatedConfigs = configs.filter(config => config.id !== configId)
         set({
@@ -219,7 +219,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
         
         console.log('SSH config deleted successfully')
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '删除配置失败'
+        const errorMessage = error instanceof Error ? error.message : 'Failed to delete configuration'
         set({
           error: errorMessage,
           isDeleting: false
@@ -231,7 +231,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
       }
     },
     
-    // 清空配置缓存
+    // Clear configuration cache
     clearConfigCache: async (account?: string) => {
       if (account) {
         const { lastFetchedAccount } = get()
@@ -257,7 +257,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
         console.log('Cleared all SSH config cache')
       }
       
-      // 清除持久化存储
+      // Clear persistent storage
       try {
         if (window.ipcRenderer?.store) {
           await window.ipcRenderer.store.delete('ssh-config-store')
@@ -267,7 +267,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
       }
     },
     
-    // 直接设置配置数据
+    // Directly set configuration data
     setConfigs: (configs: DecryptedSSHConfig[]) => {
       const activeConfigs = configs.filter(config => config.isActive)
       set({
@@ -279,7 +279,7 @@ export const useSSHConfigStore = create<SSHConfigState>()(
       })
     },
     
-    // 清除错误
+    // Clear error
     clearError: () => {
       set({ error: null })
     }
@@ -296,23 +296,23 @@ export const useSSHConfigStore = create<SSHConfigState>()(
   }
 ))
 
-// 计算选择器
+// Computed selectors
 export const useSSHConfigSelectors = () => {
   const state = useSSHConfigStore()
   console.log('state', state)
   
   return {
-    // 是否有缓存数据
+    // Whether there is cached data
     hasCachedConfigs: state.configs.length > 0 && state.lastFetchTime !== null,
-    // 是否应该显示加载状态
+    // Whether loading state should be displayed
     shouldShowLoading: state.isLoading && state.configs.length === 0,
-    // 是否应该显示解密状态
+    // Whether decryption state should be displayed
     shouldShowDecrypting: state.isDecrypting,
-    // 是否有任何操作进行中
+    // Whether any operation is in progress
     isProcessing: state.isLoading || state.isDecrypting || state.isAdding || state.isUpdating || state.isDeleting,
-    // 是否可以进行操作
+    // Whether operations can be performed
     canPerformAction: !state.isLoading && !state.isDecrypting,
-    // 缓存时间信息
+    // Cache time information
     cacheAge: state.lastFetchTime ? Date.now() - state.lastFetchTime : null,
     isCacheValid: state.lastFetchTime ? Date.now() - state.lastFetchTime < 5 * 60 * 1000 : false
   }

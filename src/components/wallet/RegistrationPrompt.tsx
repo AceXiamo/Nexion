@@ -20,7 +20,7 @@ export function RegistrationPrompt() {
             {t('wallet:registration.description')}
           </p>
           
-          {/* 功能亮点 */}
+          {/* Feature highlights */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="flex items-center space-x-2">
               <Icon icon="mdi:shield-check" className="w-4 h-4 text-lime-400" />

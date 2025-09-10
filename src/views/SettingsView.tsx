@@ -57,7 +57,7 @@ export function SettingsView() {
 
   return (
     <div className="space-y-6">
-      {/* 基本设置 */}
+      {/* Basic settings */}
       <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
         <div className="flex items-center space-x-3 mb-6">
           <Icon icon="lucide:settings" className="w-6 h-6 text-[#BCFF2F]" />
@@ -65,7 +65,7 @@ export function SettingsView() {
         </div>
 
         <div className="space-y-4">
-          {/* 语言设置 */}
+          {/* Language settings */}
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-[#272727] rounded-lg flex items-center justify-center">
@@ -81,7 +81,7 @@ export function SettingsView() {
         </div>
       </div>
 
-      {/* 快捷键设置 */}
+      {/* Keyboard shortcuts settings */}
       <div className="bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] p-6">
         <div className="flex items-center space-x-3 mb-6">
           <Icon icon="lucide:keyboard" className="w-6 h-6 text-[#BCFF2F]" />
@@ -89,7 +89,7 @@ export function SettingsView() {
         </div>
 
         <div className="space-y-4">
-          {/* 快捷键总开关 */}
+          {/* Keyboard shortcuts master switch */}
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-[#272727] rounded-lg flex items-center justify-center">
@@ -110,7 +110,7 @@ export function SettingsView() {
             <>
               <div className="border-t border-[#333333] pt-4"></div>
 
-              {/* 快捷键列表 */}
+              {/* Keyboard shortcuts list */}
               <div className="space-y-6">
                 {Object.entries(groupedShortcuts).map(([category, categoryShortcuts]) => (
                   <div key={category} className="space-y-4">

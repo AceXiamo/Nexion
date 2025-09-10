@@ -4,17 +4,17 @@ import { DeterministicSignatureService } from './deterministic-signature'
 import type { SSHConfigInput, DecryptedSSHConfig } from '@/types/ssh'
 
 /**
- * 基于确定性签名的 SSH 配置加密服务
- * 使用确定性钱包签名派生稳定加密密钥，采用 ChaCha20Poly1305 对称加密
+ * SSH configuration encryption service based on deterministic signatures
+ * Uses deterministic wallet signatures to derive stable encryption keys, employing ChaCha20Poly1305 symmetric encryption
  * 
- * 重构说明：
- * - 移除了不稳定的基于日期的密钥派生
- * - 添加了主密钥内存+持久缓存机制，避免重复签名
- * - 使用确定性签名确保密钥一致性
- * - 支持localStorage持久化，用户断开钱包时自动清理
+ * Refactoring notes:
+ * - Removed unstable date-based key derivation
+ * - Added master key memory + persistent cache mechanism to avoid repeated signing
+ * - Uses deterministic signatures to ensure key consistency
+ * - Supports localStorage persistence, automatically cleaned when wallet is disconnected
  */
 /**
- * 持久缓存数据结构
+ * Persistent cache data structure
  */
 interface CachedMasterKey {
   version: string
@@ -25,16 +25,16 @@ interface CachedMasterKey {
 }
 
 export class WalletBasedEncryptionService {
-  // 主密钥内存缓存：钱包地址 -> 主密钥
+  // Master key memory cache: wallet address -> master key
   private static masterKeyCache = new Map<string, Uint8Array>()
   
-  // 持久缓存配置
+  // Persistent cache configuration
   private static readonly CACHE_KEY_PREFIX = 'ssh_master_key_'
   private static readonly CACHE_VERSION = '1.0'
-  private static readonly CACHE_EXPIRY_HOURS = 24 // 24小时过期
+  private static readonly CACHE_EXPIRY_HOURS = 24 // 24 hours expiry
 
   /**
-   * 检查localStorage是否可用
+   * Check if localStorage is available
    */
   private static isLocalStorageAvailable(): boolean {
     try {
@@ -42,7 +42,7 @@ export class WalletBasedEncryptionService {
         return false
       }
       
-      // 测试localStorage读写功能
+      // Test localStorage read/write functionality
       const testKey = '__ssh_localStorage_test__'
       localStorage.setItem(testKey, 'test')
       localStorage.removeItem(testKey)
@@ -53,14 +53,14 @@ export class WalletBasedEncryptionService {
   }
 
   /**
-   * 生成持久缓存的键
+   * Generate persistent cache key
    */
   private static getCacheKey(walletAddress: string): string {
     return `${this.CACHE_KEY_PREFIX}${walletAddress.toLowerCase()}`
   }
 
   /**
-   * 从localStorage读取持久缓存的主密钥
+   * Load master key from localStorage persistent cache
    */
   private static loadMasterKeyFromPersistentCache(walletAddress: string): Uint8Array | null {
     try {
@@ -77,48 +77,48 @@ export class WalletBasedEncryptionService {
 
       const parsed: CachedMasterKey = JSON.parse(cachedData)
       
-      // 验证缓存版本
+      // Verify cache version
       if (parsed.version !== this.CACHE_VERSION) {
-        console.log(`缓存版本不匹配，清理旧版本缓存: ${parsed.version} != ${this.CACHE_VERSION}`)
+        console.log(`Cache version mismatch, clearing old version cache: ${parsed.version} != ${this.CACHE_VERSION}`)
         localStorage.removeItem(cacheKey)
         return null
       }
 
-      // 验证缓存是否过期
+      // Verify if cache is expired
       if (Date.now() > parsed.expiresAt) {
-        console.log(`缓存已过期，清理过期缓存: ${walletAddress}`)
+        console.log(`Cache expired, clearing expired cache: ${walletAddress}`)
         localStorage.removeItem(cacheKey)
         return null
       }
 
-      // 验证钱包地址
+      // Verify wallet address
       if (parsed.walletAddress.toLowerCase() !== walletAddress.toLowerCase()) {
-        console.log(`钱包地址不匹配，清理无效缓存`)
+        console.log(`Wallet address mismatch, clearing invalid cache`)
         localStorage.removeItem(cacheKey)
         return null
       }
 
-      console.log(`从持久缓存加载主密钥: ${walletAddress}`)
+      console.log(`Loading master key from persistent cache: ${walletAddress}`)
       return new Uint8Array(parsed.masterKey)
     } catch (error) {
-      console.error('读取持久缓存失败:', error)
-      // 清理损坏的缓存
+      console.error('Failed to read persistent cache:', error)
+      // Clean up corrupted cache
       try {
         localStorage.removeItem(this.getCacheKey(walletAddress))
       } catch (cleanupError) {
-        console.error('清理损坏缓存失败:', cleanupError)
+        console.error('Failed to clean up corrupted cache:', cleanupError)
       }
       return null
     }
   }
 
   /**
-   * 将主密钥保存到localStorage持久缓存
+   * Save master key to localStorage persistent cache
    */
   private static saveMasterKeyToPersistentCache(walletAddress: string, masterKey: Uint8Array): void {
     try {
       if (!this.isLocalStorageAvailable()) {
-        console.log('localStorage不可用，跳过持久缓存保存')
+        console.log('localStorage unavailable, skipping persistent cache save')
         return
       }
 
@@ -128,22 +128,22 @@ export class WalletBasedEncryptionService {
       const cacheData: CachedMasterKey = {
         version: this.CACHE_VERSION,
         walletAddress: walletAddress.toLowerCase(),
-        masterKey: Array.from(masterKey), // 转换为普通数组
+        masterKey: Array.from(masterKey), // Convert to regular array
         timestamp: now,
         expiresAt
       }
 
       const cacheKey = this.getCacheKey(walletAddress)
       localStorage.setItem(cacheKey, JSON.stringify(cacheData))
-      console.log(`主密钥已保存到持久缓存: ${walletAddress}，过期时间: ${new Date(expiresAt).toLocaleString()}`)
+      console.log(`Master key saved to persistent cache: ${walletAddress}, expires at: ${new Date(expiresAt).toLocaleString()}`)
     } catch (error) {
-      console.error('保存主密钥到持久缓存失败:', error)
-      // 持久缓存失败不影响正常功能，继续使用内存缓存
+      console.error('Failed to save master key to persistent cache:', error)
+      // Persistent cache failure doesn't affect normal functionality, continue using memory cache
     }
   }
 
   /**
-   * 清理指定钱包的持久缓存
+   * Clear persistent cache for specified wallet
    */
   private static clearPersistentCache(walletAddress: string): void {
     try {
@@ -154,14 +154,14 @@ export class WalletBasedEncryptionService {
       const cacheKey = this.getCacheKey(walletAddress)
       const removed = localStorage.getItem(cacheKey) !== null
       localStorage.removeItem(cacheKey)
-      console.log(`清理持久缓存: ${walletAddress}`, removed ? '成功' : '无缓存')
+      console.log(`Clear persistent cache: ${walletAddress}`, removed ? 'success' : 'no cache')
     } catch (error) {
-      console.error('清理持久缓存失败:', error)
+      console.error('Failed to clear persistent cache:', error)
     }
   }
 
   /**
-   * 清理所有SSH相关的持久缓存
+   * Clear all SSH-related persistent cache
    */
   private static clearAllPersistentCache(): void {
     try {
@@ -171,7 +171,7 @@ export class WalletBasedEncryptionService {
 
       const keysToRemove: string[] = []
       
-      // 遍历localStorage找到所有SSH缓存键
+      // Traverse localStorage to find all SSH cache keys
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i)
         if (key && key.startsWith(this.CACHE_KEY_PREFIX)) {
@@ -179,25 +179,25 @@ export class WalletBasedEncryptionService {
         }
       }
 
-      // 删除找到的缓存
+      // Delete found caches
       keysToRemove.forEach(key => {
         localStorage.removeItem(key)
       })
 
-      console.log(`清理所有持久缓存，共 ${keysToRemove.length} 个`)
+      console.log(`Cleared all persistent cache, total ${keysToRemove.length} items`)
     } catch (error) {
-      console.error('清理所有持久缓存失败:', error)
+      console.error('Failed to clear all persistent cache:', error)
     }
   }
 
   /**
-   * 通过确定性签名派生加密密钥（带双重缓存）
+   * Derive encryption key through deterministic signature (with dual cache)
    * 
-   * 新实现说明：
-   * - 使用固定消息确保签名确定性
-   * - 添加内存+持久双重缓存，同一钱包地址只需签名一次
-   * - 支持跨会话缓存，提升用户体验
-   * - 钱包断开连接时自动清理所有缓存
+   * New implementation notes:
+   * - Uses fixed messages to ensure signature determinism
+   * - Adds memory + persistent dual cache, same wallet address only needs to sign once
+   * - Supports cross-session cache, improving user experience
+   * - Automatically clears all cache when wallet is disconnected
    */
   private static async deriveEncryptionKey(
     walletAddress: string, 
@@ -206,38 +206,38 @@ export class WalletBasedEncryptionService {
     try {
       const addressKey = walletAddress.toLowerCase()
 
-      // 1. 检查内存缓存（最快）
+      // 1. Check memory cache (fastest)
       const memoryCachedKey = this.masterKeyCache.get(addressKey)
       if (memoryCachedKey) {
-        console.log(`使用内存缓存的主密钥: ${walletAddress}`)
+        console.log(`Using memory cached master key: ${walletAddress}`)
         return memoryCachedKey
       }
 
-      // 2. 检查持久缓存（避免跨会话重复签名）
+      // 2. Check persistent cache (avoid cross-session duplicate signing)
       const persistentCachedKey = this.loadMasterKeyFromPersistentCache(walletAddress)
       if (persistentCachedKey) {
-        console.log(`使用持久缓存的主密钥: ${walletAddress}`)
-        // 同时更新内存缓存以提高后续访问速度
+        console.log(`Using persistent cached master key: ${walletAddress}`)
+        // Also update memory cache to improve subsequent access speed
         this.masterKeyCache.set(addressKey, persistentCachedKey)
         return persistentCachedKey
       }
 
-      // 3. 缓存全部未命中，需要重新派生主密钥
-      console.log(`派生新的主密钥: ${walletAddress}`)
+      // 3. All caches missed, need to re-derive master key
+      console.log(`Deriving new master key: ${walletAddress}`)
       const masterKey = await DeterministicSignatureService.deriveMasterKey(
         walletAddress,
         signMessageAsync
       )
 
-      // 4. 同时更新内存缓存和持久缓存
+      // 4. Update both memory cache and persistent cache
       this.masterKeyCache.set(addressKey, masterKey)
       this.saveMasterKeyToPersistentCache(walletAddress, masterKey)
-      console.log(`主密钥已缓存（内存+持久）: ${walletAddress}`)
+      console.log(`Master key cached (memory + persistent): ${walletAddress}`)
 
       return masterKey
     } catch (error) {
-      console.error('派生加密密钥失败:', error)
-      throw error // 直接抛出，让确定性签名服务处理具体错误
+      console.error('Failed to derive encryption key:', error)
+      throw error // Throw directly, let deterministic signature service handle specific errors
     }
   }
 
@@ -272,18 +272,18 @@ export class WalletBasedEncryptionService {
     
     try {
       if (this.isLocalStorageAvailable()) {
-        // 扫描localStorage中的SSH缓存
+        // Scan SSH cache in localStorage
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i)
           if (key && key.startsWith(this.CACHE_KEY_PREFIX)) {
-            // 提取钱包地址
+            // Extract wallet address
             const address = key.substring(this.CACHE_KEY_PREFIX.length)
             persistentCachedAddresses.push(address)
           }
         }
       }
     } catch (error) {
-      console.error('扫描持久缓存失败:', error)
+      console.error('Failed to scan persistent cache:', error)
     }
 
     return {
@@ -299,7 +299,7 @@ export class WalletBasedEncryptionService {
   }
 
   /**
-   * 清理过期的持久缓存（维护任务）
+   * Clean up expired persistent cache (maintenance task)
    */
   static cleanupExpiredPersistentCache(): void {
     try {
@@ -310,7 +310,7 @@ export class WalletBasedEncryptionService {
       const keysToRemove: string[] = []
       const now = Date.now()
       
-      // 遍历所有SSH缓存
+      // Traverse all SSH caches
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i)
         if (key && key.startsWith(this.CACHE_KEY_PREFIX)) {
@@ -319,36 +319,36 @@ export class WalletBasedEncryptionService {
             if (cachedData) {
               const parsed: CachedMasterKey = JSON.parse(cachedData)
               
-              // 检查是否过期或版本不匹配
+              // Check if expired or version mismatch
               if (now > parsed.expiresAt || parsed.version !== this.CACHE_VERSION) {
                 keysToRemove.push(key)
               }
             }
           } catch (parseError) {
-            // 损坏的缓存也要清理
-            console.error(`解析缓存失败，将清理: ${key}`, parseError)
+            // Corrupted cache also needs to be cleaned
+            console.error(`Failed to parse cache, will clean: ${key}`, parseError)
             keysToRemove.push(key)
           }
         }
       }
 
-      // 删除过期缓存
+      // Delete expired caches
       keysToRemove.forEach(key => {
         localStorage.removeItem(key)
       })
 
       if (keysToRemove.length > 0) {
-        console.log(`清理过期持久缓存，共 ${keysToRemove.length} 个`)
+        console.log(`Cleaned expired persistent cache, total ${keysToRemove.length} items`)
       }
     } catch (error) {
-      console.error('清理过期持久缓存失败:', error)
+      console.error('Failed to clean expired persistent cache:', error)
     }
   }
 
 
 
   /**
-   * 使用用户钱包地址加密 SSH 配置
+   * Encrypt SSH configuration using user wallet address
    */
   static async encryptSSHConfig(
     config: SSHConfigInput,
@@ -356,56 +356,56 @@ export class WalletBasedEncryptionService {
     signMessageAsync: (message: { message: string }) => Promise<string>
   ): Promise<string> {
     try {
-      // 1. 获取或生成加密密钥
+      // 1. Get or generate encryption key
       const encryptionKey = await this.deriveEncryptionKey(walletAddress, signMessageAsync)
 
-      // 2. 序列化配置数据
+      // 2. Serialize configuration data
       const configData = JSON.stringify({
         ...config,
         timestamp: Date.now(),
       })
       const plaintext = new TextEncoder().encode(configData)
 
-      // 3. 生成随机 nonce
-      const nonce = randomBytes(24) // XChaCha20Poly1305 需要 24 字节 nonce
+      // 3. Generate random nonce
+      const nonce = randomBytes(24) // XChaCha20Poly1305 requires 24-byte nonce
 
-      // 4. 使用对称加密
+      // 4. Use symmetric encryption
       const cipher = xchacha20poly1305(encryptionKey, nonce)
       const ciphertext = cipher.encrypt(plaintext)
 
-      // 5. 返回简化的结果格式
+      // 5. Return simplified result format
       const result = {
         nonce: Array.from(nonce),
         ciphertext: Array.from(ciphertext),
-        keyVersion: '3.0' // 确定性签名版本标识
+        keyVersion: '3.0' // Deterministic signature version identifier
       }
 
       return JSON.stringify(result)
     } catch (error) {
-      console.error('SSH配置加密失败:', error)
+      console.error('SSH configuration encryption failed:', error)
       
-      // 提供更具体的错误信息
+      // Provide more specific error messages
       if (error instanceof Error) {
         if (error.message.includes('用户取消') || error.message.includes('签名')) {
-          throw new Error('用户取消了签名操作，加密过程已中断')
+          throw new Error('User cancelled the signing operation, encryption process interrupted')
         }
         if (error.message.includes('钱包连接已断开') || error.message.includes('Connector not found')) {
-          throw new Error('钱包连接已断开，请重新连接钱包后重试')
+          throw new Error('Wallet connection lost, please reconnect wallet and try again')
         }
         if (error.message.includes('网络') || error.message.includes('连接')) {
-          throw new Error('网络连接异常，请检查网络后重试')
+          throw new Error('Network connection error, please check network and try again')
         }
         
-        // 如果是已知错误，直接抛出
+        // If it's a known error, throw directly
         throw error
       }
       
-      throw new Error('配置加密过程中发生未知错误，请重试')
+      throw new Error('Unknown error occurred during configuration encryption, please try again')
     }
   }
 
   /**
-   * 使用用户钱包地址解密 SSH 配置
+   * Decrypt SSH configuration using user wallet address
    */
   static async decryptSSHConfig(
     encryptedData: string,
@@ -416,28 +416,28 @@ export class WalletBasedEncryptionService {
     signMessageAsync: (message: { message: string }) => Promise<string>
   ): Promise<DecryptedSSHConfig> {
     try {
-      // 1. 解析加密数据
+      // 1. Parse encrypted data
       const encrypted = JSON.parse(encryptedData)
       const { nonce, ciphertext, keyVersion } = encrypted
 
-      // 检查版本 - 支持新的确定性签名版本
+      // Check version - support new deterministic signature versions
       if (keyVersion !== '3.0' && keyVersion !== '2.0') {
-        throw new Error(`不支持的加密版本: ${keyVersion || 'unknown'}。请升级应用或重新创建配置。`)
+        throw new Error(`Unsupported encryption version: ${keyVersion || 'unknown'}. Please upgrade the application or recreate the configuration.`)
       }
 
-      // 2. 获取加密密钥（可能需要用户签名）
+      // 2. Get encryption key (may require user signature)
       const encryptionKey = await this.deriveEncryptionKey(walletAddress, signMessageAsync)
 
-      // 3. 解密数据
+      // 3. Decrypt data
       const nonceArray = new Uint8Array(nonce)
       const ciphertextArray = new Uint8Array(ciphertext)
       const cipher = xchacha20poly1305(encryptionKey, nonceArray)
       const plaintext = cipher.decrypt(ciphertextArray)
 
-      // 4. 解析配置数据
+      // 4. Parse configuration data
       const configData = JSON.parse(new TextDecoder().decode(plaintext))
       
-      // 5. 构建完整的解密配置对象
+      // 5. Build complete decrypted configuration object
       return {
         id: configId,
         name: configData.name,
@@ -453,36 +453,36 @@ export class WalletBasedEncryptionService {
         isActive,
       }
     } catch (error) {
-      console.error('SSH配置解密失败:', error)
+      console.error('SSH configuration decryption failed:', error)
       
-      // 提供更具体的错误信息
+      // Provide more specific error messages
       if (error instanceof Error) {
         if (error.message.includes('不支持的加密版本')) {
-          throw new Error('配置版本不兼容，请重新创建此配置')
+          throw new Error('Configuration version incompatible, please recreate this configuration')
         }
         if (error.message.includes('用户取消') || error.message.includes('签名')) {
-          throw new Error('需要签名验证身份才能解密配置')
+          throw new Error('Signature verification required to decrypt configuration')
         }
         if (error.message.includes('钱包连接已断开') || error.message.includes('Connector not found')) {
-          throw new Error('钱包连接已断开，请重新连接')
+          throw new Error('Wallet connection lost, please reconnect')
         }
         if (error.message.includes('invalid') || error.message.includes('SyntaxError')) {
-          throw new Error('配置数据已损坏或格式错误')
+          throw new Error('Configuration data is corrupted or format error')
         }
         if (error.message.includes('decrypt')) {
-          throw new Error('解密失败，可能是密钥不匹配')
+          throw new Error('Decryption failed, possible key mismatch')
         }
         
-        // 如果是已知错误，直接抛出
+        // If it's a known error, throw directly
         throw error
       }
       
-      throw new Error('配置解密过程中发生未知错误')
+      throw new Error('Unknown error occurred during configuration decryption')
     }
   }
 
   /**
-   * 验证加密数据的完整性
+   * Validate the integrity of encrypted data
    */
   static validateEncryptedData(encryptedData: string): boolean {
     try {
@@ -494,7 +494,7 @@ export class WalletBasedEncryptionService {
         Array.isArray(data.nonce) &&
         Array.isArray(data.ciphertext) &&
         data.nonce.length === 24 && // XChaCha20Poly1305 nonce
-        data.ciphertext.length > 16 && // 至少包含认证标签
+        data.ciphertext.length > 16 && // At least contains authentication tag
         (data.keyVersion === '3.0' || data.keyVersion === '2.0')
       )
     } catch {
@@ -503,14 +503,14 @@ export class WalletBasedEncryptionService {
   }
 
   /**
-   * 生成配置摘要（用于显示，不包含敏感信息）
+   * Generate configuration summary (for display, does not contain sensitive information)
    */
   static generateConfigSummary(config: DecryptedSSHConfig): string {
     return `${config.name} (${config.username}@${config.host}:${config.port})`
   }
 
   /**
-   * 测试确定性签名支持（调试功能）
+   * Test deterministic signature support (debugging feature)
    */
   static async testDeterministicSignature(
     signMessageAsync: (message: { message: string }) => Promise<string>

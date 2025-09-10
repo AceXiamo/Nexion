@@ -3,18 +3,18 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { electronPersist } from './electronPersist'
 
 export interface UserRegistrationState {
-  // 状态
-  isRegistered: boolean | null // null=未知, false=未注册, true=已注册
+  // State
+  isRegistered: boolean | null // null=unknown, false=not registered, true=registered
   isLoading: boolean
   lastCheckedAccount: string | null
   showRegistrationPrompt: boolean
   
-  // 注册操作状态
+  // Registration operation state
   isRegistering: boolean
   registrationConfirmed: boolean
   error: string | null
   
-  // 动作
+  // Actions
   checkRegistrationStatus: (account: string, checkFn: (account: string) => Promise<boolean>) => Promise<void>
   setRegistrationStatus: (status: boolean) => void
   clearRegistrationCache: () => Promise<void>
@@ -27,28 +27,28 @@ export interface UserRegistrationState {
 export const useUserRegistrationStore = create<UserRegistrationState>()(
   electronPersist(
     subscribeWithSelector((set, get) => ({
-    // 初始状态
+    // Initial state
     isRegistered: null,
     isLoading: false,
     lastCheckedAccount: null,
     showRegistrationPrompt: false,
     
-    // 注册操作状态
+    // Registration operation state
     isRegistering: false,
     registrationConfirmed: false,
     error: null,
     
-    // 检查注册状态（带缓存）
+    // Check registration status (with cache)
     checkRegistrationStatus: async (account: string, checkFn: (account: string) => Promise<boolean>) => {
       const { lastCheckedAccount, isRegistered } = get()
       
-      // 如果是相同账户且已有缓存结果，直接返回
+      // If same account with cached result, return directly
       if (lastCheckedAccount === account && isRegistered !== null) {
         console.log('Using cached registration status for account:', account, isRegistered)
         return
       }
       
-      // 如果账户不同，重置状态
+      // If different account, reset state
       if (lastCheckedAccount !== account) {
         set({
           isRegistered: null,
@@ -68,12 +68,12 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
           isRegistered: status,
           lastCheckedAccount: account,
           isLoading: false,
-          showRegistrationPrompt: !status, // 未注册时显示提示
+          showRegistrationPrompt: !status, // Show prompt when not registered
         })
         
         console.log('Registration status updated:', { account, status })
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '检查注册状态失败'
+        const errorMessage = error instanceof Error ? error.message : 'Failed to check registration status'
         set({
           isLoading: false,
           error: errorMessage,
@@ -83,7 +83,7 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
       }
     },
     
-    // 直接设置注册状态
+    // Directly set registration status
     setRegistrationStatus: (status: boolean) => {
       console.log('setRegistrationStatus', status)
       set({
@@ -93,7 +93,7 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
       })
     },
     
-    // 清空注册缓存
+    // Clear registration cache
     clearRegistrationCache: async () => {
       set({
         isRegistered: null,
@@ -102,7 +102,7 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
         error: null
       })
       
-      // 清除持久化存储
+      // Clear persistent storage
       try {
         if (window.ipcRenderer?.store) {
           await window.ipcRenderer.store.delete('user-registration-store')
@@ -112,12 +112,12 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
       }
     },
     
-    // 设置注册提示显示状态
+    // Set registration prompt display state
     setShowRegistrationPrompt: (show: boolean) => {
       set({ showRegistrationPrompt: show })
     },
     
-    // 处理注册操作
+    // Handle registration operation
     handleRegister: async (registerFn: () => Promise<void>) => {
       set({ isRegistering: true, error: null })
       
@@ -125,7 +125,7 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
         await registerFn()
         console.log('Registration initiated successfully')
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '注册失败'
+        const errorMessage = error instanceof Error ? error.message : 'Registration failed'
         set({
           error: errorMessage,
           isRegistering: false
@@ -135,7 +135,7 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
       }
     },
     
-    // 设置注册确认状态
+    // Set registration confirmation state
     setRegistrationConfirmed: (confirmed: boolean) => {
       set({
         registrationConfirmed: confirmed,
@@ -143,7 +143,7 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
       })
       
       if (confirmed) {
-        // 注册确认后，清空缓存以便重新查询状态
+        // After registration confirmation, clear cache to re-query status
         set({
           isRegistered: null,
           showRegistrationPrompt: false
@@ -151,7 +151,7 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
       }
     },
     
-    // 清除错误
+    // Clear error
     clearError: () => {
       set({ error: null })
     }
@@ -165,18 +165,18 @@ export const useUserRegistrationStore = create<UserRegistrationState>()(
   }
 ))
 
-// 计算选择器
+// Computed selectors
 export const useUserRegistrationSelectors = () => {
   const state = useUserRegistrationStore()
   
   return {
-    // 是否已知注册状态（不是null）
+    // Whether registration status is known (not null)
     hasRegistrationStatus: state.isRegistered !== null,
-    // 是否应该显示加载状态
+    // Whether loading state should be displayed
     shouldShowLoading: state.isLoading && state.isRegistered === null,
-    // 是否应该显示注册提示
+    // Whether registration prompt should be displayed
     shouldShowRegistrationPrompt: state.showRegistrationPrompt && state.isRegistered === false,
-    // 操作状态
+    // Operation status
     isProcessing: state.isLoading || state.isRegistering
   }
 }

@@ -15,11 +15,11 @@ export function ConnectionsView() {
   const { isConnected } = useWalletStore()
   const { isRegistered } = useUserRegistration()
   
-  // 使用选择器获取更精细的状态控制
+  // Use selectors to get more fine-grained state control
   const { hasRegistrationStatus, shouldShowLoading: shouldShowRegistrationLoading } = useUserRegistrationSelectors()
   
   
-  // SSH 配置管理
+  // SSH configuration management
   const {
     configs,
     isLoading: isLoadingConfigs,
@@ -32,23 +32,23 @@ export function ConnectionsView() {
     isDeleting,
   } = useSSHConfigs()
   
-  // 模态框状态
+  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingConfig, setEditingConfig] = useState<DecryptedSSHConfig | undefined>()
   
-  // 处理添加配置
+  // Handle add configuration
   const handleAddConfig = () => {
     setEditingConfig(undefined)
     setIsModalOpen(true)
   }
   
-  // 处理编辑配置
+  // Handle edit configuration
   const handleEditConfig = (config: DecryptedSSHConfig) => {
     setEditingConfig(config)
     setIsModalOpen(true)
   }
   
-  // 处理表单提交
+  // Handle form submission
   const handleSubmitConfig = async (configData: SSHConfigInput) => {
     if (editingConfig) {
       await updateConfig(editingConfig.id, configData)
@@ -57,19 +57,19 @@ export function ConnectionsView() {
     }
   }
   
-  // 处理删除配置
+  // Handle delete configuration
   const handleDeleteConfig = async (configId: string) => {
     await deleteConfig(configId)
   }
 
   
-  // 关闭模态框
+  // Close modal
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setEditingConfig(undefined)
   }
   
-  // 检查是否有操作正在进行
+  // Check if any operation is in progress
   const isSubmitting = isAdding || isUpdating || isDeleting
 
   if (!isConnected) {
@@ -113,22 +113,22 @@ export function ConnectionsView() {
         {/* Registration Prompt */}
         <RegistrationPrompt />
 
-        {/* SSH 配置管理区域 - 优化状态显示以避免闪动 */}
+        {/* SSH configuration management area - optimize state display to avoid flickering */}
         {(() => {
-          // 如果没有注册状态且正在加载，显示加载状态
+          // If no registration status and loading, show loading state
           if (!hasRegistrationStatus && shouldShowRegistrationLoading) {
             return (
               <div className="border border-[#1a1a1a] bg-[#0f0f0f] rounded-xl shadow-lg p-12 text-center">
                 <div className="w-16 h-16 bg-[#BCFF2F]/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-[#BCFF2F]/20">
                   <Icon icon="lucide:loader-2" className="w-8 h-8 text-[#BCFF2F] animate-spin" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-4">检查身份验证状态...</h3>
-                <p className="text-[#CCCCCC] text-sm">正在验证您的钱包注册状态，请稍候</p>
+                <h3 className="text-xl font-semibold text-white mb-4">Checking authentication status...</h3>
+                <p className="text-[#CCCCCC] text-sm">Verifying your wallet registration status, please wait</p>
               </div>
             )
           }
           
-          // 如果已注册，显示配置列表
+          // If registered, show configuration list
           if (isRegistered) {
             return (
               <SSHConfigList
@@ -143,7 +143,7 @@ export function ConnectionsView() {
             )
           }
           
-          // 如果未注册，显示认证提示
+          // If not registered, show authentication prompt
           return (
             <div className="border border-[#1a1a1a] bg-[#0f0f0f] rounded-xl shadow-lg p-12 text-center">
               <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-orange-500/20">
@@ -167,7 +167,7 @@ export function ConnectionsView() {
         })()}
       </div>
 
-      {/* SSH 配置模态框 */}
+      {/* SSH configuration modal */}
       <SSHConfigModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

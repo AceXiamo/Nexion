@@ -29,7 +29,7 @@ export function PathBreadcrumb({ path, onPathClick, onEditClick }: PathBreadcrum
         size="sm"
         onClick={onEditClick}
         className="p-1 h-6 w-6 flex-shrink-0"
-        title="编辑路径"
+        title="Edit Path"
       >
         <Icon icon="mdi:pencil" className="w-3 h-3" />
       </Button>

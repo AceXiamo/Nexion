@@ -1,8 +1,8 @@
 import { SSHSessionData } from '@/types/electron'
 
 /**
- * 全局会话状态管理器
- * 解决会话历史记录丢失问题，在内存中维护会话状态
+ * Global session state manager
+ * Solves session history loss issue by maintaining session state in memory
  */
 class SessionStore {
   private static instance: SessionStore
@@ -20,12 +20,12 @@ class SessionStore {
   }
 
   /**
-   * 订阅会话状态变化
+   * Subscribe to session state changes
    */
   subscribe(listener: (sessions: SSHSessionData[]) => void): () => void {
     this.listeners.add(listener)
 
-    // 立即触发一次回调，传递当前状态
+    // Immediately trigger callback once, passing current state
     listener(this.getAllSessions())
 
     return () => {
@@ -34,7 +34,7 @@ class SessionStore {
   }
 
   /**
-   * 通知所有监听器
+   * Notify all listeners
    */
   private notifyListeners() {
     const sessions = this.getAllSessions()
@@ -48,19 +48,19 @@ class SessionStore {
   }
 
   /**
-   * 添加或更新会话
+   * Add or update session
    */
   updateSession(sessionData: SSHSessionData) {
-    console.log('🔄 SessionStore: 更新会话', sessionData.id, sessionData.status)
+    console.log('🔄 SessionStore: Updating session', sessionData.id, sessionData.status)
     this.sessions.set(sessionData.id, sessionData)
     this.notifyListeners()
   }
 
   /**
-   * 批量更新会话
+   * Batch update sessions
    */
   updateSessions(sessions: SSHSessionData[]) {
-    console.log('🔄 SessionStore: 批量更新会话', sessions.length)
+    console.log('🔄 SessionStore: Batch updating sessions', sessions.length)
     sessions.forEach((session) => {
       this.sessions.set(session.id, session)
     })
@@ -68,13 +68,13 @@ class SessionStore {
   }
 
   /**
-   * 移除会话
+   * Remove session
    */
   removeSession(sessionId: string) {
-    console.log('🗑️ SessionStore: 删除会话', sessionId)
+    console.log('🗑️ SessionStore: Removing session', sessionId)
     this.sessions.delete(sessionId)
 
-    // 如果删除的是活跃会话，清空活跃状态
+    // If removing the active session, clear active state
     if (this.activeSessionId === sessionId) {
       this.activeSessionId = undefined
     }
@@ -83,16 +83,16 @@ class SessionStore {
   }
 
   /**
-   * 设置活跃会话
+   * Set active session
    */
   setActiveSession(sessionId: string | undefined) {
-    console.log('🎯 SessionStore: 设置活跃会话', sessionId)
+    console.log('🎯 SessionStore: Setting active session', sessionId)
 
-    // 更新活跃状态
+    // Update active state
     const oldActiveId = this.activeSessionId
     this.activeSessionId = sessionId
 
-    // 更新会话的isActive状态
+    // Update session's isActive state
     this.sessions.forEach((session, id) => {
       if (id === oldActiveId && session.isActive) {
         this.sessions.set(id, { ...session, isActive: false })
@@ -106,42 +106,42 @@ class SessionStore {
   }
 
   /**
-   * 获取活跃会话ID
+   * Get active session ID
    */
   getActiveSessionId(): string | undefined {
     return this.activeSessionId
   }
 
   /**
-   * 获取所有会话
+   * Get all sessions
    */
   getAllSessions(): SSHSessionData[] {
     return Array.from(this.sessions.values()).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
   /**
-   * 获取指定会话
+   * Get specified session
    */
   getSession(sessionId: string): SSHSessionData | undefined {
     return this.sessions.get(sessionId)
   }
 
   /**
-   * 检查会话是否存在
+   * Check if session exists
    */
   hasSession(sessionId: string): boolean {
     return this.sessions.has(sessionId)
   }
 
   /**
-   * 获取会话数量
+   * Get session count
    */
   getSessionCount(): number {
     return this.sessions.size
   }
 
   /**
-   * 获取连接状态统计
+   * Get connection status statistics
    */
   getConnectionStats() {
     const sessions = this.getAllSessions()
@@ -155,17 +155,17 @@ class SessionStore {
   }
 
   /**
-   * 清空所有会话（应用退出时调用）
+   * Clear all sessions (called when application exits)
    */
   clear() {
-    console.log('🧹 SessionStore: 清空所有会话')
+    console.log('🧹 SessionStore: Clearing all sessions')
     this.sessions.clear()
     this.activeSessionId = undefined
     this.notifyListeners()
   }
 
   /**
-   * 调试信息
+   * Debug information
    */
   getDebugInfo() {
     return {

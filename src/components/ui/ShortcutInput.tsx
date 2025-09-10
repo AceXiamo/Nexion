@@ -10,7 +10,7 @@ interface ShortcutInputProps {
   className?: string
 }
 
-export const ShortcutInput: React.FC<ShortcutInputProps> = ({ value, onChange, onValidate, placeholder = '点击录制快捷键...', disabled = false, className = '' }) => {
+export const ShortcutInput: React.FC<ShortcutInputProps> = ({ value, onChange, onValidate, placeholder = 'Click to record shortcut...', disabled = false, className = '' }) => {
   const [isRecording, setIsRecording] = useState(false)
   const [currentKeys, setCurrentKeys] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string>('')
@@ -95,14 +95,14 @@ export const ShortcutInput: React.FC<ShortcutInputProps> = ({ value, onChange, o
 
         if (keyboardShortcutManager.isValidShortcut(shortcut)) {
           if (onValidate && !onValidate(shortcut)) {
-            setError('此快捷键已被占用')
+            setError('This shortcut is already in use')
             setTimeout(() => setError(''), 2000)
           } else {
             onChange(shortcut)
             setError('')
           }
         } else {
-          setError('无效的快捷键组合')
+          setError('Invalid shortcut combination')
           setTimeout(() => setError(''), 2000)
         }
 
@@ -150,7 +150,7 @@ export const ShortcutInput: React.FC<ShortcutInputProps> = ({ value, onChange, o
           ref={inputRef}
           type="text"
           value={currentDisplay || displayValue || ''}
-          placeholder={isRecording ? '按下快捷键组合...' : placeholder}
+          placeholder={isRecording ? 'Press shortcut combination...' : placeholder}
           readOnly
           disabled={disabled}
           onKeyDown={handleKeyDown}

@@ -115,7 +115,7 @@ function TransferTaskItem({ task }: TransferTaskItemProps) {
               icon={task.type === 'upload' ? 'mdi:upload' : 'mdi:download'} 
               className="w-3 h-3" 
             />
-            <span>{task.type === 'upload' ? '上传' : '下载'}</span>
+            <span>{task.type === 'upload' ? 'Upload' : 'Download'}</span>
           </div>
         </div>
 
@@ -140,7 +140,7 @@ function TransferTaskItem({ task }: TransferTaskItemProps) {
             
             <div className="flex items-center gap-2 text-gray-400">
               {speed && <span>{speed}</span>}
-              {eta && <span>剩余 {eta}</span>}
+              {eta && <span>Remaining {eta}</span>}
             </div>
           </div>
         </div>
@@ -168,7 +168,7 @@ function TransferTaskItem({ task }: TransferTaskItemProps) {
             size="sm"
             onClick={handlePause}
             className="h-8 w-8 p-0"
-            title="暂停"
+            title="Pause"
           >
             <Icon icon="mdi:pause" className="w-4 h-4" />
           </Button>
@@ -180,7 +180,7 @@ function TransferTaskItem({ task }: TransferTaskItemProps) {
             size="sm"
             onClick={handlePause}
             className="h-8 w-8 p-0"
-            title="继续"
+            title="Continue"
           >
             <Icon icon="mdi:play" className="w-4 h-4" />
           </Button>
@@ -192,7 +192,7 @@ function TransferTaskItem({ task }: TransferTaskItemProps) {
             size="sm"
             onClick={handleRetry}
             className="h-8 w-8 p-0"
-            title="重试"
+            title="Retry"
           >
             <Icon icon="mdi:refresh" className="w-4 h-4" />
           </Button>
@@ -203,7 +203,7 @@ function TransferTaskItem({ task }: TransferTaskItemProps) {
           size="sm"
           onClick={handleCancel}
           className="h-8 w-8 p-0 hover:text-red-400"
-          title="取消"
+          title="Cancel"
         >
           <Icon icon="mdi:close" className="w-4 h-4" />
         </Button>
@@ -223,8 +223,8 @@ export function TransferQueue() {
       {/* Queue Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 text-xs text-gray-400">
-          <span>传输中: {activeTasks.length}</span>
-          <span>已完成: {completedTasks.length}</span>
+          <span>Transferring: {activeTasks.length}</span>
+          <span>Completed: {completedTasks.length}</span>
         </div>
 
         {completedTasks.length > 0 && (
@@ -235,7 +235,7 @@ export function TransferQueue() {
             className="text-xs"
           >
             <Icon icon="mdi:broom" className="w-4 h-4 mr-1" />
-            清除已完成
+            Clear Completed
           </Button>
         )}
       </div>
@@ -250,7 +250,7 @@ export function TransferQueue() {
       {transferQueue.length === 0 && (
         <div className="text-center text-gray-500 py-4">
           <Icon icon="mdi:transfer" className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <span className="text-sm">暂无传输任务</span>
+          <span className="text-sm">No transfer tasks</span>
         </div>
       )}
     </div>

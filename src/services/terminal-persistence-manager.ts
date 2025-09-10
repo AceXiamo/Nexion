@@ -2,8 +2,8 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 
 /**
- * 终端持久化管理器
- * 全局管理终端实例，确保会话切换时终端内容不丢失
+ * Terminal persistence manager
+ * Globally manages terminal instances to ensure terminal content is not lost during session switching
  */
 class TerminalPersistenceManager {
   private static instance: TerminalPersistenceManager
@@ -19,19 +19,19 @@ class TerminalPersistenceManager {
   }
 
   /**
-   * 获取或创建终端实例
+   * Get or create terminal instance
    */
   getOrCreateTerminal(sessionId: string): { terminal: Terminal; fitAddon: FitAddon } {
-    console.log('🚀 获取或创建终端实例:', sessionId)
-    // 如果终端实例已存在，直接返回
+    console.log('🚀 Get or create terminal instance:', sessionId)
+    // If terminal instance already exists, return directly
     if (this.terminals.has(sessionId)) {
-      console.log(`🔄 复用已存在的终端实例: ${sessionId}`)
+      console.log(`🔄 Reusing existing terminal instance: ${sessionId}`)
       return this.terminals.get(sessionId)!
     }
 
-    console.log(`🆕 创建新的终端实例: ${sessionId}`)
+    console.log(`🆕 Creating new terminal instance: ${sessionId}`)
 
-    // 创建新的终端实例
+    // Create new terminal instance
     const terminal = new Terminal({
       theme: {
         background: '#000000',
@@ -68,11 +68,11 @@ class TerminalPersistenceManager {
       allowProposedApi: true,
     })
 
-    // 创建自适应插件
+    // Create fit addon
     const fitAddon = new FitAddon()
     terminal.loadAddon(fitAddon)
 
-    // 保存终端实例
+    // Save terminal instance
     const terminalData = { terminal, fitAddon }
     this.terminals.set(sessionId, terminalData)
 
@@ -80,36 +80,36 @@ class TerminalPersistenceManager {
   }
 
   /**
-   * 检查终端实例是否存在
+   * Check if terminal instance exists
    */
   hasTerminal(sessionId: string): boolean {
     return this.terminals.has(sessionId)
   }
 
   /**
-   * 移除终端实例
+   * Remove terminal instance
    */
   removeTerminal(sessionId: string): void {
     const terminalData = this.terminals.get(sessionId)
     if (terminalData) {
-      console.log(`🗑️ 销毁终端实例: ${sessionId}`)
+      console.log(`🗑️ Destroying terminal instance: ${sessionId}`)
       terminalData.terminal.dispose()
       this.terminals.delete(sessionId)
     }
   }
 
   /**
-   * 获取所有终端会话ID
+   * Get all terminal session IDs
    */
   getTerminalSessionIds(): string[] {
     return Array.from(this.terminals.keys())
   }
 
   /**
-   * 清空所有终端实例
+   * Clear all terminal instances
    */
   clear(): void {
-    console.log('🧹 清空所有终端实例')
+    console.log('🧹 Clearing all terminal instances')
     this.terminals.forEach((terminalData) => {
       terminalData.terminal.dispose()
     })
@@ -117,7 +117,7 @@ class TerminalPersistenceManager {
   }
 
   /**
-   * 获取调试信息
+   * Get debug information
    */
   getDebugInfo() {
     return {

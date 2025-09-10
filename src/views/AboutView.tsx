@@ -15,7 +15,7 @@ export function AboutView() {
 
   return (
     <div className="space-y-8">
-      {/* 英雄区域 - 产品头部 */}
+      {/* Hero section - Product header */}
       <div className="p-4">
         <div className="flex items-center space-x-4 mb-6">
           <div className="w-12 h-12 rounded-lg border border-blue-400/30 flex items-center justify-center overflow-hidden">
@@ -87,7 +87,7 @@ export function AboutView() {
         </div>
       </div>
 
-      {/* 联系我们 */}
+      {/* Contact us */}
       <div className="p-4">
         <div className="flex items-center space-x-2 mb-4">
           <Icon icon="fluent-emoji:open-mailbox-with-raised-flag" className="w-5 h-5 text-blue-400" />
@@ -134,7 +134,7 @@ export function AboutView() {
         </div>
       </div>
 
-      {/* 重要链接 */}
+      {/* Important links */}
       <div className="p-4">
         <div className="flex items-center space-x-2 mb-4">
           <Icon icon="fluent-emoji:link" className="w-5 h-5 text-blue-400" />
@@ -196,7 +196,7 @@ export function AboutView() {
         </div>
       </div>
 
-      {/* 版权信息 */}
+      {/* Copyright information */}
       <div className="p-4">
         <div className="flex items-center space-x-2 mb-4">
           <Icon icon="lucide:info" className="w-5 h-5 text-purple-400" />

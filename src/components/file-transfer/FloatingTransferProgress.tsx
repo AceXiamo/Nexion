@@ -41,7 +41,7 @@ interface TransferProgressCardProps {
   isExpanded: boolean
 }
 
-function TransferProgressCard({ task, isExpanded }: TransferProgressCardProps) {
+function TransferProgressCard({ task }: TransferProgressCardProps) {
   const [speed, setSpeed] = useState(calculateSpeed(task))
 
   // update progress on task change
@@ -134,10 +134,10 @@ function AggregatedProgress({ tasks, onToggleExpand, isExpanded }: AggregatedPro
   }
 
   const getStatusText = () => {
-    if (errorTasks.length > 0) return `${errorTasks.length} 个失败`
-    if (completedTasks.length === tasks.length) return '全部完成'
-    if (activeTasks.length > 0) return `传输中 ${activeTasks.length} 个文件`
-    return '等待中'
+    if (errorTasks.length > 0) return `${errorTasks.length} failed`
+    if (completedTasks.length === tasks.length) return 'All completed'
+    if (activeTasks.length > 0) return `Transferring ${activeTasks.length} files`
+    return 'Waiting'
   }
 
   return (
@@ -169,15 +169,12 @@ function AggregatedProgress({ tasks, onToggleExpand, isExpanded }: AggregatedPro
                 animate={{ width: `${totalProgress}%` }}
                 transition={{ duration: 0.3 }}
               /> */}
-              <div
-                className={cn('h-1.5 rounded-full transition-all duration-300', getStatusColor())}
-                style={{ width: `${totalProgress}%` }}
-              />
+              <div className={cn('h-1.5 rounded-full transition-all duration-300', getStatusColor())} style={{ width: `${totalProgress}%` }} />
             </div>
 
             <div className="flex items-center justify-between text-xs text-gray-400">
-              <span>总进度: {totalProgress}%</span>
-              <span>{tasks.length} 个任务</span>
+              <span>Total progress: {totalProgress}%</span>
+              <span>{tasks.length} tasks</span>
             </div>
           </div>
         </div>
