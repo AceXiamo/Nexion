@@ -309,8 +309,10 @@ export function useSSHSessions() {
     const currentSessionId = getCurrentSessionId()
     if (currentSessionId) {
       const currentSession = sessions.find(s => s.id === currentSessionId)
-      if (currentSession?.config) {
-        return await createSession(currentSession.config)
+      if (currentSession?.configId) {
+        // TODO: Implement fetching config by configId for duplication
+        console.warn('Duplicate session needs config data, not just configId')
+        return false
       }
     }
     return false

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 export function FileTransferModal() {
   const { isOpen, closeModal, currentSession, localPath, remotePath, localFiles, remoteFiles, isLoading, errors, setLocalPath, setRemotePath } = useFileTransferStore()
-  const { t } = useTranslation('fileTransfer')
+  const { t } = useTranslation()
 
   return (
     <Modal isOpen={isOpen && !!currentSession} onClose={closeModal} title={t('modal.title')} size="2xl" closeOnOverlayClick={false} closeOnEscape={true} disableContentAnimation={true}>

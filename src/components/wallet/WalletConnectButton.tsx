@@ -21,9 +21,7 @@ export function WalletConnectButton() {
   } = useWalletStore()
   
   const {
-    shortAddress,
-    canConnect,
-    canDisconnect
+    shortAddress
   } = useWalletSelectors()
   
   const [showDropdown, setShowDropdown] = useState(false)

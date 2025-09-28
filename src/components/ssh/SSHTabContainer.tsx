@@ -103,8 +103,10 @@ export function SSHTabContainer() {
   const handleDuplicateSessionShortcut = async () => {
     if (activeSessionId) {
       const activeSession = sessions.find((s) => s.id === activeSessionId)
-      if (activeSession?.config) {
-        await createSession(activeSession.config)
+      if (activeSession?.configId) {
+        // Find the config by configId and create new session
+        // This would need to be implemented to fetch config by configId
+        console.warn('Duplicate session needs config data, not just configId')
       }
     }
   }

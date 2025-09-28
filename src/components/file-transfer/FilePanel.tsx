@@ -38,7 +38,7 @@ export function FilePanel({ type, currentPath, files, isLoading, error, onPathCh
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
   const [showHiddenFiles, setShowHiddenFiles] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { t } = useTranslation(['fileTransfer', 'common'])
+  const { t } = useTranslation()
 
   const isLocal = type === 'local'
   const panelTitle = isLocal ? t('fileTransfer:modal.localPanel') : t('fileTransfer:modal.remotePanel')

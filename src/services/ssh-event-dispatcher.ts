@@ -1,6 +1,5 @@
 import { Terminal } from '@xterm/xterm'
 import '@/types/electron'
-import { terminalHistoryManager } from '@/services/terminal-history-manager'
 
 /**
  * Global SSH event dispatcher

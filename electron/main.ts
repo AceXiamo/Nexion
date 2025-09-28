@@ -41,7 +41,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     icon: path.join(process.env.VITE_PUBLIC, 'app-icon.png'),
-    title: 'Web3 SSH Manager',
+    title: 'Nexion',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,
@@ -53,8 +53,9 @@ function createWindow() {
       enableBlinkFeatures: 'CSSColorSchemeUARendering', // Enable modern CSS features
       additionalArguments: ['--disable-web-security', '--disable-features=VizDisplayCompositor'],
     },
-    // Optimized title bar style for macOS
-    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    // Cross-platform frameless window configuration
+    frame: false, // Remove native frame for custom title bar
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : undefined,
     titleBarOverlay: process.platform === 'win32' ? {
       color: '#000000',
       symbolColor: '#BCFF2F',
@@ -64,6 +65,10 @@ function createWindow() {
     vibrancy: process.platform === 'darwin' ? 'under-window' : undefined, // macOS glass effect
     visualEffectState: process.platform === 'darwin' ? 'active' : undefined,
     show: false, // Don't show until ready
+    resizable: true,
+    maximizable: true,
+    minimizable: true,
+    closable: true,
   })
 
   // Show window when ready to prevent visual flash
@@ -518,7 +523,7 @@ ipcMain.handle('sftp:connect', async (_event, sessionId: string) => {
   }
 })
 
-ipcMain.handle('sftp:disconnect', async (_event, sessionId: string) => {
+ipcMain.handle('sftp:disconnect', async () => {
   try {
     // SFTP disconnection is handled with SSH session disconnect
     return { success: true }
@@ -671,7 +676,7 @@ ipcMain.handle('wallet:openExternal', async (_event, url: string) => {
 })
 
 // Window management IPC handlers
-ipcMain.handle('window:close', async (_event) => {
+ipcMain.handle('window:close', async () => {
   try {
     if (win) {
       win.close()
@@ -681,6 +686,49 @@ ipcMain.handle('window:close', async (_event) => {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to close window'
+    }
+  }
+})
+
+ipcMain.handle('window:minimize', async () => {
+  try {
+    if (win) {
+      win.minimize()
+    }
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to minimize window'
+    }
+  }
+})
+
+ipcMain.handle('window:maximize', async () => {
+  try {
+    if (win) {
+      if (win.isMaximized()) {
+        win.unmaximize()
+      } else {
+        win.maximize()
+      }
+    }
+    return { success: true, isMaximized: win?.isMaximized() || false }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to maximize window'
+    }
+  }
+})
+
+ipcMain.handle('window:isMaximized', async () => {
+  try {
+    return { success: true, isMaximized: win?.isMaximized() || false }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get window state'
     }
   }
 })
@@ -722,7 +770,7 @@ ipcMain.handle('store:delete', async (_event, key: string) => {
   }
 })
 
-ipcMain.handle('store:clear', async (_event) => {
+ipcMain.handle('store:clear', async () => {
   try {
     store.clear()
     return { success: true }

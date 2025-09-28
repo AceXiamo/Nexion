@@ -7,7 +7,7 @@ export function StatsView() {
   const { t } = useTranslation()
   const { account } = useWalletStore()
   const { useGetUserStats } = useSSHContract()
-  const { data: userStats, isLoading } = useGetUserStats(account)
+  const { data: userStats, isLoading } = useGetUserStats(account || undefined)
 
   if (!account) {
     return (
@@ -105,7 +105,7 @@ export function StatsView() {
             <div className="flex justify-between items-center py-3 border-b border-[#333333]">
               <span className="text-[#888888]">Wallet Address</span>
               <code className="text-sm bg-[#272727] px-3 py-1 rounded text-[#CCCCCC] font-mono">
-                {`${address.slice(0, 8)}...${address.slice(-8)}`}
+                {`${account?.slice(0, 8)}...${account?.slice(-8)}`}
               </code>
             </div>
             <div className="flex justify-between items-center py-3 border-b border-[#333333]">

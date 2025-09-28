@@ -30,7 +30,7 @@ declare global {
       off: (channel: string, listener: (...args: any[]) => void) => void
       send: (channel: string, ...args: any[]) => void
       invoke: (channel: string, ...args: any[]) => Promise<any>
-      
+
       ssh: {
         createSession: (config: any) => Promise<SSHIPCResponse>
         closeSession: (sessionId: string) => Promise<SSHIPCResponse>
@@ -58,9 +58,23 @@ declare global {
       system: {
         getUserHomeDirectory: () => Promise<{ success: boolean; homeDir?: string; error?: string }>
       }
+
+      store: {
+        get: (key: string) => Promise<{ success: boolean; data?: any; error?: string }>
+        set: (key: string, value: any) => Promise<{ success: boolean; error?: string }>
+        delete: (key: string) => Promise<{ success: boolean; error?: string }>
+        clear: () => Promise<{ success: boolean; error?: string }>
+      }
+
+      window: {
+        close: () => Promise<{ success: boolean; error?: string }>
+        minimize: () => Promise<{ success: boolean; error?: string }>
+        maximize: () => Promise<{ success: boolean; isMaximized?: boolean; error?: string }>
+        isMaximized: () => Promise<{ success: boolean; isMaximized?: boolean; error?: string }>
+      }
     }
     
-    walletDebug: {
+    walletDebug?: {
       checkWalletAvailability: () => any
       logWalletProviders: () => void
     }

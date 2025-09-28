@@ -60,6 +60,74 @@
   -webkit-transform: translateZ(0);
 }
 
+/* Windows 标题栏样式 */
+.windows-titlebar {
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  z-index: 1000;
+}
+
+/* Windows 拖拽区域 */
+.windows-drag-region {
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+/* Windows 控制按钮样式 */
+.windows-control-btn {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  position: relative;
+  z-index: 1001;
+}
+
+.windows-control-btn:focus-visible {
+  outline: 2px solid rgb(var(--primary));
+  outline-offset: -2px;
+}
+
+/* Windows 控制按钮悬停效果 */
+.windows-minimize-btn:hover,
+.windows-maximize-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.windows-close-btn:hover {
+  background-color: #e81123;
+}
+
+.windows-close-btn:active {
+  background-color: #f1707a;
+  color: #000;
+}
+
+/* Windows 特定的布局调整 */
+.platform-windows {
+  /* Windows specific styles */
+}
+
+.has-custom-titlebar {
+  /* Styles for windows with custom title bar */
+}
+
+/* macOS 拖拽区域样式 */
+.macos-drag-region {
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+.platform-macos {
+  /* macOS specific styles */
+}
+
+.has-traffic-lights {
+  /* Styles for macOS with traffic lights */
+}
+
 /* OKX 基础样式 */
 * {
   border-color: rgb(var(--border));

@@ -127,10 +127,6 @@ declare global {
   interface Window {
     okxwallet?: any
     ethereum?: any
-    walletDebug?: {
-      checkWalletAvailability: () => any
-      logWalletProviders: () => void
-    }
   }
   const __BUILD_NETWORK__: string
 }

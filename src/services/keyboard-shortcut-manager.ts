@@ -1,4 +1,4 @@
-import { ShortcutKeyEvent, ShortcutAction, KeyboardShortcut, getPlatform } from '../types/keyboard-shortcuts';
+import { ShortcutKeyEvent, ShortcutAction, getPlatform } from '../types/keyboard-shortcuts';
 import { settingsStore } from '../store/settings-store';
 import { modalManager } from '../lib/modal-manager';
 

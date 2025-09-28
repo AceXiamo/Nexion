@@ -1,4 +1,4 @@
-import React from 'react'
+// React import not needed for functional components
 import { Icon } from '@iconify/react'
 import { Button } from '@/components/ui/button'
 import { useFileTransferStore } from '@/store/file-transfer-store'

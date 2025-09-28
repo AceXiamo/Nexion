@@ -17,13 +17,12 @@ export function TerminalContainer() {
   const { t } = useTranslation()
   const { sessionId } = useParams<{ sessionId: string }>()
   const { 
-    sessions, 
-    reconnectSession, 
+    sessions,
+    reconnectSession,
     loading,
     switchToSessionByIndex,
     switchToNextSession,
     switchToPreviousSession,
-    closeCurrentSession,
     duplicateCurrentSession 
   } = useSSHSessions()
   const { openModal } = useFileTransferStore()

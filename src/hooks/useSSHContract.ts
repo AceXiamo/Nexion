@@ -53,8 +53,8 @@ export function useSSHContract() {
         console.error('Error checking user registration:', error)
       } finally {
         setIsLoading(false)
-        return registered
       }
+      return registered
     }, [userAddress, contractAddress])
 
     // Auto-fetch when address changes
@@ -111,8 +111,8 @@ export function useSSHContract() {
         console.error('Error fetching SSH configs:', error)
       } finally {
         setIsLoading(false)
-        return results
       }
+      return results
     }, [userAddress, contractAddress])
 
     // Auto-fetch when address changes

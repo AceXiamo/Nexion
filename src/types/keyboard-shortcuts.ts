@@ -121,24 +121,24 @@ export const DEFAULT_SHORTCUTS: Record<ShortcutAction, KeyboardShortcut> = {
     category: 'navigation',
     action: 'switchToTab9'
   },
-  // nextTab: {
-  //   id: 'nextTab',
-  //   name: 'Next Tab',
-  //   description: 'Switch to the next tab',
-  //   defaultKey: 'Ctrl+Tab',
-  //   currentKey: 'Ctrl+Tab',
-  //   category: 'navigation',
-  //   action: 'nextTab'
-  // },
-  // previousTab: {
-  //   id: 'previousTab',
-  //   name: 'Previous Tab',
-  //   description: 'Switch to the previous tab',
-  //   defaultKey: 'Ctrl+Shift+Tab',
-  //   currentKey: 'Ctrl+Shift+Tab',
-  //   category: 'navigation',
-  //   action: 'previousTab'
-  // },
+  nextTab: {
+    id: 'nextTab',
+    name: 'Next Tab',
+    description: 'Switch to the next tab',
+    defaultKey: 'Ctrl+Tab',
+    currentKey: 'Ctrl+Tab',
+    category: 'navigation',
+    action: 'nextTab'
+  },
+  previousTab: {
+    id: 'previousTab',
+    name: 'Previous Tab',
+    description: 'Switch to the previous tab',
+    defaultKey: 'Ctrl+Shift+Tab',
+    currentKey: 'Ctrl+Shift+Tab',
+    category: 'navigation',
+    action: 'previousTab'
+  },
   newSession: {
     id: 'newSession',
     name: 'New Session',
@@ -157,15 +157,15 @@ export const DEFAULT_SHORTCUTS: Record<ShortcutAction, KeyboardShortcut> = {
     category: 'session',
     action: 'closeSession'
   },
-  // duplicateSession: {
-  //   id: 'duplicateSession',
-  //   name: 'Duplicate Session',
-  //   description: 'Duplicate current session configuration to create new session',
-  //   defaultKey: 'Ctrl+Shift+T',
-  //   currentKey: 'Ctrl+Shift+T',
-  //   category: 'session',
-  //   action: 'duplicateSession'
-  // },
+  duplicateSession: {
+    id: 'duplicateSession',
+    name: 'Duplicate Session',
+    description: 'Duplicate current session configuration to create new session',
+    defaultKey: 'Ctrl+Shift+T',
+    currentKey: 'Ctrl+Shift+T',
+    category: 'session',
+    action: 'duplicateSession'
+  },
   openFileTransfer: {
     id: 'openFileTransfer',
     name: 'Open File Transfer',

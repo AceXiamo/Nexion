@@ -32,7 +32,7 @@ export interface ConnectionState {
 
 export class NativeWalletConnect {
   private provider: UniversalProvider | null = null
-  private listeners: Map<string, Function[]> = new Map()
+  private listeners: Map<string, ((...args: any[]) => void)[]> = new Map()
   private connectionState: ConnectionState = {
     isConnected: false,
     isConnecting: false,
@@ -399,14 +399,14 @@ export class NativeWalletConnect {
     return { ...this.connectionState }
   }
 
-  on(event: string, callback: Function): void {
+  on(event: string, callback: (...args: any[]) => void): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, [])
     }
     this.listeners.get(event)!.push(callback)
   }
 
-  off(event: string, callback: Function): void {
+  off(event: string, callback: (...args: any[]) => void): void {
     const callbacks = this.listeners.get(event)
     if (callbacks) {
       const index = callbacks.indexOf(callback)

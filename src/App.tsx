@@ -11,12 +11,13 @@ import { sessionStore } from '@/store/session-store'
 import { terminalPersistenceManager } from '@/services/terminal-persistence-manager'
 import { useKeyboardShortcuts, useShortcutHandler } from '@/hooks/useKeyboardShortcuts'
 import { useSSHSessions } from '@/hooks/useSSHSessions'
+import { getPlatformClasses } from '@/lib/platform'
 
 function AppContent() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // 处理根路径重定向
+  // Handle root path redirection
   useEffect(() => {
     if (location.pathname === '/') {
       console.log('Redirecting from / to /connections')
@@ -24,47 +25,50 @@ function AppContent() {
     }
   }, [location.pathname, navigate])
 
-  // 初始化键盘快捷键管理器
+  // Initialize keyboard shortcut manager
   useKeyboardShortcuts()
 
-  // 获取SSH会话信息用于全局快捷键处理
+  // Get SSH session information for global shortcut handling
   const { activeSessionId, closeSession } = useSSHSessions()
 
-  // 全局 closeSession 快捷键处理
+  // Global closeSession shortcut handling
   const handleGlobalCloseShortcut = () => {
     if (activeSessionId) {
-      // 有活跃会话时关闭当前会话
+      // Close current session when there's an active session
       closeSession(activeSessionId)
     } else {
-      // 没有活跃会话时关闭窗口
+      // Close window when there's no active session
       if (window.electronAPI && typeof window.electronAPI === 'object' && 'closeWindow' in window.electronAPI) {
-        ;(window.electronAPI as any).closeWindow()
+        (window.electronAPI as any).closeWindow()
       } else {
-        // 如果没有closeWindow API，尝试其他方式
+        // If no closeWindow API, try other methods
         window.close()
       }
     }
   }
 
-  // 注册全局快捷键
+  // Register global shortcuts
   useShortcutHandler('closeSession', handleGlobalCloseShortcut, [activeSessionId, closeSession])
 
-  // 初始化全局SSH事件分发器和会话状态管理
+  // Initialize global SSH event dispatcher and session state management
   useEffect(() => {
-    console.log('🚀 初始化应用，启动SSH事件分发器')
+    console.log('🚀 Initializing application, starting SSH event dispatcher')
 
     sshEventDispatcher.initialize()
 
-    // 应用退出时清理
+    // Add platform-specific classes to document body
+    document.body.className = `${document.body.className} ${getPlatformClasses()}`.trim()
+
+    // Clean up on application exit
     return () => {
-      console.log('🧹 应用退出，清理全局状态')
+      console.log('🧹 Application exit, cleaning up global state')
       sshEventDispatcher.cleanup()
       sessionStore.clear()
       terminalPersistenceManager.clear()
     }
   }, [])
 
-  // 根据当前路径确定活跃的tab
+  // Determine active tab based on current path
   const getActiveTab = () => {
     const path = location.pathname
     if (path.startsWith('/terminal/')) return 'terminal'
@@ -79,21 +83,21 @@ function AppContent() {
     <Layout
       activeTab={getActiveTab()}
       onTabChange={(tab) => {
-        // 使用React Router导航
+        // Use React Router navigation
         if (tab !== 'terminal') {
           navigate(`/${tab}`)
         }
       }}
     >
       <Routes>
-        {/* 移除根路径的 Navigate，直接处理 /connections */}
+        {/* Remove root path Navigate, handle /connections directly */}
         <Route path="/connections" element={<ConnectionsView />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/stats" element={<StatsView />} />
         <Route path="/about" element={<AboutView />} />
         <Route path="/terminal/:sessionId" element={<TerminalContainer />} />
         <Route path="/terminal" element={<TerminalContainer />} />
-        {/* 添加一个通配符路由作为后备 */}
+        {/* Add a wildcard route as fallback */}
         <Route path="*" element={<Navigate to="/connections" replace />} />
       </Routes>
     </Layout>

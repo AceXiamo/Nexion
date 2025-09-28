@@ -39,7 +39,7 @@ export function FileBrowser({ files, isLoading, selectedFiles, onSelectionChange
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { t } = useTranslation(['fileTransfer', 'common'])
+  const { t } = useTranslation()
 
   const { isOpen, position, openContextMenu, closeContextMenu } = useContextMenu()
 
