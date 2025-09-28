@@ -6,7 +6,7 @@ Nexion combines traditional SSH management with cutting-edge Web3 technology to 
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
-![Version](https://img.shields.io/badge/version-0.1.0--beta-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 
 ## ✨ Key Features
 
@@ -43,7 +43,7 @@ Nexion combines traditional SSH management with cutting-edge Web3 technology to 
 ### Prerequisites
 
 - Node.js 18+
-- pnpm or npm
+- yarn or npm
 - Git
 
 ### Installation
@@ -56,23 +56,27 @@ cd Nexion
 
 2. **Install dependencies**
 ```bash
-pnpm install
+yarn install
 # or
 npm install
 ```
 
 3. **Run in development mode**
 ```bash
-pnpm dev
+yarn dev:testnet
+yarn dev:mainnet
 # or
-npm run dev
+npm run dev:testnet
+npm run dev:mainnet
 ```
 
 4. **Build the application**
 ```bash
-pnpm build
+yarn build:testnet
+yarn build:mainnet
 # or
-npm run build
+npm run build:testnet
+npm run build:mainnet
 ```
 
 ## 📖 Usage Guide
@@ -133,16 +137,15 @@ Nexion/
 
 ```bash
 # Development mode
-pnpm dev
+yarn dev:testnet
+yarn dev:mainnet
 
 # Code linting
-pnpm lint
+yarn lint
 
 # Build application
-pnpm build
-
-# Preview build
-pnpm preview
+yarn build:testnet
+yarn build:mainnet
 ```
 
 ## 🛡️ Security
@@ -164,6 +167,23 @@ Nexion employs multi-layered security protection:
 ## 📄 License
 
 This project is licensed under the [Apache 2.0 License](LICENSE).
+
+## ☕ Support the Project
+
+If you find Nexion useful and would like to support its development, consider buying me a coffee! In true Web3 spirit, you can send crypto directly to my wallet:
+
+### 💰 Donation Address
+```
+0xe92bc8BB508028CB43ab43ec69def83C406489aa
+```
+
+**Supported Networks:**
+- Ethereum (ETH)
+- X Layer (OKB, USDT, USDC)
+- Polygon (MATIC, USDT, USDC)
+- BSC (BNB, BUSD, USDT)
+
+Your support helps maintain and improve Nexion. Every contribution, no matter how small, is greatly appreciated! 🙏
 
 ## 🙏 Acknowledgments
 
