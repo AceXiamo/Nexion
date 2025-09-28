@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { ConnectionsView } from '@/views/ConnectionsView'
 import { SettingsView } from '@/views/SettingsView'
@@ -17,13 +17,15 @@ function AppContent() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Handle root path redirection
+  // Handle root path redirection for HashRouter
   useEffect(() => {
-    if (location.pathname === '/') {
-      console.log('Redirecting from / to /connections')
+    // For HashRouter, check both pathname and hash
+    const currentPath = location.pathname + location.hash
+    if (location.pathname === '/' && (!location.hash || location.hash === '#/')) {
+      console.log('Redirecting from root to /connections')
       navigate('/connections', { replace: true })
     }
-  }, [location.pathname, navigate])
+  }, [location.pathname, location.hash, navigate])
 
   // Initialize keyboard shortcut manager
   useKeyboardShortcuts()
@@ -68,7 +70,7 @@ function AppContent() {
     }
   }, [])
 
-  // Determine active tab based on current path
+  // Determine active tab based on current path (HashRouter compatible)
   const getActiveTab = () => {
     const path = location.pathname
     if (path.startsWith('/terminal/')) return 'terminal'
