@@ -25,9 +25,10 @@ export function WindowsTitleBar({ title = 'Nexion', showWalletButton = true }: W
         <div className="flex items-center space-x-2 min-w-0">
           {/* App icon */}
           <div className="flex-shrink-0">
-            <Icon
-              icon="simple-icons:electron"
-              className="w-4 h-4 text-[#BCFF2F]"
+            <img
+              src="https://nexion.acexiamo.com/logo.png"
+              alt="Nexion"
+              className="w-4 h-4 object-contain"
             />
           </div>
 
