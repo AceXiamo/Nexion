@@ -20,7 +20,6 @@ function AppContent() {
   // Handle root path redirection for HashRouter
   useEffect(() => {
     // For HashRouter, check both pathname and hash
-    const currentPath = location.pathname + location.hash
     if (location.pathname === '/' && (!location.hash || location.hash === '#/')) {
       console.log('Redirecting from root to /connections')
       navigate('/connections', { replace: true })
