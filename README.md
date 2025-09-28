@@ -8,6 +8,8 @@ Nexion combines traditional SSH management with cutting-edge Web3 technology to 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 
+<a href="https://www.producthunt.com/products/nexion?utm_source=badge-follow&utm_medium=badge&utm_source=badge-nexion" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1105699&theme=light" alt="Nexion - Next&#0045;gen&#0032;web3&#0032;ssh&#0032;manager | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
 ## ✨ Key Features
 
 - 🔐 **Web3 Authentication** - Use your crypto wallet instead of traditional SSH keys
